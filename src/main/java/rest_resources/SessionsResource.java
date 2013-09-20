@@ -1,9 +1,6 @@
 package rest_resources;
 
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -16,10 +13,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -60,8 +55,7 @@ public class SessionsResource {
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response createSession(@Context HttpServletRequest req,
-			JSONObject inputJsonObj, @Context UriInfo ui,
-			@Context HttpHeaders hh) {
+			JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
 		String userName = null; // user inserted fields
 		String attemptedPassword = null; // user inserted fields
 		Response response = null;
@@ -70,41 +64,31 @@ public class SessionsResource {
 			attemptedPassword = (String) inputJsonObj.get("password");
 		} catch (JSONException e) {
 			System.out.println("Error Reading the jsonFile");
-			return Response.status(Status.BAD_REQUEST)
-					.entity("Error reading JSON").build();
+			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
 		}
 		// String email = appsMid.getEmailUsingUserName(appId, userName);
 		if(userName == null && attemptedPassword == null)
-			return Response.status(Status.BAD_REQUEST)
-					.entity("Error reading JSON").build();
+			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
 		String userId = appsMid.getUserIdUsingUserName(appId, userName);
 		if (userId != null) {
-			boolean usersConfirmedOption = appsMid
-					.confirmUsersEmailOption(appId);
+			boolean usersConfirmedOption = appsMid.confirmUsersEmailOption(appId);
 			// Remember the order of evaluation in java
 			if (usersConfirmedOption) {
 				if (appsMid.userEmailIsConfirmed(appId, userId)) {
-					System.out.println("userId of " + userName + "is: "
-							+ userId);
+					System.out.println("userId of " + userName + "is: " + userId);
 					String sessionToken = getRandomString(IDGENERATOR);
-					boolean validation = appsMid.createSession(sessionToken,
-							appId, userId, attemptedPassword);
+					boolean validation = appsMid.createSession(sessionToken, appId, userId, attemptedPassword);
 					if (validation) {
-						NewCookie identifier = new NewCookie("sessionToken",
-								sessionToken);
+						NewCookie identifier = new NewCookie("sessionToken", sessionToken);
 
-						response = Response.status(Status.OK)
-								.entity(identifier).build();
+						response = Response.status(Status.OK).entity(identifier).build();
 					}
-					response = Response.status(Status.OK).entity(sessionToken)
-							.build();
+					response = Response.status(Status.OK).entity(sessionToken).build();
 				} else {
-					response = Response.status(Status.FORBIDDEN)
-							.entity(EMAILCONFIRMATIONERROR).build();
+					response = Response.status(Status.FORBIDDEN).entity(EMAILCONFIRMATIONERROR).build();
 				}
 			} else
-				response = Response.status(Status.UNAUTHORIZED).entity("")
-						.build();
+				response = Response.status(Status.UNAUTHORIZED).entity("").build();
 		} else
 			response = Response.status(Status.NOT_FOUND).entity("").build();
 		return response;
@@ -124,8 +108,7 @@ public class SessionsResource {
 		if (appsMid.deleteUserSession(sessionToken, userId))
 			response = Response.status(Status.OK).entity(sessionToken).build();
 		else
-			response = Response.status(Status.NOT_FOUND).entity(sessionToken)
-					.build();
+			response = Response.status(Status.NOT_FOUND).entity(sessionToken).build();
 		return response;
 	}
 
@@ -144,8 +127,7 @@ public class SessionsResource {
 		if (appsMid.sessionTokenExists(sessionTokenCookie)) {
 			response = Response.status(Status.OK).entity(sessionToken).build();
 		} else
-			response = Response.status(Status.NOT_FOUND).entity(sessionToken)
-					.build();
+			response = Response.status(Status.NOT_FOUND).entity(sessionToken).build();
 		return response;
 	}
 
@@ -169,8 +151,7 @@ public class SessionsResource {
 			System.out.println("********DELETING ALL SESSIONS FOR THIS USER");
 			boolean sucess = appsMid.deleteAllUserSessions(userId);
 			if (sucess)
-				response = Response.status(Status.OK)
-						.entity(userId).build();
+				response = Response.status(Status.OK).entity(userId).build();
 			else
 				response = Response.status(Status.NOT_FOUND).entity("No sessions exist").build();
 		} else
