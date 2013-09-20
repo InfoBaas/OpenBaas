@@ -1,32 +1,21 @@
 package dataModels;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
-import com.mongodb.WriteConcern;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.DBCursor;
-import com.mongodb.ServerAddress;
 
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import misc.GeoLocationOperations;
 import misc.Geolocation;
-
-import org.bson.types.ObjectId;
-
-import ucar.ma2.Range.Iterator;
 
 //Developer notes:
 /*
@@ -107,7 +96,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean createApp(String appId, String appName, String creationDate, boolean userEmailConfirmation) {
+	public Boolean createApp(String appId, String appName, String creationDate, Boolean userEmailConfirmation) {
 		if (this.appExists(appId)) {
 			return false;
 		}
@@ -123,7 +112,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean deleteApp(String appId) {
+	public Boolean deleteApp(String appId) {
 		DBCollection coll = db.getCollection(AppsColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("_id", appId);
@@ -132,7 +121,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean updateAllAppFields(String currentId, String alive, String newAppName, boolean confirmUsersEmail) {
+	public Boolean updateAllAppFields(String currentId, String alive, String newAppName, Boolean confirmUsersEmail) {
 		DBCollection coll = db.getCollection(AppsColl);
 		BasicDBObject query = new BasicDBObject();
 		query.put("_id", currentId);
@@ -158,7 +147,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean appExists(String appId) {
+	public Boolean appExists(String appId) {
 		DBCollection table = db.getCollection(AppsColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("_id", appId);
@@ -170,7 +159,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean userExistsInApp(String appId, String email) {
+	public Boolean userExistsInApp(String appId, String email) {
 		// check if the system generated id exists in the app
 		DBCollection table = db.getCollection(UsersColl);
 		BasicDBObject searchQuery = new BasicDBObject();
@@ -204,7 +193,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean createUserWithFlag(String appId, String userId, String userName,
+	public Boolean createUserWithFlag(String appId, String userId, String userName,
 			String email, byte[] salt, byte[] hash, String creationDate, String userFile)
 			throws UnsupportedEncodingException {
 		DBCollection coll = db.getCollection(UsersColl);
@@ -219,7 +208,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 		return true;
 	}
 	@Override
-	public boolean createUserWithoutFlag(String appId, String userId, String userName,
+	public Boolean createUserWithoutFlag(String appId, String userId, String userName,
 			String email, byte[] salt, byte[] hash, String creationDate)
 			throws UnsupportedEncodingException {
 		DBCollection coll = db.getCollection(UsersColl);
@@ -266,7 +255,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean deleteUser(String appId, String userId) {
+	public Boolean deleteUser(String appId, String userId) {
 		// set user alive field to false
 		DBCollection user = db.getCollection(UsersColl);
 		BasicDBObject query = new BasicDBObject();
@@ -307,7 +296,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean audioExistsInApp(String appId, String audioId) {
+	public Boolean audioExistsInApp(String appId, String audioId) {
 		DBCollection coll = db.getCollection(AudioColl);
 		BasicDBObject query = new BasicDBObject();
 		query.append("appId", appId);
@@ -338,7 +327,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean createAudioInApp(String appId, String audioId,
+	public Boolean createAudioInApp(String appId, String audioId,
 			String directory, String type, String size, String bitRate,
 			String creationDate, String fileName, String location) {
 		DBCollection coll = db.getCollection(AudioColl);
@@ -377,7 +366,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean imageExistsInApp(String appId, String imageId) {
+	public Boolean imageExistsInApp(String appId, String imageId) {
 		DBCollection coll = db.getCollection(ImageColl);
 		BasicDBObject query = new BasicDBObject();
 		query.append("appId", appId);
@@ -399,7 +388,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean createImageInApp(String appId, String imageId,
+	public Boolean createImageInApp(String appId, String imageId,
 			String directory, String type, String size, String pixelsSize,
 			String creationDate, String fileName, String location) {
 		DBCollection coll = db.getCollection(ImageColl);
@@ -426,7 +415,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean createVideoInApp(String appId, String videoId,
+	public Boolean createVideoInApp(String appId, String videoId,
 			String directory, String type, String size, String resolution,
 			String creationDate, String fileName, String location) {
 		DBCollection coll = db.getCollection(VideoColl);
@@ -453,7 +442,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean videoExistsInApp(String appId, String videoId) {
+	public Boolean videoExistsInApp(String appId, String videoId) {
 		DBCollection coll = db.getCollection(VideoColl);
 		BasicDBObject query = new BasicDBObject();
 		query.append("appId", appId);
@@ -477,7 +466,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	// }
 
 	@Override
-	public boolean createStorageInApp(String appId, String storageId,
+	public Boolean createStorageInApp(String appId, String storageId,
 			String directory, String type, String size, String creationDate,
 			String fileName, String location) {
 		DBCollection coll = db.getCollection(StorageColl);
@@ -503,7 +492,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean deleteVideoInApp(String appId, String videoId) {
+	public Boolean deleteVideoInApp(String appId, String videoId) {
 		DBCollection coll = db.getCollection(VideoColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.append("appId", appId);
@@ -552,7 +541,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean identifierInUseByUserInApp(String appId, String userId) {
+	public Boolean identifierInUseByUserInApp(String appId, String userId) {
 		// check if the system generated exist exists in the app
 		DBCollection table = db.getCollection(UsersColl);
 		BasicDBObject searchQuery = new BasicDBObject();
@@ -679,7 +668,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean updateAppName(String appId, String newAppName) {
+	public Boolean updateAppName(String appId, String newAppName) {
 		DBCollection coll = db.getCollection(AppsColl);
 		BasicDBObject query = new BasicDBObject();
 		query.put("_id", appId);
@@ -702,7 +691,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 		users.update(query, updateUser);
 	}
 	@Override
-	public boolean updateUserPassword(String appId, String userId, byte [] hash, byte [] salt) throws UnsupportedEncodingException{
+	public Boolean updateUserPassword(String appId, String userId, byte [] hash, byte [] salt) throws UnsupportedEncodingException{
 		DBCollection users = db.getCollection(UsersColl);
 		BasicDBObject query = new BasicDBObject();
 		query.append("_id", userId);
@@ -772,7 +761,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean storageExistsInApp(String appId, String storageId) {
+	public Boolean storageExistsInApp(String appId, String storageId) {
 		DBCollection coll = db.getCollection(StorageColl);
 		BasicDBObject query = new BasicDBObject();
 		query.append("appId", appId);
@@ -794,7 +783,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean deleteStorageInApp(String appId, String storageId){
+	public Boolean deleteStorageInApp(String appId, String storageId){
 		DBCollection coll = db.getCollection(StorageColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.append("appId", appId);
@@ -804,20 +793,20 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean confirmUsersEmail(String appId) {
+	public Boolean confirmUsersEmail(String appId) {
 		DBCollection coll = db.getCollection(AppsColl);
 		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.append("appId", appId);
-		Map<String, String> temp = (Map) coll.findOne(searchQuery);
-		for(Map.Entry<String, String> entry : temp.entrySet()){
+		searchQuery.append("_id", appId);
+		Map<String, Object> temp = (Map) coll.findOne(searchQuery);
+		for(Map.Entry<String, Object> entry : temp.entrySet()){
 			if(entry.getKey().equalsIgnoreCase(CONFIRMUSERSEMAIL))
-				return Boolean.parseBoolean(entry.getValue());
+				return ((Boolean)(entry.getValue()));
 		}
 		return false;
 	}
 
 	@Override
-	public boolean deleteImageInApp(String appId, String imageId) {
+	public Boolean deleteImageInApp(String appId, String imageId) {
 		DBCollection coll = db.getCollection(ImageColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("appId", appId);
@@ -827,9 +816,9 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean createUserWithFlagWithEmailConfirmation(String appId,
+	public Boolean createUserWithFlagWithEmailConfirmation(String appId,
 			String userId, String userName, String email, byte[] salt,
-			byte[] hash, String creationDate, String userFile, boolean emailConfirmed) throws UnsupportedEncodingException {
+			byte[] hash, String creationDate, String userFile, Boolean emailConfirmed) throws UnsupportedEncodingException {
 		DBCollection coll = db.getCollection(UsersColl);
 		BasicDBObject user = new BasicDBObject("_id", userId)
 				.append("alive", "true").append("appId", appId)
@@ -844,9 +833,9 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean createUserWithoutFlagWithEmailConfirmation(String appId,
+	public Boolean createUserWithoutFlagWithEmailConfirmation(String appId,
 			String userId, String userName, String email, byte[] salt,
-			byte[] hash, String creationDate, boolean emailConfirmed)
+			byte[] hash, String creationDate, Boolean emailConfirmed)
 			throws UnsupportedEncodingException {
 		DBCollection coll = db.getCollection(UsersColl);
 		BasicDBObject user = new BasicDBObject("_id", userId)
@@ -861,7 +850,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean confirmUserEmail(String appId, String userId) {
+	public Boolean confirmUserEmail(String appId, String userId) {
 		try{
 			DBCollection users = db.getCollection(UsersColl);
 			BasicDBObject query = new BasicDBObject();
@@ -881,7 +870,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean userEmailIsConfirmed(String appId, String userId) {
+	public Boolean userEmailIsConfirmed(String appId, String userId) {
 		DBCollection users = db.getCollection(UsersColl);
 		BasicDBObject query = new BasicDBObject();
 		query.put("_id", userId);
@@ -896,7 +885,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean updateConfirmUsersEmailOption(String appId,
+	public Boolean updateConfirmUsersEmailOption(String appId,
 			Boolean confirmUsersEmail) {
 		DBCollection coll = db.getCollection(AppsColl);
 		BasicDBObject query = new BasicDBObject();

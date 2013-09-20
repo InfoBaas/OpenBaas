@@ -105,16 +105,16 @@ public class RedisDataModel implements CacheInterface {
 	 * was performed
 	 * 
 	 */
-	public boolean deleteApp(String appId) {
+	public Boolean deleteApp(String appId) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			if (jedis.exists("apps:" + appId)) {
 				long unixTime = System.currentTimeMillis() / 1000L;
 				jedis.zrem("apps:time", appId);
 				Set<String> inactiveApps = jedis.smembers("apps:inactive");
 				Iterator<String> it = inactiveApps.iterator();
-				boolean inactive = false;
+				Boolean inactive = false;
 				while (it.hasNext() && !inactive) {
 					if (it.next().equals(appId))
 						inactive = true;
@@ -137,9 +137,9 @@ public class RedisDataModel implements CacheInterface {
 	 * 
 	 * @return
 	 */
-	public boolean updateApp(String currentId, String newId, String alive) {
+	public Boolean updateApp(String currentId, String newId, String alive) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			if (jedis.exists("apps:" + currentId)) {
 				jedis.zrem("apps:time", currentId);
@@ -176,9 +176,9 @@ public class RedisDataModel implements CacheInterface {
 		return appFields;
 	}
 
-	public boolean appExists(String appId) {
+	public Boolean appExists(String appId) {
 		Jedis jedis = pool.getResource();
-		boolean op;
+		Boolean op;
 		try {
 			op = jedis.exists("apps:" + appId);
 		}finally {
@@ -187,9 +187,9 @@ public class RedisDataModel implements CacheInterface {
 		return op;
 	}
 
-	public boolean userExistsInApp(String appId, String email) {
+	public Boolean userExistsInApp(String appId, String email) {
 		Jedis jedis = pool.getResource();
-		boolean userExists = false;
+		Boolean userExists = false;
 		try {
 			Set<String> usersInApp = this.jedis.smembers("app:" + appId + ":users");
 			Iterator<String> it = usersInApp.iterator();
@@ -201,11 +201,11 @@ public class RedisDataModel implements CacheInterface {
 		return userExists;
 	}
 
-	public boolean createUserWithFlag(String appId, String userId, String userName,
+	public Boolean createUserWithFlag(String appId, String userId, String userName,
 			String email, byte[] salt, byte[] hash, String creationDate, String userFile)
 					throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			if (!jedis.exists("users:" + userId)) {
 				long unixTime = System.currentTimeMillis() / 1000L;
@@ -232,11 +232,11 @@ public class RedisDataModel implements CacheInterface {
 		return sucess;
 	}
 
-	public boolean createUserWithoutFlag(String appId, String userId, String userName,
+	public Boolean createUserWithoutFlag(String appId, String userId, String userName,
 			String email, byte[] salt, byte[] hash, String creationDate)
 					throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			if (!jedis.exists("users:" + userId)) {
 				long unixTime = System.currentTimeMillis() / 1000L;
@@ -276,7 +276,7 @@ public class RedisDataModel implements CacheInterface {
 		try {
 			Set<String> usersOfApp = jedis.smembers("app:" + appId + ":users");
 			Iterator<String> it = usersOfApp.iterator();
-			boolean userExistsforApp = false;
+			Boolean userExistsforApp = false;
 			while (it.hasNext())
 				if (it.next().equalsIgnoreCase(userId))
 					userExistsforApp = true;
@@ -296,7 +296,7 @@ public class RedisDataModel implements CacheInterface {
 			Set<String> storageOfApp = jedis.smembers("app:" + appId
 					+ ":storage");
 			Iterator<String> it = storageOfApp.iterator();
-			boolean storageExists = false;
+			Boolean storageExists = false;
 			while (it.hasNext())
 				if (it.next().equals(storageId))
 					storageExists = true;
@@ -315,9 +315,9 @@ public class RedisDataModel implements CacheInterface {
 	 * @param userId
 	 * @return
 	 */
-	public boolean deleteUser(String appId, String userId) {
+	public Boolean deleteUser(String appId, String userId) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			if (jedis.exists("users:"+userId)) {
 				jedis.zrem("users:time", userId);
@@ -346,7 +346,7 @@ public class RedisDataModel implements CacheInterface {
 	 * @param alive
 	 * @return
 	 */
-	public boolean updateAppName(String appId, String newAppName) {
+	public Boolean updateAppName(String appId, String newAppName) {
 		Jedis jedis = pool.getResource();
 		try {
 			long unixTime = System.currentTimeMillis() / 1000L;
@@ -395,9 +395,9 @@ public class RedisDataModel implements CacheInterface {
 		return audioIds;
 	}
 
-	public boolean audioExistsInApp(String appId, String audioId) {
+	public Boolean audioExistsInApp(String appId, String audioId) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			Set<String> audioInApp = this.jedis.smembers("app:" + appId
 					+ ":audio");
@@ -417,7 +417,7 @@ public class RedisDataModel implements CacheInterface {
 		try {
 			Set<String> audioInApp = jedis.smembers("app:" + appId + ":audio");
 			Iterator<String> it = audioInApp.iterator();
-			boolean audioExistsForApp = false;
+			Boolean audioExistsForApp = false;
 			while (it.hasNext())
 				if (it.next().equalsIgnoreCase(audioId))
 					audioExistsForApp = true;
@@ -440,10 +440,10 @@ public class RedisDataModel implements CacheInterface {
 		}
 	}
 
-	public boolean createAudioInApp(String appId, String audioId,
+	public Boolean createAudioInApp(String appId, String audioId,
 			String directory, String fileExtension, String size,
 			String bitRate, String creationDate, String fileName, String location) {
-		boolean sucess = false;
+		Boolean sucess = false;
 		Jedis jedis = pool.getResource();
 		try {
 			long unixTime = System.currentTimeMillis() / 1000L;
@@ -486,9 +486,9 @@ public class RedisDataModel implements CacheInterface {
 		return videoIds;
 	}
 
-	public boolean imageExistsInApp(String appId, String imageId) {
+	public Boolean imageExistsInApp(String appId, String imageId) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			Set<String> audioInApp = this.jedis.smembers("app:" + appId
 					+ ":images");
@@ -512,7 +512,7 @@ public class RedisDataModel implements CacheInterface {
 			Set<String> imagesInApp = jedis
 					.smembers("app:" + appId + ":images");
 			Iterator<String> it = imagesInApp.iterator();
-			boolean imageExistsForApp = false;
+			Boolean imageExistsForApp = false;
 			while (it.hasNext())
 				if (it.next().equalsIgnoreCase(imageId))
 					imageExistsForApp = true;
@@ -537,11 +537,11 @@ public class RedisDataModel implements CacheInterface {
 	 * @param fileName
 	 * @return
 	 */
-	public boolean createImageInApp(String appId, String imageId,
+	public Boolean createImageInApp(String appId, String imageId,
 			String directory, String type, String size, String pixelsSize,
 			String creationDate, String fileName, String location) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			long unixTime = System.currentTimeMillis() / 1000L;
 			jedis.zadd("images:time", unixTime, appId + ":" + imageId);
@@ -562,11 +562,11 @@ public class RedisDataModel implements CacheInterface {
 		return sucess;
 	}
 
-	public boolean createVideoInApp(String appId, String videoId,
+	public Boolean createVideoInApp(String appId, String videoId,
 			String directory, String type, String size, String resolution,
 			String creationDate, String fileName, String location) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			long unixTime = System.currentTimeMillis() / 1000L;
 			jedis.zadd("video:time", unixTime, appId + ":" + videoId);
@@ -597,11 +597,11 @@ public class RedisDataModel implements CacheInterface {
 		return storageIds;
 	}
 
-	public boolean createStorageInApp(String appId, String storageId,
+	public Boolean createStorageInApp(String appId, String storageId,
 			String directory, String fileExtension, String fileSize,
 			String creationDate, String fileName, String location) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = true;
+		Boolean sucess = true;
 		try {
 			long unixTime = System.currentTimeMillis() / 1000L;
 			jedis.zadd("storage:time", unixTime, appId + ":" + storageId);
@@ -621,9 +621,9 @@ public class RedisDataModel implements CacheInterface {
 		return sucess;
 	}
 
-	public boolean videoExistsInApp(String appId, String videoId) {
+	public Boolean videoExistsInApp(String appId, String videoId) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			Set<String> videoInApp = jedis.smembers("app:" + appId + ":video");
 			Iterator<String> it = videoInApp.iterator();
@@ -643,9 +643,9 @@ public class RedisDataModel implements CacheInterface {
 	 * @param videoId
 	 * @return
 	 */
-	public boolean deleteVideoInApp(String appId, String videoId) {
+	public Boolean deleteVideoInApp(String appId, String videoId) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			System.out.println("reaching video deletion in redis");
 			jedis.zrem("video:time", appId + ":" + videoId);
@@ -664,9 +664,9 @@ public class RedisDataModel implements CacheInterface {
 	 * @param imageId
 	 * @return
 	 */
-	public boolean deleteImageInApp(String appId, String imageId) {
+	public Boolean deleteImageInApp(String appId, String imageId) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			jedis.zrem("image:time", appId + ":" + imageId);
 			jedis.srem("app:" + appId + ":image", imageId);
@@ -677,9 +677,9 @@ public class RedisDataModel implements CacheInterface {
 		return sucess;
 	}
 
-	public boolean deleteStorageInApp(String appId, String storageId) {
+	public Boolean deleteStorageInApp(String appId, String storageId) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			jedis.zrem("storage:time", appId + ":" + storageId);
 			jedis.srem("app:" + appId + ":storage", storageId);
@@ -725,7 +725,7 @@ public class RedisDataModel implements CacheInterface {
 		try {
 			Set<String> videoInApp = jedis.smembers("app:" + appId + ":video");
 			Iterator<String> it = videoInApp.iterator();
-			boolean videoExistsForApp = false;
+			Boolean videoExistsForApp = false;
 			while (it.hasNext())
 				if (it.next().equalsIgnoreCase(videoId))
 					videoExistsForApp = true;
@@ -738,9 +738,9 @@ public class RedisDataModel implements CacheInterface {
 	}
 
 	@Override
-	public boolean identifierInUseByUserInApp(String appId, String userId) {
+	public Boolean identifierInUseByUserInApp(String appId, String userId) {
 		Jedis jedis = pool.getResource();
-		boolean userExists = false;
+		Boolean userExists = false;
 		try {
 			Set<String> usersInApp = this.jedis.smembers("app:" + appId
 					+ ":users");
@@ -986,9 +986,9 @@ public class RedisDataModel implements CacheInterface {
 	 * @param creationDate
 	 * @return
 	 */
-	public boolean createApp(String appId, String appName, String creationDate, boolean confirmUsersEmail) {
+	public Boolean createApp(String appId, String appName, String creationDate, Boolean confirmUsersEmail) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			if (!jedis.exists("apps:" + appId)) {
 				jedis.hset("apps:" + appId, "creationDate", creationDate);
@@ -1093,9 +1093,9 @@ public class RedisDataModel implements CacheInterface {
 	}
 
 	@Override
-	public boolean storageExistsInApp(String appId, String storageId) {
+	public Boolean storageExistsInApp(String appId, String storageId) {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			Set<String> storageInApp = this.jedis.smembers("app:" + appId
 					+ ":storage");
@@ -1110,9 +1110,9 @@ public class RedisDataModel implements CacheInterface {
 	}
 
 	@Override
-	public boolean confirmUsersEmail(String appId) {
+	public Boolean confirmUsersEmail(String appId) {
 		Jedis jedis = pool.getResource();
-		boolean confirmUsersEmail = false;
+		Boolean confirmUsersEmail = false;
 		try {
 			confirmUsersEmail = Boolean.parseBoolean(this.jedis.hget("apps:"+appId, "confirmUsersEmail"));
 		}finally {
@@ -1122,12 +1122,12 @@ public class RedisDataModel implements CacheInterface {
 	}
 
 	@Override
-	public boolean createUserWithFlagWithEmailConfirmation(String appId,
+	public Boolean createUserWithFlagWithEmailConfirmation(String appId,
 			String userId, String userName, String email, byte[] salt,
 			byte[] hash, String creationDate, String flag,
-			boolean emailConfirmed) throws UnsupportedEncodingException {
+			Boolean emailConfirmed) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			if (!jedis.exists("users:" + userId)) {
 				long unixTime = System.currentTimeMillis() / 1000L;
@@ -1156,11 +1156,11 @@ public class RedisDataModel implements CacheInterface {
 	}
 
 	@Override
-	public boolean createUserWithoutFlagWithEmailConfirmation(String appId,
+	public Boolean createUserWithoutFlagWithEmailConfirmation(String appId,
 			String userId, String userName, String email, byte[] salt,
-			byte[] hash, String creationDate, boolean emailConfirmed) throws UnsupportedEncodingException {
+			byte[] hash, String creationDate, Boolean emailConfirmed) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
-		boolean sucess = false;
+		Boolean sucess = false;
 		try {
 			if (!jedis.exists("users:" + userId)) {
 				long unixTime = System.currentTimeMillis() / 1000L;
@@ -1188,7 +1188,7 @@ public class RedisDataModel implements CacheInterface {
 	}
 
 	@Override
-	public boolean confirmUserEmail(String appId, String userId) {
+	public Boolean confirmUserEmail(String appId, String userId) {
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.hset("users:"+userId, "emailConfirmed", true+"");
@@ -1199,9 +1199,9 @@ public class RedisDataModel implements CacheInterface {
 	}
 
 	@Override
-	public boolean userEmailIsConfirmed(String appId, String userId) {
+	public Boolean userEmailIsConfirmed(String appId, String userId) {
 		Jedis jedis = pool.getResource();
-		boolean isConfirmed = false;
+		Boolean isConfirmed = false;
 		try {
 			isConfirmed = Boolean.parseBoolean(jedis.hget("users:"+userId, "emailConfirmed"));
 		}finally {
@@ -1211,8 +1211,8 @@ public class RedisDataModel implements CacheInterface {
 	}
 
 	@Override
-	public boolean updateAllAppFields(String appId, String alive,
-			String newAppName, boolean confirmUsersEmail) {
+	public Boolean updateAllAppFields(String appId, String alive,
+			String newAppName, Boolean confirmUsersEmail) {
 		Jedis jedis = pool.getResource();
 		try {
 			long unixTime = System.currentTimeMillis() / 1000L;
@@ -1228,7 +1228,7 @@ public class RedisDataModel implements CacheInterface {
 	}
 
 	@Override
-	public boolean updateConfirmUsersEmailOption(String appId,
+	public Boolean updateConfirmUsersEmailOption(String appId,
 			Boolean confirmUsersEmail) {
 		Jedis jedis = pool.getResource();
 		try {
@@ -1242,7 +1242,7 @@ public class RedisDataModel implements CacheInterface {
 	}
 
 	@Override
-	public boolean updateUserPassword(String appId, String userId, byte[] hash,
+	public Boolean updateUserPassword(String appId, String userId, byte[] hash,
 			byte[] salt) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
 		try {

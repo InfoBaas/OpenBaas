@@ -81,8 +81,7 @@ public class UsersResource {
 			if (appsMid.sessionTokenExists(sessionToken.getValue())) {
 				code = 1;
 				if (location != null) {
-					appsMid.refreshSession(sessionToken.getValue(),
-							location.get(0), userAgent.get(0));
+					appsMid.refreshSession(sessionToken.getValue(),	location.get(0), userAgent.get(0));
 				} else
 					appsMid.refreshSession(sessionToken.getValue());
 			} else {
@@ -138,8 +137,7 @@ public class UsersResource {
 			if (appsMid.appExists(appId)) {
 				if (appsMid.identifierInUseByUserInApp(appId, userId)) {
 					temp = appsMid.getUserInApp(appId, userId);
-					System.out.println("userId: " + temp.getUserId()
-							+ "email: " + temp.getEmail());
+					System.out.println("userId: " + temp.getUserId()+ "email: " + temp.getEmail());
 					response = Response.status(Status.OK).entity(temp).build();
 				} else {
 					response = Response.status(Status.NOT_FOUND).entity(temp).build();
@@ -301,8 +299,7 @@ public class UsersResource {
 					salt = service.generateSalt();
 					hash = service.getEncryptedPassword(password, salt);
 				} catch (NoSuchAlgorithmException e) {
-					System.out
-							.println("Hashing Algorithm failed, please review the PasswordEncryptionService.");
+					System.out.println("Hashing Algorithm failed, please review the PasswordEncryptionService.");
 					e.printStackTrace();
 				} catch (InvalidKeySpecException e) {
 					System.out.println("Invalid Key.");
@@ -357,8 +354,7 @@ public class UsersResource {
 		try {
 			return new SessionsResource(appsMid, appId, userId);
 		} catch (IllegalArgumentException e) {
-			throw new WebApplicationException(Response
-					.status(Status.BAD_REQUEST).entity("Parse error").build());
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
 
@@ -367,8 +363,7 @@ public class UsersResource {
 		try {
 			return new UserRecoveryResource(uriInfo, appsMid, appId, userId);
 		} catch (IllegalArgumentException e) {
-			throw new WebApplicationException(Response
-					.status(Status.BAD_REQUEST).entity("Parse error").build());
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
 
@@ -377,8 +372,7 @@ public class UsersResource {
 		try {
 			return new UserDataResource(uriInfo, appsMid, appId, userId);
 		} catch (IllegalArgumentException e) {
-			throw new WebApplicationException(Response
-					.status(Status.BAD_REQUEST).entity("Parse error").build());
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
 
@@ -394,8 +388,7 @@ public class UsersResource {
 		try {
 			return new UserConfirmationResource(uriInfo, appsMid, appId, userId);
 		} catch (IllegalArgumentException e) {
-			throw new WebApplicationException(Response
-					.status(Status.BAD_REQUEST).entity("Parse error").build());
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
 }

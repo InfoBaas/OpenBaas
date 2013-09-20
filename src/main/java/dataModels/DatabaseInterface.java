@@ -1,11 +1,6 @@
 package dataModels;
 
-import modelInterfaces.Application;
-
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,8 +15,8 @@ public interface DatabaseInterface {
 	 * @param creationDate
 	 * @return
 	 */
-	public boolean createApp(String appId, String appName, String creationDate,
-			boolean userEmailConfirmation);
+	public Boolean createApp(String appId, String appName, String creationDate,
+			Boolean userEmailConfirmation);
 
 	/**
 	 * Deletes the application with appId.
@@ -29,7 +24,7 @@ public interface DatabaseInterface {
 	 * @param appId
 	 * @return
 	 */
-	public boolean deleteApp(String appId);
+	public Boolean deleteApp(String appId);
 
 	/**
 	 * Updates the currentId application, changing its appName and alive fields.
@@ -39,8 +34,8 @@ public interface DatabaseInterface {
 	 * @param newAppName
 	 * @return
 	 */
-	public boolean updateAllAppFields(String currentId, String alive,
-			String newAppName, boolean confirmUsersEmail);
+	public Boolean updateAllAppFields(String currentId, String alive,
+			String newAppName, Boolean confirmUsersEmail);
 
 	/**
 	 * Retrieves the application Fields.
@@ -56,7 +51,7 @@ public interface DatabaseInterface {
 	 * @param appId
 	 * @return
 	 */
-	public boolean appExists(String appId);
+	public Boolean appExists(String appId);
 
 	/**
 	 * Returns all the application Identifiers.
@@ -87,7 +82,7 @@ public interface DatabaseInterface {
 	 * @param newAppName
 	 * @return 
 	 */
-	public boolean updateAppName(String appId, String newAppName);
+	public Boolean updateAppName(String appId, String newAppName);
 
 	// User operations
 	/**
@@ -105,7 +100,7 @@ public interface DatabaseInterface {
 	 * @param userId
 	 * @return
 	 */
-	public boolean identifierInUseByUserInApp(String appId, String userId);
+	public Boolean identifierInUseByUserInApp(String appId, String userId);
 
 	/**
 	 * Verifies if a user existings in the application using its email.
@@ -114,7 +109,7 @@ public interface DatabaseInterface {
 	 * @param email
 	 * @return
 	 */
-	public boolean userExistsInApp(String appId, String email);
+	public Boolean userExistsInApp(String appId, String email);
 
 	/**
 	 * Creates a user.
@@ -129,12 +124,12 @@ public interface DatabaseInterface {
 	 * @return
 	 * @throws UnsupportedEncodingException
 	 */
-	public boolean createUserWithFlag(String appId, String userId,
+	public Boolean createUserWithFlag(String appId, String userId,
 			String userName, String email, byte[] salt, byte[] hash,
 			String creationDate, String flag)
 			throws UnsupportedEncodingException;
 
-	public boolean createUserWithoutFlag(String appId, String userId,
+	public Boolean createUserWithoutFlag(String appId, String userId,
 			String userName, String email, byte[] salt, byte[] hash,
 			String creationDate) throws UnsupportedEncodingException;
 
@@ -154,7 +149,7 @@ public interface DatabaseInterface {
 	 * @param userId
 	 * @return
 	 */
-	public boolean deleteUser(String appId, String userId);
+	public Boolean deleteUser(String appId, String userId);
 
 	/**
 	 * Updates the user with the param fields.
@@ -244,7 +239,7 @@ public interface DatabaseInterface {
 	 * @param audioId
 	 * @return
 	 */
-	public boolean audioExistsInApp(String appId, String audioId);
+	public Boolean audioExistsInApp(String appId, String audioId);
 
 	/**
 	 * Retrieves the audio Fields (metadata).
@@ -277,7 +272,7 @@ public interface DatabaseInterface {
 	 * @param location
 	 * @return
 	 */
-	public boolean createAudioInApp(String appId, String audioId,
+	public Boolean createAudioInApp(String appId, String audioId,
 			String directory, String fileExtension, String size,
 			String bitRate, String creationDate, String fileName,
 			String location);
@@ -299,7 +294,7 @@ public interface DatabaseInterface {
 	 * @param imageId
 	 * @return
 	 */
-	public boolean imageExistsInApp(String appId, String imageId);
+	public Boolean imageExistsInApp(String appId, String imageId);
 
 	/**
 	 * Retrieves the image fields of the specified image.
@@ -324,7 +319,7 @@ public interface DatabaseInterface {
 	 * @param location
 	 * @return
 	 */
-	public boolean createImageInApp(String appId, String imageId,
+	public Boolean createImageInApp(String appId, String imageId,
 			String directory, String type, String size, String pixelsSize,
 			String creationDate, String fileName, String location);
 
@@ -351,7 +346,7 @@ public interface DatabaseInterface {
 	 * @param location
 	 * @return
 	 */
-	public boolean createVideoInApp(String appId, String videoId,
+	public Boolean createVideoInApp(String appId, String videoId,
 			String directory, String type, String size, String resolution,
 			String creationDate, String fileName, String location);
 
@@ -362,7 +357,7 @@ public interface DatabaseInterface {
 	 * @return
 	 */
 
-	public boolean videoExistsInApp(String appId, String videoId);
+	public Boolean videoExistsInApp(String appId, String videoId);
 
 	/**
 	 * Removes the Video with videoId from the Database/s.
@@ -371,7 +366,7 @@ public interface DatabaseInterface {
 	 * @param videoId
 	 * @return
 	 */
-	public boolean deleteVideoInApp(String appId, String videoId);
+	public Boolean deleteVideoInApp(String appId, String videoId);
 
 	/**
 	 * Retrieves the Video Fields of the video with videoId.
@@ -396,7 +391,7 @@ public interface DatabaseInterface {
 	 * @param location
 	 * @return
 	 */
-	public boolean createStorageInApp(String appId, String storageId,
+	public Boolean createStorageInApp(String appId, String storageId,
 			String directory, String fileExtension, String fileSize,
 			String creationDate, String fileName, String location);
 
@@ -434,34 +429,34 @@ public interface DatabaseInterface {
 	public void updateUserLocationAndDate(String userId, String appId,
 			String sessionToken, String location, String date);
 
-	public boolean storageExistsInApp(String appId, String storageId);
+	public Boolean storageExistsInApp(String appId, String storageId);
 
 	public Map<String, String> getStorageInApp(String appId, String storageId);
 
-	public boolean deleteStorageInApp(String appId, String storageId);
+	public Boolean deleteStorageInApp(String appId, String storageId);
 
-	public boolean confirmUsersEmail(String appId);
+	public Boolean confirmUsersEmail(String appId);
 
-	public boolean deleteImageInApp(String appId, String imageId);
+	public Boolean deleteImageInApp(String appId, String imageId);
 
-	public boolean createUserWithFlagWithEmailConfirmation(String appId,
+	public Boolean createUserWithFlagWithEmailConfirmation(String appId,
 			String userId, String userName, String email, byte[] salt,
 			byte[] hash, String creationDate, String flag,
-			boolean emailConfirmed) throws UnsupportedEncodingException;
+			Boolean emailConfirmed) throws UnsupportedEncodingException;
 
-	public boolean createUserWithoutFlagWithEmailConfirmation(String appId,
+	public Boolean createUserWithoutFlagWithEmailConfirmation(String appId,
 			String userId, String userName, String email, byte[] salt,
-			byte[] hash, String creationDate, boolean emailConfirmed)
+			byte[] hash, String creationDate, Boolean emailConfirmed)
 			throws UnsupportedEncodingException;
 
-	public boolean confirmUserEmail(String appId, String userId);
+	public Boolean confirmUserEmail(String appId, String userId);
 
-	public boolean userEmailIsConfirmed(String appId, String userId);
+	public Boolean userEmailIsConfirmed(String appId, String userId);
 
-	public boolean updateConfirmUsersEmailOption(String appId,
+	public Boolean updateConfirmUsersEmailOption(String appId,
 			Boolean confirmUsersEmail);
 
-	public boolean updateUserPassword(String appId, String userId, byte[] hash,
+	public Boolean updateUserPassword(String appId, String userId, byte[] hash,
 			byte[] salt) throws UnsupportedEncodingException;
 
 }

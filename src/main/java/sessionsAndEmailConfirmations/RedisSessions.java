@@ -1,11 +1,8 @@
 package sessionsAndEmailConfirmations;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
+
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -13,13 +10,10 @@ import java.util.Map.Entry;
 import Model.Model;
 
 import misc.Geolocation;
-import modelInterfaces.*;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import rest_Models.DefaultApplication;
-import rest_Models.DefaultUser;
 
 /**
  * Sessions are stored in a separate redis instance, this redis instance is used
@@ -33,7 +27,7 @@ public class RedisSessions implements SessionDBInterface {
 	private static final int EXPIRETIME = 86400; // 24hours in seconds
 	public static final long MAXCACHESIZE = 5242880; // bytes
 	private static final int RedisSessionsAndEmailPORT = 6380;
-	private static final int MAXIMUMDISTANCE = 1; // 1 Km
+	//private static final int MAXIMUMDISTANCE = 1; // 1 Km
 	Jedis jedis;
 	private final static String server = "localhost";
 
@@ -110,8 +104,7 @@ public class RedisSessions implements SessionDBInterface {
 
 	@Override
 	public void createSession(String sessionId, String appId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.sadd("sessions:set", sessionId);
@@ -127,8 +120,7 @@ public class RedisSessions implements SessionDBInterface {
 
 	@Override
 	public Map<String, String> getSessionFields(String sessionId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		Map<String, String> sessionFields = null;
 		try {
@@ -142,16 +134,14 @@ public class RedisSessions implements SessionDBInterface {
 
 	@Override
 	public boolean sessionTokenExists(String sessionId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		boolean sucess = false;
 		try {
 			Set<String> sessionIds = jedis.smembers("sessions:set");
 			Iterator<String> it = sessionIds.iterator();
 			while (it.hasNext()) {
-				if (it.next().equalsIgnoreCase(sessionId)
-						&& jedis.exists("sessions:" + sessionId))
+				if (it.next().equalsIgnoreCase(sessionId) && jedis.exists("sessions:" + sessionId))
 					sucess = true;
 			}
 
@@ -164,8 +154,7 @@ public class RedisSessions implements SessionDBInterface {
 
 	@Override
 	public boolean sessionTokenExistsForUser(String sessionToken, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		boolean sucess = false;
 		try {
@@ -173,8 +162,7 @@ public class RedisSessions implements SessionDBInterface {
 			Iterator<String> it = sessionIds.iterator();
 			while (it.hasNext()) {
 				String sessionId = it.next();
-				if (jedis.exists("sessions:" + sessionId)
-						&& sessionId.equalsIgnoreCase(sessionToken))
+				if (jedis.exists("sessions:" + sessionId) && sessionId.equalsIgnoreCase(sessionToken))
 					sucess = true;
 				else
 					jedis.srem("user:sessions:" + userId, sessionId);
@@ -188,16 +176,14 @@ public class RedisSessions implements SessionDBInterface {
 
 	@Override
 	public void deleteAdminSession(String adminId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		try {
 			Set<String> sessionIds = jedis.smembers("sessions");
 			Iterator<String> it = sessionIds.iterator();
 			while (it.hasNext()) {
 				String id = it.next();
-				Map<String, String> sessionFields = jedis.hgetAll("sessions:"
-						+ id);
+				Map<String, String> sessionFields = jedis.hgetAll("sessions:" + id);
 				for (Entry<String, String> entry : sessionFields.entrySet()) {
 					if (entry.getKey().equalsIgnoreCase("userId")) {
 						if (entry.getKey().equalsIgnoreCase("userId")) {
@@ -217,8 +203,7 @@ public class RedisSessions implements SessionDBInterface {
 
 	@Override
 	public void createAdminSession(String sessionId, String adminId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.sadd("sessions", sessionId);
@@ -232,8 +217,7 @@ public class RedisSessions implements SessionDBInterface {
 
 	@Override
 	public boolean deleteUserSession(String sessionToken, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		boolean sucess = false;
 		try {
@@ -262,8 +246,7 @@ public class RedisSessions implements SessionDBInterface {
 	 */
 	@Override
 	public void refreshSession(String sessionToken, String date) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.expire("sessions:" + sessionToken, EXPIRETIME);
@@ -275,8 +258,7 @@ public class RedisSessions implements SessionDBInterface {
 	}
 
 	public String getUserSession(String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		String sessionId = null;
 		try {
@@ -284,11 +266,9 @@ public class RedisSessions implements SessionDBInterface {
 			Iterator<String> it = sessionIds.iterator();
 			while (it.hasNext()) {
 				String id = it.next();
-				Map<String, String> sessionFields = jedis.hgetAll("sessions:"
-						+ id);
+				Map<String, String> sessionFields = jedis.hgetAll("sessions:" + id);
 				for (Entry<String, String> entry : sessionFields.entrySet()) {
-					if (entry.getKey().equalsIgnoreCase("userId")
-							&& jedis.exists("sessions:" + id))
+					if (entry.getKey().equalsIgnoreCase("userId") && jedis.exists("sessions:" + id))
 						if (entry.getValue().equalsIgnoreCase(userId))
 							sessionId = id;
 				}
@@ -302,8 +282,7 @@ public class RedisSessions implements SessionDBInterface {
 
 	@Override
 	public boolean deleteAllUserSessions(String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		boolean sucess = false;
 		try {
@@ -320,8 +299,7 @@ public class RedisSessions implements SessionDBInterface {
 
 	@Override
 	public Set<String> getAllUserSessions(String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		Set<String> userSessions = null;
 		try {
@@ -337,8 +315,7 @@ public class RedisSessions implements SessionDBInterface {
 
 	@Override
 	public boolean sessionExistsForUser(String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",	RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		boolean exists = false;
 		try {
@@ -356,8 +333,7 @@ public class RedisSessions implements SessionDBInterface {
 	@Override
 	public void addLocationToSession(String location, String sessionToken,
 			String userAgent) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.hset("sessions:" + sessionToken, "location", location);
@@ -374,14 +350,12 @@ public class RedisSessions implements SessionDBInterface {
 	@Override
 	public boolean refreshSession(String sessionToken, String location,
 			String date, String userAgent) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.expire("sessions:" + sessionToken, EXPIRETIME);
 			jedis.hset("sessions:" + sessionToken, "date", date);
-			String previousLocation = jedis.hget("sessions:" + sessionToken,
-					"location");
+			String previousLocation = jedis.hget("sessions:" + sessionToken, "location");
 			if (previousLocation == null) { // No previous Location, we simply
 											// add it.
 				addLocationToSession(location, sessionToken, userAgent);
@@ -389,28 +363,22 @@ public class RedisSessions implements SessionDBInterface {
 				// Split the data
 				// previous location
 				String[] previousLocationArray = previousLocation.split(":");
-				double previousLatitudeValue, previousLongitudeValue,currentLatitudeValue
-				,currentLongitudeValue;
+				double previousLatitudeValue, previousLongitudeValue,currentLatitudeValue,currentLongitudeValue;
 				try{
-				previousLatitudeValue = Double
-						.parseDouble(previousLocationArray[0]);
-				previousLongitudeValue = Double
-						.parseDouble(previousLocationArray[1]);
+				previousLatitudeValue = Double.parseDouble(previousLocationArray[0]);
+				previousLongitudeValue = Double.parseDouble(previousLocationArray[1]);
 
 				// Current Location
 				String[] currentLocationArray = location.split(":");
 				
-				currentLatitudeValue = Double
-						.parseDouble(currentLocationArray[0]);
-				currentLongitudeValue = Double
-						.parseDouble(currentLocationArray[1]);
+				currentLatitudeValue = Double.parseDouble(currentLocationArray[0]);
+				currentLongitudeValue = Double.parseDouble(currentLocationArray[1]);
 				}catch(NumberFormatException e){
 					return false;
 				}
 				Geolocation geo = new Geolocation();
 				// Test if distance < MAXIMUM DISTANCE Spherical Law of Cosines
-				double dist = geo.distance(previousLatitudeValue, previousLongitudeValue,currentLatitudeValue,
-						currentLongitudeValue);
+				double dist = geo.distance(previousLatitudeValue, previousLongitudeValue,currentLatitudeValue, currentLongitudeValue);
 				if (dist < 1) { // The user is not taking the device with him.
 					jedis.hset("sessions:" + sessionToken, "location", location);
 					//refreshSession(sessionToken, date);
@@ -420,8 +388,7 @@ public class RedisSessions implements SessionDBInterface {
 					String userId = this.getUserUsingSessionToken(sessionToken);
 					String appId = this.getAppUsingSessionToken(sessionToken);
 					Model model = Model.getModel();
-					model.updateUserLocationAndDate(userId, appId,
-							sessionToken, location, date);
+					model.updateUserLocationAndDate(userId, appId, sessionToken, location, date);
 				}
 			}
 		} finally {

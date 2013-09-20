@@ -75,7 +75,7 @@ public class SessionsResource {
 			// Remember the order of evaluation in java
 			if (usersConfirmedOption) {
 				if (appsMid.userEmailIsConfirmed(appId, userId)) {
-					System.out.println("userId of " + userName + "is: " + userId);
+					System.out.println("userId of " + userName + " is: " + userId);
 					String sessionToken = getRandomString(IDGENERATOR);
 					boolean validation = appsMid.createSession(sessionToken, appId, userId, attemptedPassword);
 					if (validation) {
@@ -143,8 +143,7 @@ public class SessionsResource {
 	 */
 	@DELETE
 	@Path("/all")
-	public Response deleteAllSessions(
-			@CookieParam(value = "sessionToken") String sessionToken) {
+	public Response deleteAllSessions(@CookieParam(value = "sessionToken") String sessionToken) {
 		Response response = null;
 		if (appsMid.sessionTokenExists(sessionToken)) {
 			System.out.println("************************************");
