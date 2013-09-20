@@ -66,7 +66,7 @@ public class SessionsResource {
 			System.out.println("Error Reading the jsonFile");
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
 		}
-		// String email = appsMid.getEmailUsingUserName(appId, userName);
+		//// String email = appsMid.getEmailUsingUserName(appId, userName);
 		if(userName == null && attemptedPassword == null)
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
 		String userId = appsMid.getUserIdUsingUserName(appId, userName);
