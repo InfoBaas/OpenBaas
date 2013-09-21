@@ -178,7 +178,7 @@ public class EmailOperationsClass implements EmailOperations {
 		message.setRecipients(Message.RecipientType.TO, to);
 		message.setSubject(SUBJECTEMAILCONFIRMATION);
 		message.setContent("Dear " + userName +"," + '\n' + "In order to confirm your registration, please open the following URL:"+'\n'
-				+ link + ""+userId+"/confirmation?registrationCode="+registrationCode, "text/html;charset=UTF-8");
+				+ link.replace("account/signup", "users") + userId+"/confirmation?registrationCode="+registrationCode, "text/html;charset=UTF-8");
 		Transport.send(message);
 		} catch (AddressException ex) {
 		System.out.println( ex.getMessage());

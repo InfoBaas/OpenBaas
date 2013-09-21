@@ -5,16 +5,13 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.core.PathSegment;
 
 import org.apache.commons.io.FilenameUtils;
 import org.codehaus.jettison.json.JSONObject;
 
-import rest_Models.Storage;
 
 //*************Singleton, takes care of Filesystem + database
 public class Model {
@@ -100,8 +97,8 @@ public class Model {
 		else 
 			databaseOK = dataModel.createUserWithoutFlag(appId, userId, userName,
 					email, salt, hash);
-		boolean awsOK = fileModel.createUser(appId, userId, userName);
-		if (databaseOK && awsOK)
+		//boolean awsOK = fileModel.createUser(appId, userId, userName);
+		if (databaseOK /*&& awsOK*/)
 			return true;
 		return false;
 	}

@@ -1,23 +1,16 @@
 package dataModels;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
-
-import modelInterfaces.*;
 
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import rest_Models.DefaultApplication;
-import rest_Models.DefaultUser;
-
 //******************************REDIS DATA LAYER********************************
 /*Don't forget that as redis is a cache we have to keep track of the oldest element in the system.
  /*Other options are using the redis TTL or even keeping track of the hits each id has.
@@ -110,7 +103,7 @@ public class RedisDataModel implements CacheInterface {
 		Boolean sucess = false;
 		try {
 			if (jedis.exists("apps:" + appId)) {
-				long unixTime = System.currentTimeMillis() / 1000L;
+				//long unixTime = System.currentTimeMillis() / 1000L;
 				jedis.zrem("apps:time", appId);
 				Set<String> inactiveApps = jedis.smembers("apps:inactive");
 				Iterator<String> it = inactiveApps.iterator();
@@ -191,8 +184,8 @@ public class RedisDataModel implements CacheInterface {
 		Jedis jedis = pool.getResource();
 		Boolean userExists = false;
 		try {
-			Set<String> usersInApp = this.jedis.smembers("app:" + appId + ":users");
-			Iterator<String> it = usersInApp.iterator();
+			//Set<String> usersInApp = jedis.smembers("app:" + appId + ":users");
+			//Iterator<String> it = usersInApp.iterator();
 			if (jedis.sismember("app:" + appId + ":users:emails", email))
 				userExists = true;
 		} finally {
@@ -324,7 +317,7 @@ public class RedisDataModel implements CacheInterface {
 				if(jedis==this.jedis)
 					System.out.println("ss");
 				Client c1 = this.jedis.getClient();
-				int a = c1.getPort();
+				/*int a = */c1.getPort();
 				if(this.jedis.equals(this.jedis))
 					System.out.println("aa");
 				this.jedis.hset("users:" + userId, "alive", "false");
@@ -966,7 +959,6 @@ public class RedisDataModel implements CacheInterface {
 		return null;
 	}
 	
-	//TODO JM
 	@Override
 	public String getUserIdUsingEmail(String appId, String email) {
 		Jedis jedis = pool.getResource();

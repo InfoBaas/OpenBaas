@@ -1,19 +1,15 @@
 package management;
 
-import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
 import javax.servlet.*;
 
-import org.codehaus.jettison.json.JSONException;
 
-import Model.DataModel;
 
 import resourceModelLayer.AppsMiddleLayer;
 import rest_Models.PasswordEncryptionService;
 
-import dataModels.RedisDataModel;
 
 /**
  * Administrator class
@@ -25,7 +21,7 @@ public class Startup implements ServletContextListener {
 	public ServletContext context = null;
 	private static String OPENBAASADMIN = "openbaasAdmin";
 	private static String ADMINPASSWORD = "infosistema";
-	private static String AdminAppId = "~app";
+	private String AdminAppId = "~app";
 	private static String AdminId = "~id";
 	private static String AdminEmail = "admin@openbaas.infosistema.com";
 	private static String AdminSessionId ="~session";
@@ -52,8 +48,7 @@ public class Startup implements ServletContextListener {
 			System.out.println("*****************Creating user***************");
 			System.out.println("userId: " + AdminId + " email: " + AdminEmail);
 			System.out.println("********************************************");
-			boolean sucess = appsMid.createUser(this.AdminAppId, AdminId,
-					OPENBAASADMIN, AdminEmail, salt, hash, null);
+			appsMid.createUser(this.AdminAppId, AdminId,OPENBAASADMIN, AdminEmail, salt, hash, null);
 			// Output a simple message to the server's console
 			System.out
 					.println("***********************************************");

@@ -327,8 +327,7 @@ public class RedisSessions implements SessionDBInterface {
 	}
 
 	@Override
-	public void addLocationToSession(String location, String sessionToken,
-			String userAgent) {
+	public void addLocationToSession(String location, String sessionToken, String userAgent) {
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		try {
