@@ -33,6 +33,7 @@ public class DefaultUser implements User {
 	private String creationDate;
 	private String updatedDate;
 	private String alive;
+	private String returnToken;
 	/**
 	 * Provides the user creation mechanism.
 	 * 
@@ -87,6 +88,10 @@ public class DefaultUser implements User {
 
 	public void setUserID(String id) {
 		this.updatedDate = new Date().toString();
+
+	}
+	public void setUserID2(String id) {
+		this.userId = id;
 
 	}
 
@@ -182,5 +187,11 @@ public class DefaultUser implements User {
 	@Override
 	public void setAlive(String alive) {
 		this.alive = alive;
+	}
+	public String getReturnToken() {
+		return returnToken;
+	}
+	public void setReturnToken(String returnToken) {
+		this.returnToken = returnToken;
 	}
 }

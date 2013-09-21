@@ -703,6 +703,14 @@ public class DataModel {
 				userId = mongoModel.getUserIdUsingUserName(appId, userName);
 		return userId;
 	}
+	
+	public String getUserIdUsingEmail(String appId, String email) {
+		String userId = redisModel.getUserIdUsingEmail(appId, email);
+		if (userId == null)
+			if (auxDatabase.equalsIgnoreCase(MONGODB))
+				userId = mongoModel.getUserIdUsingEmail(appId, email);
+		return userId;
+	}
 
 	public void reviveApp(String appId) {
 		if (redisModel.appExists(appId))
@@ -1179,4 +1187,6 @@ public class DataModel {
 			System.out.println("Database not implemented.");
 		return false;
 	}
+
+	
 }

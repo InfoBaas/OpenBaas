@@ -459,4 +459,6 @@ public interface DatabaseInterface {
 	public Boolean updateUserPassword(String appId, String userId, byte[] hash,
 			byte[] salt) throws UnsupportedEncodingException;
 
+	public String getUserIdUsingEmail(String appId, String email);
+
 }

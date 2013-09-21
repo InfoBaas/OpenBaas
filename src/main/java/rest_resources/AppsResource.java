@@ -14,10 +14,8 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -29,7 +27,6 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -100,8 +97,8 @@ public class AppsResource {
 	 * sessionExists
 	 */
 	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();
+		//MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+		//MultivaluedMap<String, String> pathParams = ui.getPathParameters();
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
@@ -340,8 +337,7 @@ public class AppsResource {
 		try {
 			return new MediaResource(appsMid, appId);
 		} catch (IllegalArgumentException e) {
-			throw new WebApplicationException(Response
-					.status(Status.BAD_REQUEST).entity("Parse error").build());
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
 
@@ -356,8 +352,7 @@ public class AppsResource {
 		try {
 			return new DataResource(uriInfo, appsMid, appId);
 		} catch (IllegalArgumentException e) {
-			throw new WebApplicationException(Response
-					.status(Status.BAD_REQUEST).entity("Parse error").build());
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
 
@@ -372,8 +367,7 @@ public class AppsResource {
 		try {
 			return new AudioResource(appsMid, appId);
 		} catch (IllegalArgumentException e) {
-			throw new WebApplicationException(Response
-					.status(Status.BAD_REQUEST).entity("Parse error").build());
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
 
@@ -388,8 +382,7 @@ public class AppsResource {
 		try {
 			return new VideoResource(appsMid, appId);
 		} catch (IllegalArgumentException e) {
-			throw new WebApplicationException(Response
-					.status(Status.BAD_REQUEST).entity("Parse error").build());
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
 
@@ -404,8 +397,7 @@ public class AppsResource {
 		try {
 			return new ImageResource(appsMid, appId);
 		} catch (IllegalArgumentException e) {
-			throw new WebApplicationException(Response
-					.status(Status.BAD_REQUEST).entity("Parse error").build());
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
 
@@ -420,10 +412,25 @@ public class AppsResource {
 		try {
 			return new StorageResource(appsMid, appId);
 		} catch (IllegalArgumentException e) {
-			throw new WebApplicationException(Response
-					.status(Status.BAD_REQUEST).entity("Parse error").build());
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
+	
+	/**
+	 * Launches the resource to handle {appID}/account requests.
+	 * 
+	 * @param appId
+	 * @return
+	 */
+	@Path("{appId}/account")
+	public AccountResource account(@PathParam("appId") String appId) {
+		try {
+			return new AccountResource(appsMid, appId);
+		} catch (IllegalArgumentException e) {
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
+		}
+	}
+	
 	/**
 	 * Identifier generator
 	 * 

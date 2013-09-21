@@ -965,6 +965,25 @@ public class RedisDataModel implements CacheInterface {
 		}
 		return null;
 	}
+	
+	//TODO JM
+	@Override
+	public String getUserIdUsingEmail(String appId, String email) {
+		Jedis jedis = pool.getResource();
+		try {
+			Set<String> usersInApp = jedis.smembers("app:" + appId + ":users");
+			Iterator<String> it = usersInApp.iterator();
+			while (it.hasNext()) {
+				String userId = it.next();
+				Map<String, String> userFields = jedis.hgetAll("users:"	+ userId);
+				if (userFields.get("email").equalsIgnoreCase(email))
+					return userFields.get("userId");
+			}
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return null;
+	}
 
 	@Override
 	public Set<String> getAllStorageIdsInApp(String appId) {

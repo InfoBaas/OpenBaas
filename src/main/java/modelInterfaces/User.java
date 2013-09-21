@@ -105,6 +105,12 @@ public interface User {
 	public void setUpdatedDate(String updateDate);
 	public void setAlive(String alive);
 	public String getAlive();
+
+	public void setUserID(String userId);
+
+	public void setReturnToken(String sessionToken);
+
+	public void setUserID2(String userId);
 	}
 
 	

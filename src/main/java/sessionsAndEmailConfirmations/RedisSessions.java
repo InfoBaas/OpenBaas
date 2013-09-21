@@ -37,14 +37,11 @@ public class RedisSessions implements SessionDBInterface {
 
 	public void createAdmin(String OPENBAASADMIN, byte[] adminSalt,
 			byte[] adminHash) throws UnsupportedEncodingException {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",	RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		try {
-			jedis.hset(OPENBAASADMIN, "adminSalt", new String(adminSalt,
-					"ISO-8859-1"));
-			jedis.hset(OPENBAASADMIN, "adminHash", new String(adminHash,
-					"ISO-8859-1"));
+			jedis.hset(OPENBAASADMIN, "adminSalt", new String(adminSalt,"ISO-8859-1"));
+			jedis.hset(OPENBAASADMIN, "adminHash", new String(adminHash,"ISO-8859-1"));
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -52,8 +49,7 @@ public class RedisSessions implements SessionDBInterface {
 	}
 
 	public Map<String, String> getAdminFields(String OPENBAASADMIN) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",	RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		Map<String, String> adminFields = null;
 		try {
@@ -66,8 +62,7 @@ public class RedisSessions implements SessionDBInterface {
 	}
 
 	public boolean adminExists(String admin) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		boolean adminExists = false;
 		try {
@@ -88,8 +83,7 @@ public class RedisSessions implements SessionDBInterface {
 	 * @param userId
 	 */
 	public void createSession(String sessionId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",
-				RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",	RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.sadd("sessions:set", sessionId);
@@ -104,7 +98,7 @@ public class RedisSessions implements SessionDBInterface {
 
 	@Override
 	public void createSession(String sessionId, String appId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.sadd("sessions:set", sessionId);
@@ -141,8 +135,10 @@ public class RedisSessions implements SessionDBInterface {
 			Set<String> sessionIds = jedis.smembers("sessions:set");
 			Iterator<String> it = sessionIds.iterator();
 			while (it.hasNext()) {
-				if (it.next().equalsIgnoreCase(sessionId) && jedis.exists("sessions:" + sessionId))
+				if (it.next().equalsIgnoreCase(sessionId) && jedis.exists("sessions:" + sessionId)){
 					sucess = true;
+					break;
+				}
 			}
 
 		} finally {

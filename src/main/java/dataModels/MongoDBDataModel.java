@@ -641,6 +641,22 @@ public class MongoDBDataModel implements DatabaseInterface {
 		}
 		return userId;
 	}
+	
+	//TODO JM
+	@Override
+	public String getUserIdUsingEmail(String appId, String email) {
+		DBCollection users = db.getCollection(UsersColl);
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.append("email", email);
+		searchQuery.append("appId", appId);
+		DBCursor cursor = users.find(searchQuery);
+		String userId = null;
+		if (cursor.hasNext()) {
+			DBObject temp = cursor.next();
+			userId = (String) temp.get("_id");
+		}
+		return userId;
+	}
 
 	@Override
 	public Set<String> getAllStorageIdsInApp(String appId) {
@@ -899,5 +915,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 		coll.update(query, updateObj);
 		return true;
 	}
+
+	
 	
 }

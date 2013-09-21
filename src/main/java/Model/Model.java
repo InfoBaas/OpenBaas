@@ -291,6 +291,10 @@ public class Model {
 	public String getUserIdUsingUserName(String appId, String userName) {
 		return dataModel.getUserIdUsingUserName(appId, userName);
 	}
+	
+	public String getUserIdUsingEmail(String appId, String email) {
+		return dataModel.getUserIdUsingEmail(appId, email);
+	}
 
 	// public boolean sessionIdExists(String sessionId) {
 	// return dataModel.sessionIdExists(sessionId);
@@ -476,8 +480,8 @@ public class Model {
 		else 
 			databaseOK = dataModel.createUserWithoutFlagWithEmailConfirmation(appId, userId, userName,
 					email, salt, hash, emailConfirmed);
-		boolean awsOK = fileModel.createUser(appId, userId, userName);
-		if (databaseOK && awsOK)
+		//boolean awsOK = fileModel.createUser(appId, userId, userName);
+		if (databaseOK /*&& awsOK*/)
 			return true;
 		return false;
 	}

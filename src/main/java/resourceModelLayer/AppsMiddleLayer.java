@@ -405,6 +405,10 @@ public class AppsMiddleLayer {
 	public String getUserIdUsingUserName(String appId, String userName) {
 		return model.getUserIdUsingUserName(appId, userName);
 	}
+	
+	public String getUserIdUsingEmail(String appId, String email) {
+		return model.getUserIdUsingEmail(appId, email);
+	}
 
 	public boolean createSession(String sessionId, String appId, String userId,
 			String attemptedPassword) {
@@ -839,4 +843,6 @@ public class AppsMiddleLayer {
 	public boolean userExistsInApp(String appId, String userId) {
 		return this.model.userExistsInApp(appId, userId);
 	}
+
+	
 }

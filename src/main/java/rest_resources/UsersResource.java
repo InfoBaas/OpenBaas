@@ -159,6 +159,7 @@ public class UsersResource {
 	 * @param inputJsonObj
 	 * @return
 	 */
+	/*
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -209,6 +210,7 @@ public class UsersResource {
 					userId = getRandomString(IDLENGTH);
 
 				if (!appsMid.userExistsInApp(appId, userId, email)) {
+				//if(true){
 					System.out.println("*****************Creating user***************");
 					System.out.println("userId: " + userId + " email: " + email);
 					System.out.println("********************************************");
@@ -227,7 +229,8 @@ public class UsersResource {
 					String foundUserId = appsMid.getUserIdUsingUserName(appId,userName);
 					// 302 = found
 					response = Response.status(302).entity(foundUserId)
-							/*.header("content-location",uriInfo.getAbsolutePath() + "/"+ foundUserId)*/.build();
+							//.header("content-location",uriInfo.getAbsolutePath() + "/"+ foundUserId)
+							.build();
 				}
 			} else {
 				response = Response.status(Status.BAD_REQUEST).entity(userName).build();
@@ -238,7 +241,7 @@ public class UsersResource {
 		} else if (code == -1)
 			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
-	}
+	}*/
 
 	/**
 	 * Deletes the user.
