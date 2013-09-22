@@ -94,7 +94,7 @@ public class EmailOperationsClass implements EmailOperations {
 
 	@Override
 	public boolean sendRecoveryEmail(String appId, String userName, String userId, String email,
-			String shortCode, String url) {
+			String newPass, String url) {
 		Properties props = new Properties();
 		props.put("mail.smtp.auth", AUTH);
 		props.put("mail.smtp.starttls.enable", STARTTLS);
@@ -115,15 +115,14 @@ public class EmailOperationsClass implements EmailOperations {
 		to[0] = new InternetAddress(email);
 		message.setRecipients(Message.RecipientType.TO, to);
 		message.setSubject(SUBJECTEMAILRECOVERY);
-		message.setContent("Dear " + userName +"," + '\n' + "In order to recover your account, please open the following URL:"+'\n'
-				+ url + "?recoveryCode="+ shortCode, "text/html;charset=UTF-8");
+		message.setContent("Dear " + userName +"," + '\n' + "Your new password is "+ newPass+"."+ '\n' +"Please enter the application and change it", "text/html;charset=UTF-8");
 		Transport.send(message);
 		} catch (AddressException ex) {
 		System.out.println( ex.getMessage());
 		} catch (MessagingException ex) {
 		System.out.println( ex.getMessage());
 		}
-		addRecoveryCodeToUser(appId, userId, shortCode);
+		//addRecoveryCodeToUser(appId, userId, shortCode);
 		return true;
 	}
 	@Override

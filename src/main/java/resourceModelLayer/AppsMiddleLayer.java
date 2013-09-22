@@ -791,7 +791,7 @@ public class AppsMiddleLayer {
 		return this.model.updateConfirmUsersEmailOption(appId, confirmUsersEmail);
 	}
 
-	public boolean recoverUser(String appId, String userId, String email, UriInfo uriInfo) {
+	public boolean recoverUser(String appId, String userId, String email, UriInfo uriInfo,String newPass, byte[] hash, byte[] salt) {
 		boolean opOk = false;
 		try {
 			Map<String, String> user = this.model.getUserFields(appId, userId);
@@ -804,9 +804,11 @@ public class AppsMiddleLayer {
 				else if(entry.getKey().equalsIgnoreCase("userName"))
 					userName = entry.getValue();
 			}
+			if (email != null && newPass != null) {
+				updateUser(appId, userId, email, hash, salt);
+			}
 			if(dbEmail.equalsIgnoreCase(email)){
-				String shortCode = this.getRandomString(IDLENGTH);
-				boolean emailOk =emailOp.sendRecoveryEmail(appId, userName, userId, email, shortCode, 
+				boolean emailOk =emailOp.sendRecoveryEmail(appId, userName, userId, email, newPass, 
 						uriInfo.getAbsolutePath().toASCIIString());
 				if(emailOk){
 					

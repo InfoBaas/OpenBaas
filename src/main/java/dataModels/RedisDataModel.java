@@ -241,8 +241,7 @@ public class RedisDataModel implements CacheInterface {
 						new String(salt,
 								"ISO-8859-1"));
 				jedis.hset(("users:" + userId), "lastActive", new Date().toString());
-				jedis.hset(("users:" + userId), "hash",
-						new String(hash, "ISO-8859-1"));
+				jedis.hset(("users:" + userId), "hash",	new String(hash, "ISO-8859-1"));
 				jedis.hset("users:" + userId, "alive", new String("true"));
 				jedis.hset("users:" + userId, "creationDate", creationDate);
 				jedis.sadd("app:" + appId + ":users", userId);
@@ -361,14 +360,15 @@ public class RedisDataModel implements CacheInterface {
 	 * @param hash
 	 * @param salt
 	 * @param alive
+	 * @throws UnsupportedEncodingException 
 	 */
 	public void updateUser(String appId, String userId, String email,
-			byte[] hash, byte[] salt, String alive) {
+			byte[] hash, byte[] salt, String alive) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.hset("users:" + userId, "email", email);
-			jedis.hset(("users:" + userId).getBytes(), "salt".getBytes(), salt);
-			jedis.hset(("users:" + userId).getBytes(), "hash".getBytes(), hash);
+			jedis.hset(("users:" + userId), "salt", new String(salt,"ISO-8859-1"));
+			jedis.hset(("users:" + userId), "hash", new String(hash,"ISO-8859-1"));
 			jedis.hset("users:" + userId, "alive", alive);
 			long unixTime = System.currentTimeMillis() / 1000L;
 			jedis.zadd("users:time", unixTime, appId + ":" + userId);
@@ -970,7 +970,7 @@ public class RedisDataModel implements CacheInterface {
 				Map<String, String> userFields = jedis.hgetAll("users:"	+ userId);
 				if (userFields.get("email").equalsIgnoreCase(email))
 					return userFields.get("userId");
-			}
+			} 
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -1043,12 +1043,12 @@ public class RedisDataModel implements CacheInterface {
 
 	@Override
 	public void updateUser(String appId, String userId, String email,
-			byte[] hash, byte[] salt) {
+			byte[] hash, byte[] salt) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.hset("users:" + userId, "email", email);
-			jedis.hset(("users:" + userId).getBytes(), "salt".getBytes(), salt);
-			jedis.hset(("users:" + userId).getBytes(), "hash".getBytes(), hash);
+			jedis.hset(("users:" + userId), "salt", new String(salt,"ISO-8859-1"));
+			jedis.hset(("users:" + userId), "hash", new String(hash,"ISO-8859-1"));
 			long unixTime = System.currentTimeMillis() / 1000L;
 			jedis.zadd("users:time", unixTime, appId + ":" + userId);
 

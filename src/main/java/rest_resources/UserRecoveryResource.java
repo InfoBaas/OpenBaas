@@ -93,7 +93,8 @@ public class UserRecoveryResource {
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			boolean opOk = appsMid.recoverUser(appId, userId, email, ui);
+			String newPass="aaa";
+			boolean opOk = appsMid.recoverUser(appId, userId, email, ui,newPass,null,null);
 			if(opOk)
 				response = Response.status(Status.OK)
 				.entity("Email sent with recovery details.").build();

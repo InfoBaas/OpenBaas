@@ -8,8 +8,6 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -17,7 +15,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -231,8 +228,26 @@ public class AccountResource {
 				} else {
 					response = Response.status(Status.FORBIDDEN).entity(EMAILCONFIRMATIONERROR).build();
 				}
-			} else
-				response = Response.status(Status.UNAUTHORIZED).entity("").build();
+			} else{
+				System.out.println("userId of email: " + email + " is: " + userId);
+				String sessionToken = getRandomString(IDGENERATOR);
+				boolean validation = appsMid.createSession(sessionToken, appId, userId, attemptedPassword);
+				if(validation){
+					if (location != null) {
+						appsMid.refreshSession(sessionToken, location.get(0), userAgent.get(0));
+						refreshCode = true;
+					} else{
+						appsMid.refreshSession(sessionToken);
+						refreshCode = true;
+					}
+					if (validation && refreshCode) {
+						outUser.setUserID2(userId);
+						outUser.setReturnToken(sessionToken);
+						response = Response.status(Status.OK).entity(outUser).build();
+					}
+				}else
+					response = Response.status(Status.UNAUTHORIZED).entity("").build();				
+			}
 		} else
 			response = Response.status(Status.NOT_FOUND).entity("").build();
 		return response;
@@ -283,6 +298,45 @@ public class AccountResource {
 	}
 	
 	
+	@POST
+	@Path("/recovery")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response makeRecoveryRequest(JSONObject inputJson, @Context UriInfo ui, @Context HttpHeaders hh,
+			@HeaderParam(value = "location") String location){
+		Response response = null;
+		String email = null;
+		String newPass = this.getRandomString(5);
+		byte[] salt = null;
+		byte[] hash = null;
+			try {
+				email = (String) inputJson.get("email");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			PasswordEncryptionService service = new PasswordEncryptionService();
+			try {
+				salt = service.generateSalt();
+				hash = service.getEncryptedPassword(newPass, salt);
+			} catch (NoSuchAlgorithmException e) {
+				System.out.println("Hashing Algorithm failed, please review the PasswordEncryptionService.");
+				e.printStackTrace();
+			} catch (InvalidKeySpecException e) {
+				System.out.println("Invalid Key.");
+				e.printStackTrace();
+			}
+			String userId = appsMid.getUserIdUsingEmail(appId, email);
+			boolean opOk = appsMid.recoverUser(appId, userId, email, ui, newPass,hash,salt);
+			
+			if(opOk)
+				response = Response.status(Status.OK)
+				.entity("Email sent with recovery details.").build();
+			else
+				response = Response.status(Status.BAD_REQUEST)
+				.entity("Wrong email.").build();
+		return response;
+		
+	}
 
 	/**
 	 * Gets the session fields associated with the token.
@@ -317,6 +371,7 @@ public class AccountResource {
 			@PathParam("sessionToken") String sessionToken) {
 		Response response = null;
 		if (appsMid.sessionTokenExists(sessionToken)) {
+			String userId = appsMid.getUserUsingSessionToken(sessionToken);
 			if (appsMid.sessionExistsForUser(userId)) {
 				if (location != null) {
 					appsMid.refreshSession(sessionToken, location, userAgent);
