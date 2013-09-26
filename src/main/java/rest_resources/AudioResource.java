@@ -305,8 +305,7 @@ public class AudioResource {
 			 * successfully.
 			 */
 			String file = dir + audioId + "." + fileType;
-			this.appsMid.uploadImageFileToServerWithGeoLocation(appId,audioId, fileType, location, fileName );
-			
+			this.appsMid.uploadAudioFileToServer(appId,audioId, fileType, location, fileName );
 			
 //			String fileDirectory = null;
 //			String compact = null;

@@ -895,7 +895,8 @@ public class MongoDBDataModel implements DatabaseInterface {
 		boolean emailIsConfirmed = false;
 		if(cursor.hasNext()){
 			DBObject temp = cursor.next();
-			emailIsConfirmed = (Boolean) temp.get("emailConfirmed");
+			if(temp.containsField("emailConfirmed"))
+				emailIsConfirmed = (Boolean) temp.get("emailConfirmed");
 		}
 		return emailIsConfirmed;
 	}
