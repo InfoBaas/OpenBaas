@@ -67,7 +67,7 @@ public class AppsMiddleLayer {
 
 	private static final String AUDIOTYPE = "audio";
 	private static final String VIDEOTYPE = "video";
-	private static final String IMAGETYPE = "images";
+	private static final String IMAGETYPE = "image";
 	private static final String STORAGEFOLDER = "storage";
 	private static final String MEDIAFOLDER = "media";
 	private static final String IMAGESFOLDER = "/media/images";
@@ -214,8 +214,7 @@ public class AppsMiddleLayer {
 	}
 
 	public Audio getAudioInApp(String appId, String audioId) {
-		Map<String, String> audioFields = this.model.getAudioInApp(appId,
-				audioId);
+		Map<String, String> audioFields = this.model.getAudioInApp(appId, audioId);
 		Audio temp = new MP3(audioId);
 		for (Map.Entry<String, String> entry : audioFields.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase("type"))
@@ -244,8 +243,12 @@ public class AppsMiddleLayer {
 		return this.model.deleteUserInApp(appId, userId);
 	}
 
-	public boolean downloadAudioInApp(String appId, String audioId) {
-		return this.model.downloadAudioInApp(appId, audioId);
+	public byte[] downloadAudioInApp(String appId, String audioId,String ext) {
+		return this.model.downloadAudioInApp(appId, audioId,ext);
+	}
+	
+	public byte[] downloadImageInApp(String appId, String imageId,String ext) {
+		return this.model.downloadImageInApp(appId, imageId,ext);
 	}
 
 	public boolean createAppAWS(String appId) {
@@ -368,8 +371,8 @@ public class AppsMiddleLayer {
 		this.model.deleteVideoInApp(appId, videoId, MEDIAFOLDER, VIDEOTYPE);
 	}
 
-	public boolean downloadVideoInApp(String appId, String videoId) {
-		return this.model.downloadVideoInApp(appId, videoId);
+	public byte[] downloadVideoInApp(String appId, String videoId,String ext) {
+		return this.model.downloadVideoInApp(appId, videoId,ext);
 	}
 
 	public Video getVideoInApp(String appId, String videoId) {
@@ -481,10 +484,7 @@ public class AppsMiddleLayer {
 	}
 	public Map<String, String> getAdminFields(String OPENBAASADMIN)
 			throws UnsupportedEncodingException {
-		byte[] adminHash = null;
-		byte[] adminSalt = null;
-		Map<String, String> adminFields = sessions
-				.getAdminFields(OPENBAASADMIN);
+		Map<String, String> adminFields = sessions.getAdminFields(OPENBAASADMIN);
 		return adminFields;
 	}
 	public void updateAppName(String appId, String newAppName) {
@@ -712,6 +712,11 @@ public class AppsMiddleLayer {
 			double longitude, double radius) {
 		return model.getAllAudioIdsInRadius(appId, latitude, longitude, radius);
 	}
+	
+	public Set<String> getAllImagesIdsInRadius(String appId, double latitude,
+			double longitude, double radius) {
+		return model.getAllImagesIdsInRadius(appId, latitude, longitude, radius);
+	}
 
 	public String createLocalFile(InputStream uploadedInputStream,
 			FormDataContentDisposition fileDetail, String appId, String extension, String dir) {
@@ -738,8 +743,8 @@ public class AppsMiddleLayer {
 		return id;
 	}
 
-	public boolean downloadStorageInApp(String appId, String storageId) {
-		return this.model.downloadStorageInApp(appId, storageId);
+	public byte[] downloadStorageInApp(String appId, String storageId,String ext) {
+		return this.model.downloadStorageInApp(appId, storageId,ext);
 	}
 
 	public void deleteStorageInApp(String appId, String storageId) {

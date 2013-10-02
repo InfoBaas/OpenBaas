@@ -1,12 +1,14 @@
 package FileSystemModels;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.apache.commons.io.IOUtils;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -28,6 +30,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 
 public class AWSModel implements FileSystemInterface{
 	private static AWSModel ref;
@@ -89,37 +92,47 @@ public class AWSModel implements FileSystemInterface{
 	 * @return
 	 * @throws IOException
 	 */
-	public boolean download(String appId, String folder, String requestType,
-			String id) throws IOException {
-		this.startAWS();
-//		if(folder.equalsIgnoreCase(MEDIAFOLDER)){
-//			if (requestType == "audio")
-//				fileFormat = DEFAULTAUDIOFORMAT;
-//			else if (requestType == "images")
-//				fileFormat = DEFAULTIMAGEFORMAT;
-//			else if (requestType == "video")
-//				fileFormat = DEFAULTVIDEOFORMAT;
-//		}
-//		else if(folder.equalsIgnoreCase(STORAGEFOLDER)){
-//			
-//		}
-		
-		String directory = "apps/" + appId + "/" + folder + "/" + requestType
-				+ "/";
-		System.out.println(directory);
-		S3Object object = s3.getObject(new GetObjectRequest(OPENBAASBUCKET,directory));
-
-		String dir = "apps/" + appId + "/" + folder + "/" + requestType	+ "/"+object.getKey(); //id?
-		System.out.println("Downloading to: " + dir);
-		OutputStream soutputStream = new FileOutputStream(new File(dir));
-		int read = 0;
-		byte[] bytes = new byte[1024];
-
-		while ((read = object.getObjectContent().read(bytes)) != -1) {
-			soutputStream.write(bytes, 0, read);
+	public byte[] download(String appId, String folder, String requestType, String id, String ext) throws IOException {
+		OutputStream soutputStream=null;
+		byte[] byteArray = null;
+		try{
+			this.startAWS();
+	//		if(folder.equalsIgnoreCase(MEDIAFOLDER)){
+	//			if (requestType == "audio")
+	//				fileFormat = DEFAULTAUDIOFORMAT;
+	//			else if (requestType == "images")
+	//				fileFormat = DEFAULTIMAGEFORMAT;
+	//			else if (requestType == "video")
+	//				fileFormat = DEFAULTVIDEOFORMAT;
+	//		}
+	//		else if(folder.equalsIgnoreCase(STORAGEFOLDER)){
+	//			
+	//		}
+			
+			//directory= "apps/296/media/images/3d2.jpg"
+			StringBuffer directory = new StringBuffer("apps/" + appId + "/" + folder + "/" + requestType + "/"+id);
+			if(ext!=null)
+				directory.append("."+ext);
+			System.out.println(directory);
+			S3Object object = s3.getObject(new GetObjectRequest(OPENBAASBUCKET,directory.toString()));
+			S3ObjectInputStream s3ObjInputStream = object.getObjectContent();
+			byteArray = IOUtils.toByteArray(s3ObjInputStream);
+			//String dir = "apps/" + appId + "/" + folder + "/" + requestType	+ "/"+object.getKey(); //id?
+			System.out.println("Downloading to: " + directory.toString());
+			soutputStream = new FileOutputStream(new File(directory.toString()));
+			int read = 0;
+			byte[] bytes = new byte[1024];
+			S3Object object2 = s3.getObject(new GetObjectRequest(OPENBAASBUCKET,directory.toString()));
+			
+			while ((read = object2.getObjectContent().read(bytes)) != -1) {
+				soutputStream.write(bytes, 0, read);
+			}	 
+		}catch(Exception e){
+			System.err.println(e.toString());
+		}finally{
+			soutputStream.close();
 		}
-
-		return true;
+		return byteArray;
 	}
 	@Override
 	public boolean upload(String appId, String destinationDirectory, String id,
@@ -158,7 +171,7 @@ public class AWSModel implements FileSystemInterface{
 		CreateUserResult result = client.createUser(user);
 
 		AddUserToGroupRequest addUserToGroupRequest = new AddUserToGroupRequest()
-				.withGroupName(APPMASTERSGROUP).withUserName(appId);
+			.withGroupName(APPMASTERSGROUP).withUserName(appId);
 		client.addUserToGroup(addUserToGroupRequest);
 		// ------------------------------------------------
 		// ------------Creating the Default Folders--------
@@ -170,14 +183,10 @@ public class AWSModel implements FileSystemInterface{
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentLength(0);
 		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/", input, metadata);
-		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/storage/", input,
-				metadata);
-		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/media/audio/", input,
-				metadata);
-		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/media/images/", input,
-				metadata);
-		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/media/video/", input,
-				metadata);
+		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/storage/", input, metadata);
+		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/media/audio/", input, metadata);
+		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/media/images/", input,	metadata);
+		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/media/video/", input, metadata);
 		sucess = true;
 		return sucess;
 	}

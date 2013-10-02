@@ -483,8 +483,7 @@ public class RedisDataModel implements CacheInterface {
 		Jedis jedis = pool.getResource();
 		Boolean sucess = false;
 		try {
-			Set<String> audioInApp = this.jedis.smembers("app:" + appId
-					+ ":images");
+			Set<String> audioInApp = this.jedis.smembers("app:" + appId	+ ":images");
 			Iterator<String> it = audioInApp.iterator();
 			while (it.hasNext())
 				if (it.next().equalsIgnoreCase(imageId)){
@@ -601,8 +600,7 @@ public class RedisDataModel implements CacheInterface {
 			jedis.hset("storage:" + storageId, "dir", directory);
 			jedis.hset("storage:" + storageId, "type", fileExtension);
 			jedis.hset("storage:" + storageId, "size", fileSize);
-			jedis.hset("storage:" + storageId, "creationDate",
-					creationDate);
+			jedis.hset("storage:" + storageId, "creationDate",creationDate);
 			jedis.hset("storage:" + storageId, "fileName", fileName);
 			if(location != null)
 				jedis.hset("storage:" + storageId, "location", location);

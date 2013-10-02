@@ -58,4 +58,6 @@ public interface Image{
 	public void setPixelsSize(String value);
 	public void setResolution(String value);
 	public String getResolution();
+	public void setType(String type);
+	public String getType();
 }

@@ -1,17 +1,12 @@
 package rest_resources;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
@@ -29,23 +24,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 
-import modelInterfaces.Audio;
 import modelInterfaces.Video;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
 import resourceModelLayer.AppsMiddleLayer;
-import rest_Models.MP3;
-import rest_Models.MPEG;
 
 public class VideoResource {
 
@@ -62,8 +47,8 @@ public class VideoResource {
 	 * Forbidden -1 -> Bad request 1 -> sessionExists
 	 */
 	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();
+		/*MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+		MultivaluedMap<String, String> pathParams = ui.getPathParameters();*/
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
@@ -97,11 +82,11 @@ public class VideoResource {
 			}
 		}
 		return code;
-	}
+	}/*
 	private String getRandomString(int length) {
 		return (String) UUID.randomUUID().toString().subSequence(0, length);
 	}
-
+*/
 	/**
 	 * Gets all Video Identifiers.
 	 * 
@@ -193,21 +178,21 @@ public class VideoResource {
 	public Response downloadAudio(@PathParam("videoId") String videoId,
 			@CookieParam(value = "sessionToken") String sessionToken) {
 		Response response = null;
+		byte[] sucess = null;
 		if (appsMid.sessionTokenExists(sessionToken)) {
 			System.out.println("************************************");
 			System.out.println("*********Downloading Video**********");
 			System.out.println("Trying to download.");
 			if (this.appsMid.videoExistsInApp(appId, videoId)) {
 				Video video = this.appsMid.getVideoInApp(appId, videoId);
-				boolean sucess = appsMid.downloadVideoInApp(appId, videoId);
-				if (sucess)
-					response = Response.status(Status.OK).entity(video).build();
+				sucess = appsMid.downloadVideoInApp(appId, videoId,video.getType());
+				if (sucess!=null)
+					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
+					.header("content-disposition","attachment; filename = "+video.getFileName()+"."+video.getType()).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(videoId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(videoId).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(sessionToken)
-					.build();
+			response = Response.status(Status.FORBIDDEN).entity(sessionToken).build();
 		return response;
 	}
 
@@ -267,7 +252,7 @@ public class VideoResource {
 			 * in a way that this error is handled produces the file
 			 * successfully.
 			 */
-			String file = dir + videoId + "." + fileType;
+			//String file = dir + videoId + "." + fileType;
 			this.appsMid.uploadVideoFileToServerWithoutGeoLocation(this.appId, videoId, fileType,
 					fileName);
 			response = Response.status(200).entity(fileNameWithType).build();

@@ -1,8 +1,5 @@
 package rest_resources;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
@@ -10,10 +7,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
@@ -43,9 +38,9 @@ public class UserRecoveryResource {
 	 * Returns a code corresponding to the sucess or failure Codes: -2 ->
 	 * Forbidden -1 -> Bad request 1 -> sessionExists
 	 * CHECK FILTERS
-	 */
+	 *//*
 	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+		/*MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
 		MultivaluedMap<String, String> pathParams = ui.getPathParameters();
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
@@ -80,7 +75,7 @@ public class UserRecoveryResource {
 			}
 		}
 		return code;
-	}
+	}*/
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)

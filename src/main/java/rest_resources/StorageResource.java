@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -59,8 +58,8 @@ public class StorageResource {
 	 * Forbidden -1 -> Bad request 1 -> sessionExists
 	 */
 	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();
+		/*MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+		MultivaluedMap<String, String> pathParams = ui.getPathParameters();*/
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
@@ -130,6 +129,8 @@ public class StorageResource {
 	public Response downloadStorageUsingId(@PathParam("storageId") final String storageId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		ResponseBuilder builder = Response.status(Status.OK);
+		byte[] found = null;
+		String extension = "";
 		try {
 			/*
 			 * pseudo codigo if(!existe em local storage) buscar a aws else
@@ -147,10 +148,9 @@ public class StorageResource {
             });
 			String url = "apps/" + appId + "/storage/" + myFiles[0];
 			File file = new File(url);
-			String extension = FilenameUtils.getExtension(url);
-			boolean found = false;
+			extension = FilenameUtils.getExtension(url);
 			if (!file.exists()) {
-				found = appsMid.downloadStorageInApp(appId, storageId);
+				found = appsMid.downloadStorageInApp(appId, storageId,null);
 			} else if(file.exists()){
 				FileInputStream fis = new FileInputStream(file);
 				ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -158,9 +158,8 @@ public class StorageResource {
 				for (int readNum; (readNum = fis.read(buf)) != -1;) {
 					bos.write(buf, 0, readNum);
 				}
-				builder.entity(bos.toByteArray());
-				builder.header("fileType", extension);
-				found = true;
+				found = bos.toByteArray();
+				fis.close();
 			}
 			else{
 				builder.status(Status.NOT_FOUND);
@@ -168,6 +167,8 @@ public class StorageResource {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
+		builder.entity(found);
+		builder.header("fileType", extension);
 		return builder.build();
 	}
 	/**
@@ -227,7 +228,7 @@ public class StorageResource {
 			 * in a way that this error is handled produces the file
 			 * successfully.
 			 */
-			String file = dir + storageId + "." + fileType;
+			//String file = dir + storageId + "." + fileType;
 			this.appsMid.uploadStorageFileToServer(this.appId, storageId, fileType,
 					fileName);
 			response = Response.status(200).entity(fileNameWithType).build();
@@ -270,8 +271,8 @@ public class StorageResource {
 	 * 
 	 * @param length
 	 * @return
-	 */
+	 *//*
 	private String getRandomString(int length) {
 		return (String) UUID.randomUUID().toString().subSequence(0, length);
-	}
+	}*/
 }

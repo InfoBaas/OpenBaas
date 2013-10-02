@@ -23,6 +23,4 @@ public interface CacheInterface extends DatabaseInterface{
 	 */
 	public Set<String> allCachedElements();
 	void destroyPool();
-	
-	public String getUserIdUsingEmail(String appId, String email);
 }

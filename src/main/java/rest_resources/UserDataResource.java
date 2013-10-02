@@ -51,8 +51,8 @@ public class UserDataResource {
 	 * Forbidden -1 -> Bad request 1 -> sessionExists
 	 */
 	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();
+		/*MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+		MultivaluedMap<String, String> pathParams = ui.getPathParameters();*/
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;

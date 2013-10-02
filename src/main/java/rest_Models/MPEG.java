@@ -80,4 +80,9 @@ public class MPEG extends Media implements Video {
 	public String getResolution(){
 		return this.resolution;
 	}
+
+	@Override
+	public String getType() {
+		return type;
+	}
 }

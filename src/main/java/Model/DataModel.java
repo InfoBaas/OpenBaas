@@ -1023,10 +1023,16 @@ public class DataModel {
 		}
 	}
 
-	public Set<String> getAllAudioIdsInRadius(String appId, double latitude,
-			double longitude, double radius) {
+	public Set<String> getAllAudioIdsInRadius(String appId, double latitude,double longitude, double radius) {
 		try {
 			return docModel.getAllAudioIdsInRadius(appId, latitude, longitude, radius);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	public Set<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, double radius) {
+		try {
+			return docModel.getAllImagesIdsInRadius(appId, latitude, longitude, radius);
 		} catch (Exception e) {
 			return null;
 		}

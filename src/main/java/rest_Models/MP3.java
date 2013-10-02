@@ -119,5 +119,17 @@ public class MP3 extends Media implements Audio{
 	}
 
 
+	@Override
+	public void setType(String type) {
+		this.type=type;
+	}
+
+
+	@Override
+	public String getType() {
+		return type;
+	}
+
+
 
 }

@@ -1,11 +1,6 @@
 package rest_resources;
 
-import simulators.AudioSimulator;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -21,36 +16,21 @@ import javax.ws.rs.core.UriInfo;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
+
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.Map.Entry;
 
-import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.Response.Status;
 
 import modelInterfaces.Audio;
-
-import org.apache.commons.fileupload.*;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 import resourceModelLayer.AppsMiddleLayer;
 import rest_Models.MP3;
@@ -67,10 +47,10 @@ public class AudioResource {
 		this.appsMid = appsMid;
 		// AudioSimulator audioSim = new AudioSimulator(this.audio);
 	}
-
+	/*
 	private String getRandomString(int length) {
 		return (String) UUID.randomUUID().toString().subSequence(0, length);
-	}
+	}*/
 	/*
 	 * Returns a code corresponding to the sucess or failure Codes: 
 	 * -2 -> Forbidden
@@ -79,8 +59,8 @@ public class AudioResource {
 	 * sessionExists
 	 */
 	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();
+		/*MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+		MultivaluedMap<String, String> pathParams = ui.getPathParameters();*/
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
@@ -222,15 +202,17 @@ public class AudioResource {
 	public Response downloadAudio(@PathParam("audioId") String audioId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
+		byte[] sucess = null;
 		int code = this.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("*********Downloading Audio**********");
 			if (this.appsMid.audioExistsInApp(appId, audioId)) {
 				Audio audio = this.appsMid.getAudioInApp(appId, audioId);
-				boolean sucess = appsMid.downloadAudioInApp(appId, audioId);
-				if (sucess)
-					response = Response.status(Status.OK).entity(audio).build();
+				sucess = appsMid.downloadAudioInApp(appId, audioId,audio.getType());
+				if (sucess!=null)
+					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
+							.header("content-disposition","attachment; filename = "+audio.getFileName()+"."+audio.getType()).build();
 			} else
 				response = Response.status(Status.NOT_FOUND).entity(audioId)
 						.build();
@@ -304,8 +286,10 @@ public class AudioResource {
 			 * in a way that this error is handled produces the file
 			 * successfully.
 			 */
-			String file = dir + audioId + "." + fileType;
-			this.appsMid.uploadAudioFileToServer(appId,audioId, fileType, location, fileName );
+			//String file = dir + audioId + "." + fileType;
+			//this.appsMid.uploadAudioFileToServer(appId, fileDirectory, location, fileType, fileName);
+			
+			this.appsMid.uploadImageFileToServerWithGeoLocation(appId, location, fileType, fileName, audioId);
 			
 //			String fileDirectory = null;
 //			String compact = null;

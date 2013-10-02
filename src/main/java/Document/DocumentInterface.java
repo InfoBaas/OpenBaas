@@ -142,6 +142,6 @@ public interface DocumentInterface {
 	public Set<String> getAllUserDocsInRadius(String appId, String userId,
 			double latitude, double longitude, double radius);
 	public String getAllUserDocs(String appId, String userId);
-	public Set<String> getAllAudioIdsInRadius(String appId, double latitude,
-			double longitude, double radius);
+	public Set<String> getAllAudioIdsInRadius(String appId, double latitude,double longitude, double radius);
+	public Set<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, double radius);
 }

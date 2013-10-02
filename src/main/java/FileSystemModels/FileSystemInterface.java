@@ -18,8 +18,8 @@ public interface FileSystemInterface {
 	 * @return
 	 * @throws IOException
 	 */
-	public boolean download(String appId, String folder, String requestType,
-			String id) throws IOException;
+	public byte[] download(String appId, String folder, String requestType,
+			String id, String ext) throws IOException;
 	/**
 	 * Uploads the file to the given directory.
 	 * @param appId

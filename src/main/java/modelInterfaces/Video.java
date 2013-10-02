@@ -54,4 +54,5 @@ public interface Video {
 	public void setCreationDate(String date);
 	public String getResolution();
 	public void setResolution(String value);
+	public String getType();
 }

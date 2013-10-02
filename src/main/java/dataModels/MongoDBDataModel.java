@@ -401,8 +401,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 					.append("creationDate", creationDate)
 					.append("fileName", fileName).append("location", location);
 			String[] array = location.split(":");
-			geo.insertObjectInGrid(Double.parseDouble(array[0]),
-					Double.parseDouble(array[1]), type, imageId);
+			geo.insertObjectInGrid(Double.parseDouble(array[0]),Double.parseDouble(array[1]), type, imageId);
 		} else
 			image = new BasicDBObject().append("_id", imageId)
 					.append("appId", appId).append("dir", directory)
@@ -627,7 +626,49 @@ public class MongoDBDataModel implements DatabaseInterface {
 		return email;
 	}
 
-	@Override
+
+	public String getImageLocationUsingImageId(String appId, String imageId) {
+		DBCollection users = db.getCollection(ImageColl);
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.append("_id", imageId);
+		searchQuery.append("appId", appId);
+		DBCursor cursor = users.find(searchQuery);
+		String location = null;
+		if (cursor.hasNext()) {
+			DBObject temp = cursor.next();
+			location = (String) temp.get("location");
+		}
+		return location;
+	}
+	
+	public String getAudioLocationUsingAudioId(String appId, String audioId) {
+		DBCollection users = db.getCollection(AudioColl);
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.append("_id", audioId);
+		searchQuery.append("appId", appId);
+		DBCursor cursor = users.find(searchQuery);
+		String location = null;
+		if (cursor.hasNext()) {
+			DBObject temp = cursor.next();
+			location = (String) temp.get("location");
+		}
+		return location;
+	}
+
+	public String getVideoLocationUsingVideoId(String appId, String videoId) {
+		DBCollection users = db.getCollection(VideoColl);
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.append("_id", videoId);
+		searchQuery.append("appId", appId);
+		DBCursor cursor = users.find(searchQuery);
+		String location = null;
+		if (cursor.hasNext()) {
+			DBObject temp = cursor.next();
+			location = (String) temp.get("location");
+		}
+		return location;
+	}
+	
 	public String getUserIdUsingUserName(String appId, String userName) {
 		DBCollection users = db.getCollection(UsersColl);
 		BasicDBObject searchQuery = new BasicDBObject();
@@ -642,7 +683,6 @@ public class MongoDBDataModel implements DatabaseInterface {
 		return userId;
 	}
 	
-	//TODO JM
 	@Override
 	public String getUserIdUsingEmail(String appId, String email) {
 		DBCollection users = db.getCollection(UsersColl);
@@ -916,6 +956,8 @@ public class MongoDBDataModel implements DatabaseInterface {
 		coll.update(query, updateObj);
 		return true;
 	}
+
+	
 
 	
 	

@@ -21,7 +21,7 @@ public class Model {
 	private static FileSystemModel fileModel;
 	// request types
 	private static final String AUDIO = "audio";
-	private static final String IMAGES = "images";
+	private static final String IMAGES = "image";
 	private static final String VIDEO = "video";
 
 	// Request folders
@@ -154,16 +154,16 @@ public class Model {
 		return dataModel.deleteUserInApp(appId, userId);
 	}
 
-	public boolean downloadAudioInApp(String appId, String audioId) {
-		return fileModel.download(appId, MEDIAFOLDER, AUDIO, audioId);
+	public byte[] downloadAudioInApp(String appId, String audioId,String ext) {
+		return fileModel.download(appId, MEDIAFOLDER, AUDIO, audioId,ext);
 	}
 
-	public boolean downloadVideoInApp(String appId, String videoId) {
-		return fileModel.download(appId, MEDIAFOLDER, VIDEO, videoId);
+	public byte[] downloadVideoInApp(String appId, String videoId,String ext) {
+		return fileModel.download(appId, MEDIAFOLDER, VIDEO, videoId,ext);
 	}
 
-	public boolean downloadImageInApp(String appId, String imageId) {
-		return fileModel.download(appId, MEDIAFOLDER, IMAGES, imageId);
+	public byte[] downloadImageInApp(String appId, String imageId,String ext) {
+		return fileModel.download(appId, MEDIAFOLDER, IMAGES, imageId,ext);
 	}
 
 	public boolean createAppFoldersAWS(String appId) {
@@ -200,7 +200,7 @@ public class Model {
 					databaseOk = dataModel.createAudioInApp(appId, id,
 							destinationDirectory, fileExtension, fileSize,
 							MINIMUMBITRATE, new Date().toString(), fileName, location);
-				else if (requestType.equalsIgnoreCase("images"))
+				else if (requestType.equalsIgnoreCase("image"))
 					databaseOk = dataModel.createImageInApp(appId, id,
 							destinationDirectory, fileExtension, fileSize,
 							SMALLIMAGE, new Date().toString(), fileName, location);
@@ -449,9 +449,13 @@ public class Model {
 			double longitude, double radius) {
 		return dataModel.getAllAudioIdsInRadius(appId, latitude, longitude, radius);
 	}
+	public Set<String> getAllImagesIdsInRadius(String appId, double latitude,
+			double longitude, double radius) {
+		return dataModel.getAllImagesIdsInRadius(appId, latitude, longitude, radius);
+	}
 
-	public boolean downloadStorageInApp(String appId, String storageId) {
-		return fileModel.download(appId, STORAGEFOLDER, null, storageId);
+	public byte[] downloadStorageInApp(String appId, String storageId,String ext) {
+		return fileModel.download(appId, STORAGEFOLDER, null, storageId,ext);
 	}
 
 	public boolean confirmUsersEmailOption(String appId) {

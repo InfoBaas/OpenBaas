@@ -118,5 +118,15 @@ public class JPG extends Media implements Image{
 	public String getResolution() {
 		return this.defaultResolution;
 	}
+
+	@Override
+	public void setType(String type) {
+		this.type=type;		
+	}
+
+	@Override
+	public String getType() {
+		return type;
+	}
 	
 }

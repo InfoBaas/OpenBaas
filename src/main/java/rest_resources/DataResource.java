@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -39,8 +38,7 @@ public class DataResource {
 	@Context
 	UriInfo uriInfo;
 
-	public DataResource(@Context UriInfo uriInfo, AppsMiddleLayer appsMid,
-			String appId) {
+	public DataResource(@Context UriInfo uriInfo, AppsMiddleLayer appsMid, String appId) {
 		this.appsMid = appsMid;
 		this.appId = appId;
 		this.uriInfo = uriInfo;
@@ -52,8 +50,8 @@ public class DataResource {
 	 * 1 -> sessionExists
 	 */
 	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();
+		/*MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+		MultivaluedMap<String, String> pathParams = ui.getPathParameters();*/
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
@@ -78,8 +76,7 @@ public class DataResource {
 			if (appsMid.sessionTokenExists(sessionToken.getValue())) {
 				code = 1;
 				if (location != null) {
-					if(!appsMid.refreshSession(sessionToken.getValue(),
-							location.get(0), userAgent.get(0)))
+					if(!appsMid.refreshSession(sessionToken.getValue(),	location.get(0), userAgent.get(0)))
 						code = -1;
 				} else
 					appsMid.refreshSession(sessionToken.getValue());
@@ -96,8 +93,7 @@ public class DataResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createNonPublishableDocument(JSONObject inputJsonObj,
 			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
-			@Context HttpHeaders hh,
-			@HeaderParam(value = "location") String location) {
+			@Context HttpHeaders hh, @HeaderParam(value = "location") String location) {
 		Response response = null;
 		int code = this.treatParameters(ui, hh);
 		if (code == 1) {
@@ -112,18 +108,14 @@ public class DataResource {
 				if (appsMid.createNonPublishableAppDocument(appId, data, path, location))
 					response = Response.status(Status.OK).entity(appId).build();
 				else
-					response = Response.status(Status.BAD_REQUEST)
-							.entity(appId).build();
+					response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 
@@ -166,11 +158,9 @@ public class DataResource {
 				response = Response.status(Status.OK).entity(all).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 
@@ -185,8 +175,7 @@ public class DataResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createDocumentRoot(JSONObject inputJsonObj,
-			@Context UriInfo ui, @Context HttpHeaders hh,
+	public Response createDocumentRoot(JSONObject inputJsonObj,@Context UriInfo ui, @Context HttpHeaders hh,
 			@HeaderParam(value = "location") String location) {
 		Response response = null;
 		int code = this.treatParameters(ui, hh);
@@ -200,22 +189,17 @@ public class DataResource {
 			}
 			if (appsMid.appExists(appId)) {
 				if (appsMid.insertAppDocumentRoot(appId, data, location)) {
-					response = Response.status(Status.CREATED).entity(appId)
-							.build();
+					response = Response.status(Status.CREATED).entity(appId).build();
 				} else {
-					response = Response.status(Status.BAD_REQUEST).entity(data)
-							.build();
+					response = Response.status(Status.BAD_REQUEST).entity(data).build();
 				}
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 
@@ -230,10 +214,8 @@ public class DataResource {
 	@Path("/{pathId:.+}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createOrReplaceDocument(JSONObject inputJsonObj,
-			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
-			@Context HttpHeaders hh,
-			@HeaderParam(value = "location")String location) {
+	public Response createOrReplaceDocument(JSONObject inputJsonObj,@PathParam("pathId") List<PathSegment> path, 
+			@Context UriInfo ui,@Context HttpHeaders hh,@HeaderParam(value = "location")String location) {
 		Response response = null;
 		int code = this.treatParameters(ui, hh);
 		if (code == 1) {
@@ -241,21 +223,16 @@ public class DataResource {
 				String url = appsMid.createAppDocPathFromListWithSlashes(appId,
 						path);
 				if (appsMid.insertIntoAppDocument(appId, url, inputJsonObj, location))
-					response = Response.status(Status.CREATED).entity(appId)
-							.build();
+					response = Response.status(Status.CREATED).entity(appId).build();
 				else
-					response = Response.status(Status.BAD_REQUEST).entity(inputJsonObj)
-							.build();
+					response = Response.status(Status.BAD_REQUEST).entity(inputJsonObj).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 
@@ -278,30 +255,25 @@ public class DataResource {
 		int code = this.treatParameters(ui, hh);
 		if (code == 1) {
 			if (latitude != null && longitude != null && radius != null) {
-				Set<String> all = appsMid.getElementInAppInRadius(appId, path,Double.parseDouble(latitude), 
-						Double.parseDouble(longitude), Double.parseDouble(radius));
-				
+				/*Set<String> all = appsMid.getElementInAppInRadius(appId, path,Double.parseDouble(latitude), 
+						Double.parseDouble(longitude), Double.parseDouble(radius));*/
 			//no query parameters return all docs
 			} else {
 				if (appsMid.dataExistsForElement(appId, path)) {
 					String data = appsMid.getElementInAppDocument(appId, path);
 					if (data == null)
-						response = Response.status(Status.BAD_REQUEST)
-								.entity(appId).build();
+						response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 					else
 						response = Response.status(Status.OK).entity(data).build();
 				} else {
-					response = Response.status(Status.NOT_FOUND).entity(appId)
-							.build();
+					response = Response.status(Status.NOT_FOUND).entity(appId).build();
 				}
 			}
 			
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 
@@ -323,18 +295,14 @@ public class DataResource {
 				if (appsMid.deleteDataInElement(appId, path))
 					response = Response.status(Status.OK).entity("").build();
 				else
-					response = Response.status(Status.BAD_REQUEST).entity(path)
-							.build();
+					response = Response.status(Status.BAD_REQUEST).entity(path).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 
@@ -357,23 +325,18 @@ public class DataResource {
 		int code = this.treatParameters(ui, hh);
 		if (code == 1) {
 			if (appsMid.dataExistsForElement(appId, path)) {
-				String data = appsMid
-						.patchDataInElement(appId, path, inputJson, location);
+				String data = appsMid.patchDataInElement(appId, path, inputJson, location);
 				if (data != null)
 					response = Response.status(Status.OK).entity(data).build();
 				else
-					response = Response.status(Status.BAD_REQUEST)
-							.entity(appId).build();
+					response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 }

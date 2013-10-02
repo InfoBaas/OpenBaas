@@ -41,6 +41,7 @@ public class DocumentModel implements DocumentInterface {
 	public static final int PORT = 27017;
 	private static final String specialCharacter = "~";
 	private static final String AUDIO = "audio";
+	private static final String IMAGE = "jpg";
 	GeoLocationOperations geo;
 	public DocumentModel() {
 		mongoClient = null;
@@ -149,8 +150,7 @@ public class DocumentModel implements DocumentInterface {
 				if (location != null){
 					temp.append("location", location);
 					String[] splitted = location.split(":");
-					geo.insertObjectInGrid(Double.parseDouble(splitted[0]),
-							Double.parseDouble(splitted[1]), key, tempURL);
+					geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), key, tempURL);
 				}
 				coll.insert(temp);
 				keys.remove();
@@ -289,10 +289,7 @@ public class DocumentModel implements DocumentInterface {
 			String element = keys.next();
 			if (element.equalsIgnoreCase("data")) {// update the content of the
 													// url
-				BasicDBObject newDocument = new BasicDBObject()
-						.append("$set",
-								new BasicDBObject().append("data",
-										inputJson.toString()));
+				BasicDBObject newDocument = new BasicDBObject().append("$set",	new BasicDBObject().append("data",inputJson.toString()));
 				coll.update(searchQuery, newDocument);
 				break;
 			}
@@ -313,8 +310,7 @@ public class DocumentModel implements DocumentInterface {
 			if (childsIt.hasNext()) {
 				child = childsIt.next();
 				tempURL += "," + child;
-				patchDataInElementRec(coll, tempURL, (JSONObject) childs,
-						location, child);
+				patchDataInElementRec(coll, tempURL, (JSONObject) childs,location, child);
 			}
 		} catch (JSONException e) {// Java 7 allows multiple exception catches
 									// but
@@ -339,20 +335,14 @@ public class DocumentModel implements DocumentInterface {
 		if (cursor.hasNext()) {
 			BasicDBObject newDocument = null;
 			if (location != null){
-				newDocument = new BasicDBObject().append(
-						"$set",
-						new BasicDBObject()
-								.append("data", inputJson.toString()).append(
-										"location", location));
+				newDocument = new BasicDBObject().append("$set",new BasicDBObject().append("data", inputJson.toString()).append("location", location));
 			String[] splitted = location.split(":");
 			geo.insertObjectInGrid(Double.parseDouble(splitted[0]),
 					Double.parseDouble(splitted[1]), child, tempURL);
 		}
 			else
 				newDocument = new BasicDBObject()
-						.append("$set",
-								new BasicDBObject().append("data",
-										inputJson.toString()));
+						.append("$set",new BasicDBObject().append("data",inputJson.toString()));
 			coll.update(searchQuery, newDocument);
 		} else {
 			BasicDBObject newDocument = new BasicDBObject();
@@ -379,8 +369,7 @@ public class DocumentModel implements DocumentInterface {
 			if (location != null){
 				temp.append("location", location);
 				String[] splitted = location.split(":");
-				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),
-						Double.parseDouble(splitted[1]), key, tempURL);
+				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), key, tempURL);
 			}
 			tempURL += "," + key;
 			temp.append("path", tempURL);
@@ -416,17 +405,12 @@ public class DocumentModel implements DocumentInterface {
 		if (cursor.hasNext()) {// update the data inside the doc
 			BasicDBObject newDocument = new BasicDBObject();
 			if (location != null)
-				newDocument.append(
-						"$set",
-						new BasicDBObject().append("data",
-								specialCharacter + data.toString()).append(
-								"location", location)); // ~data
+				newDocument.append("$set",new BasicDBObject().append("data",specialCharacter + data.toString()).append("location", location));
+			// ~data
 			
 			else
-				newDocument.append(
-						"$set",
-						new BasicDBObject().append("data", specialCharacter
-								+ data.toString())); // ~data
+				newDocument.append(	"$set",	new BasicDBObject().append("data", specialCharacter	+ data.toString())); 
+			// ~data
 			coll.update(searchQuery, newDocument);
 			sucess = true;
 		} else {// create the element and insert data
@@ -643,7 +627,7 @@ public class DocumentModel implements DocumentInterface {
 		Geolocation geo =new Geolocation();
 		geo.createGridCache(180, 360);
 		String type = appId+"docs";
-		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius);
+		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius,appId);
 		Iterator<String> allIt = all.iterator();
 		Set<String> allElements = new HashSet<String>();
 		while(allIt.hasNext()){
@@ -689,7 +673,7 @@ public class DocumentModel implements DocumentInterface {
 		Geolocation geo =new Geolocation();
 		geo.createGridCache(180, 360);
 		String type = appId+"docs";
-		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius);
+		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius, appId);
 		Iterator<String> allIt = all.iterator();
 		Set<String> allElements = new HashSet<String>();
 		while(allIt.hasNext()){
@@ -710,7 +694,7 @@ public class DocumentModel implements DocumentInterface {
 		Geolocation geo =new Geolocation();
 		geo.createGridCache(180, 360);
 		String type = appId+"docs";
-		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius);
+		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius, appId);
 		Iterator<String> allIt = all.iterator();
 		Set<String> allElements = new HashSet<String>();
 		while(allIt.hasNext()){
@@ -764,13 +748,12 @@ public class DocumentModel implements DocumentInterface {
 	}
 
 	@Override
-	public Set<String> getAllAudioIdsInRadius(String appId, double latitude,
-			double longitude, double radius) {
+	public Set<String> getAllAudioIdsInRadius(String appId, double latitude, double longitude, double radius) {
 		DBCollection coll = db.getCollection(UserDataColl);
 		Geolocation geo =new Geolocation();
 		geo.createGridCache(180, 360);
 		String type = appId+"docs";
-		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, AUDIO , radius);
+		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, AUDIO , radius, appId);
 		Iterator<String> allIt = all.iterator();
 		Set<String> allElements = new HashSet<String>();
 		while(allIt.hasNext()){
@@ -784,5 +767,27 @@ public class DocumentModel implements DocumentInterface {
 			}
 		}
 		return allElements;
+	}
+	@Override
+	public Set<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, double radius) {
+		DBCollection coll = db.getCollection(UserDataColl);
+		Geolocation geo =new Geolocation();
+		geo.createGridCache(10, 10);
+		//String type = appId+"docs";
+		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, IMAGE , radius, appId);
+		Iterator<String> allIt = all.iterator();
+		Set<String> allElements = new HashSet<String>();
+		while(allIt.hasNext()){
+			String next = allIt.next();
+			BasicDBObject query = new BasicDBObject();
+			query.put("path", Pattern.compile(next));
+			DBCursor cursor = coll.find(query);
+			while(cursor.hasNext()){
+				DBObject element = cursor.next();
+				allElements.add("path: " + element.get("path") + " data: " + element.get("data"));
+			}
+		}
+		//return allElements;
+		return all;
 	}
 }

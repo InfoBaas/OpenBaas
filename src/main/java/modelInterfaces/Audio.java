@@ -56,4 +56,6 @@ public interface Audio {
 	public void setCreationDate(String creationDate);
 	public void setFileName(String fileName);
 	public void setLocation(String location);
+	public void setType(String type);
+	public String getType();
 }

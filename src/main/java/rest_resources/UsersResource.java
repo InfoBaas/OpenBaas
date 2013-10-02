@@ -5,13 +5,10 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.Map.Entry;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -27,7 +24,6 @@ import javax.ws.rs.core.Response.Status;
 
 import modelInterfaces.User;
 
-import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import resourceModelLayer.AppsMiddleLayer;
@@ -38,7 +34,7 @@ public class UsersResource {
 
 	private AppsMiddleLayer appsMid;
 	private String appId;
-	private static final int IDLENGTH = 3;
+	//private static final int IDLENGTH = 3;
 
 	@Context
 	UriInfo uriInfo;
@@ -292,7 +288,7 @@ public class UsersResource {
 			String alive = null;
 			byte[] salt = null;
 			byte[] hash = null;
-			User temp = null;
+			//User temp = null;
 			email = (String) inputJsonObj.opt("email");
 			password = (String) inputJsonObj.opt("password");
 			alive = (String) inputJsonObj.opt("alive");
@@ -309,17 +305,17 @@ public class UsersResource {
 					e.printStackTrace();
 				}
 			}
-			boolean sucess = true;
+			//boolean sucess;
 			if (this.appsMid.identifierInUseByUserInApp(this.appId, userId)) {
 				if (email != null && password != null && alive != null) {
 					appsMid.updateUser(appId, userId, email, hash, salt, alive);
-					sucess = true;
+					//sucess = true;
 				} else if (email != null && password != null) {
 					appsMid.updateUser(appId, userId, email, hash, salt);
-					sucess = true;
+					//sucess = true;
 				} else if (email != null) {
 					appsMid.updateUser(appId, userId, email);
-					sucess = true;
+					//sucess = true;
 				}
 				response = Response.status(Status.OK).entity(this.appsMid.getUserInApp(appId, userId)).build();
 			} else {
@@ -341,10 +337,10 @@ public class UsersResource {
 	 * 
 	 * @param length
 	 * @return
-	 */
+	 *//*
 	private String getRandomString(int length) {
 		return (String) UUID.randomUUID().toString().subSequence(0, length);
-	}
+	}*/
 
 	/**
 	 * Launches the sessions resource.

@@ -36,20 +36,19 @@ public class FileSystemModel {
 		return false;
 	}
 
-	public boolean download(String appId, String mediafolder, String requestType,
-			String id) {
+	public byte[] download(String appId, String mediafolder, String requestType,
+			String id,String ext) {
 		if(FILESYSTEM.equalsIgnoreCase("aws"))
 			try {
-				return this.aws.download(appId, mediafolder, requestType, id);
+				return this.aws.download(appId, mediafolder, requestType, id,ext);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		else{
 			System.out.println("FileSystem not yet implemented.");
-			return true;
 		}
-		return false;
+		return null;
 	}
 
 	public boolean upload(String appId, String destinationDirectory, String id,

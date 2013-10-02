@@ -14,6 +14,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
@@ -25,8 +26,6 @@ import javax.ws.rs.core.UriInfo;
 
 import modelInterfaces.Image;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
@@ -51,8 +50,6 @@ public class ImageResource {
 	 * sessionExists
 	 */
 	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
@@ -87,10 +84,38 @@ public class ImageResource {
 		}
 		return code;
 	}
+	
+	/**
+	 * Retrieve all the image Ids for this application.
+	 * @return
+	 */
+	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response findAllImagesIds(@Context UriInfo ui, @Context HttpHeaders hh,
+			@QueryParam("lat") String latitude,	@QueryParam("long") String longitude,@QueryParam("radius") String radius) {
+		Response response = null;
+		int code = this.treatParameters(ui, hh);
+		if (code == 1) {
+			System.out.println("******************************************");
+			System.out.println("********Finding all Images - GEO**********");
+			Set<String> imagesIds = null;
+			if (latitude != null && longitude != null && radius != null) {
+				imagesIds = appsMid.getAllImagesIdsInRadius(appId, Double.parseDouble(latitude),Double.parseDouble(longitude), Double.parseDouble(radius));
+			}else
+				imagesIds = appsMid.getAllImageIdsInApp(appId);
+			response = Response.status(Status.OK).entity(imagesIds).build();
+		} else if(code == -2){
+			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		 }else if(code == -1)
+			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+		return response;
+	}
+	
 	/**
 	 * Get all image Identifiers in the application.
 	 * @return
 	 */
+	/*
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response findAllImageIds(@Context UriInfo ui, @Context HttpHeaders hh) {
@@ -109,6 +134,7 @@ public class ImageResource {
 			 .build();
 		return response;		
 	}
+	*/
 	/**
 	 * Uploads an image to the server and creates in the DB all the required information. Necessary fields: "fileDirectory"
 	 * @param inputJsonObj
@@ -120,13 +146,18 @@ public class ImageResource {
 	public Response uploadImage(@Context UriInfo ui, @Context HttpHeaders hh,
 			@FormDataParam("file") InputStream uploadedInputStream,
 			@FormDataParam("file") FormDataContentDisposition fileDetail,
-			@FormDataParam("location") String location,
 			@PathParam("appId") String appId){
 		Response response = null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		int code = this.treatParameters(ui, hh);
 		String fileNameWithType = null;
 		String extension = new String();
 		String fileName = new String();
+		List<String> location = null;
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase("location"))
+				location = entry.getValue();	
+		}
 		boolean uploadOk = false;
 		if (code == 1) {
 			System.out.println("***********************************");
@@ -152,7 +183,7 @@ public class ImageResource {
 					fileDetail, appId, extension, fileDirectory);
 			if(location!= null)
 				uploadOk = this.appsMid.uploadImageFileToServerWithGeoLocation(this.appId, 
-					location, extension, fileName, imageId);
+					location.get(0), extension, fileName, imageId);
 			else
 				uploadOk = this.appsMid.uploadImageFileToServerWithoutGeoLocation(this.appId, 
 						extension, fileName, imageId);
@@ -177,8 +208,7 @@ public class ImageResource {
 	@Path("{imageId}")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response getImageMetadata(@PathParam("imageId") String imageId,
-			@Context UriInfo ui, @Context HttpHeaders hh){
+	public Response getImageMetadata(@PathParam("imageId") String imageId,@Context UriInfo ui, @Context HttpHeaders hh){
 		Response response = null;
 		int code = this.treatParameters(ui, hh);
 		if (code == 1) {
@@ -198,13 +228,39 @@ public class ImageResource {
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
 		}else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
+			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
+			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
+	
+	@Path("{imageId}/{quality}/download")
+	@GET
+	@Produces({ MediaType.APPLICATION_OCTET_STREAM })
+	public Response downloadImage(@PathParam("imageId") String imageId,	@Context UriInfo ui, @Context HttpHeaders hh) {
+		Response response = null;
+		byte[] sucess = null;
+		int code = this.treatParameters(ui, hh);
+		if (code == 1) {
+			System.out.println("************************************");
+			System.out.println("*********Downloading Image**********");
+			if (this.appsMid.imageExistsInApp(appId, imageId)) {
+				Image image = this.appsMid.getImageInApp(appId, imageId);
+				sucess = appsMid.downloadImageInApp(appId, imageId,image.getType());
+				if (sucess!=null){ 
+					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
+					.header("content-disposition","attachment; filename = "+image.getFileName()+"."+image.getType()).build();
+					//response = Response.status(Status.OK).entity(image).build();
+				}
+			} else
+				response = Response.status(Status.NOT_FOUND).entity(imageId).build();
+		}else if(code == -2){
+			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		 }else if(code == -1)
+			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+		return response;
+	}
+	
 	/**
 	 * Deletes the video (from filesystem and database).
 	 * 
@@ -214,8 +270,7 @@ public class ImageResource {
 	@Path("{imageId}")
 	@DELETE
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response deleteImage(@PathParam("imageId") String imageId,
-			@CookieParam(value = "sessionToken") String sessionToken) {
+	public Response deleteImage(@PathParam("imageId") String imageId, @CookieParam(value = "sessionToken") String sessionToken) {
 		Response response = null;
 		if (appsMid.sessionTokenExists(sessionToken)) {
 			System.out.println("************************************");
@@ -224,11 +279,9 @@ public class ImageResource {
 				this.appsMid.deleteImageInApp(appId, imageId);
 				response = Response.status(Status.OK).entity(appId).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(sessionToken)
-					.build();
+			response = Response.status(Status.FORBIDDEN).entity(sessionToken).build();
 		return response;
 	}
 }
