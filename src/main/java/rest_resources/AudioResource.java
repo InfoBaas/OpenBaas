@@ -1,7 +1,6 @@
 package rest_resources;
 
 import java.io.InputStream;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -13,25 +12,20 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response.Status;
-
 import modelInterfaces.Audio;
-
 import resourceModelLayer.AppsMiddleLayer;
 import rest_Models.MP3;
 
@@ -47,10 +41,7 @@ public class AudioResource {
 		this.appsMid = appsMid;
 		// AudioSimulator audioSim = new AudioSimulator(this.audio);
 	}
-	/*
-	private String getRandomString(int length) {
-		return (String) UUID.randomUUID().toString().subSequence(0, length);
-	}*/
+
 	/*
 	 * Returns a code corresponding to the sucess or failure Codes: 
 	 * -2 -> Forbidden
@@ -59,8 +50,6 @@ public class AudioResource {
 	 * sessionExists
 	 */
 	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		/*MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();*/
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
@@ -95,6 +84,8 @@ public class AudioResource {
 		}
 		return code;
 	}
+	
+	//TODO PAGINATION
 	/**
 	 * Retrieve all the audio Ids for this application.
 	 * @return

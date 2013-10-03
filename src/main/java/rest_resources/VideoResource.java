@@ -82,11 +82,9 @@ public class VideoResource {
 			}
 		}
 		return code;
-	}/*
-	private String getRandomString(int length) {
-		return (String) UUID.randomUUID().toString().subSequence(0, length);
 	}
-*/
+
+	//TODO: PAGINATION
 	/**
 	 * Gets all Video Identifiers.
 	 * 

@@ -1,7 +1,5 @@
 package modelInterfaces;
 
-import java.util.Date;
-
 /**
  * Image Interface, specifies each get and possible actions performed for images.
  * @author maniceto

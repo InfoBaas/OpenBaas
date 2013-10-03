@@ -253,10 +253,6 @@ public class AccountResource {
 		return response;
 
 	}
-	
-	
-	
-	
 
 	/**
 	 * Deletes a session (signout).
@@ -360,7 +356,6 @@ public class AccountResource {
 	private String getRandomString(int length) {
 		return (String) UUID.randomUUID().toString().subSequence(0, length);
 	}
-
 	
 	@PATCH
 	@Path("/sessions/{sessionToken}")

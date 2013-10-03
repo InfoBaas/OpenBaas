@@ -1,6 +1,5 @@
 package rest_resources;
 
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -38,44 +37,7 @@ public class UserRecoveryResource {
 	 * Returns a code corresponding to the sucess or failure Codes: -2 ->
 	 * Forbidden -1 -> Bad request 1 -> sessionExists
 	 * CHECK FILTERS
-	 *//*
-	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		/*MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();
-		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
-		Map<String, Cookie> cookiesParams = hh.getCookies();
-		int code = -1;
-		List<String> location = null;
-		Cookie sessionToken = null;
-		List<String> userAgent = null;
-		// iterate cookies
-		for (Entry<String, Cookie> entry : cookiesParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
-				sessionToken = entry.getValue();
-		}
-		// iterate headers
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
-				sessionToken = new Cookie("sessionToken", entry.getValue().get(0));
-			if (entry.getKey().equalsIgnoreCase("location"))
-				location = entry.getValue();
-			else if (entry.getKey().equalsIgnoreCase("user-agent"))
-				userAgent = entry.getValue();
-		}
-		if (sessionToken != null) {
-			if (appsMid.sessionTokenExists(sessionToken.getValue())) {
-				code = 1;
-				if (location != null) {
-					appsMid.refreshSession(sessionToken.getValue(),
-							location.get(0), userAgent.get(0));
-				} else
-					appsMid.refreshSession(sessionToken.getValue());
-			} else {
-				code = -2;
-			}
-		}
-		return code;
-	}*/
+	 */
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)

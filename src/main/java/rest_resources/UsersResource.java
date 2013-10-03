@@ -34,7 +34,6 @@ public class UsersResource {
 
 	private AppsMiddleLayer appsMid;
 	private String appId;
-	//private static final int IDLENGTH = 3;
 
 	@Context
 	UriInfo uriInfo;
@@ -87,6 +86,7 @@ public class UsersResource {
 		return code;
 	}
 
+	//TODO: PAGINATION
 	/**
 	 * Gets all the users in the application.
 	 * 
@@ -147,97 +147,6 @@ public class UsersResource {
 			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
-
-	/**
-	 * Creates a user in the application, necessary fields: "password";
-	 * "userName" or "email" (at least one of these is necessary").
-	 * 
-	 * @param inputJsonObj
-	 * @return
-	 */
-	/*
-	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response createUser(JSONObject inputJsonObj, @Context UriInfo ui,@Context HttpHeaders hh) {
-		Response response = null;
-		int code = this.treatParameters(ui, hh);
-		if (code == 1) {
-			long start = System.currentTimeMillis();
-			System.out.println("************************************");
-			System.out.println("***********Creating User************");
-			String email = null;
-			String password = null;
-			String userName = null;
-			String userFile = null;
-			// User temp = null;
-			String userId = null;
-			byte[] salt = null;
-			byte[] hash = null;
-			Boolean readOk = false;
-			Boolean sucess = false;
-			try {
-				userName = (String) inputJsonObj.opt("userName");
-				userFile = (String) inputJsonObj.opt("userFile");
-				email = (String) inputJsonObj.get("email");
-				password = (String) inputJsonObj.get("password");
-				readOk = true;
-				PasswordEncryptionService service = new PasswordEncryptionService();
-				try {
-					salt = service.generateSalt();
-					hash = service.getEncryptedPassword(password, salt);
-				} catch (NoSuchAlgorithmException e) {
-					System.out.println("Hashing Algorithm failed, please review the PasswordEncryptionService.");
-					e.printStackTrace();
-				} catch (InvalidKeySpecException e) {
-					System.out.println("Invalid Key.");
-					e.printStackTrace();
-				}
-			} catch (JSONException e) {
-				System.out.println("Error parsing the JSON file.");
-				e.printStackTrace();
-			}
-			if (userName == null) {
-				userName = email;
-			}
-			if (readOk && appsMid.appExists(appId)) {
-				userId = getRandomString(IDLENGTH);
-				while (appsMid.identifierInUseByUserInApp(appId, userId))
-					userId = getRandomString(IDLENGTH);
-
-				if (!appsMid.userExistsInApp(appId, userId, email)) {
-				//if(true){
-					System.out.println("*****************Creating user***************");
-					System.out.println("userId: " + userId + " email: " + email);
-					System.out.println("********************************************");
-					if (!appsMid.confirmUsersEmailOption(this.appId)) {//
-						sucess = appsMid.createUser(this.appId, userId,	userName, email, salt, hash, userFile);
-						response = Response.status(Status.CREATED).entity(userId).build();
-					} else if (appsMid.confirmUsersEmailOption(this.appId)) {
-						boolean emailConfirmed = false;
-						if(uriInfo==null) 
-							uriInfo=ui;
-						sucess = appsMid.createUserWithEmailConfirmation(this.appId, userId, 
-								userName, email, salt,hash, userFile, emailConfirmed, uriInfo);
-						response = Response.status(Status.CREATED).entity(userId).build();
-					}
-				} else {
-					String foundUserId = appsMid.getUserIdUsingUserName(appId,userName);
-					// 302 = found
-					response = Response.status(302).entity(foundUserId)
-							//.header("content-location",uriInfo.getAbsolutePath() + "/"+ foundUserId)
-							.build();
-				}
-			} else {
-				response = Response.status(Status.BAD_REQUEST).entity(userName).build();
-			}
-			System.out.println("TIME TO FULLFILL REQUEST: "	+ (System.currentTimeMillis() - start));
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
-		return response;
-	}*/
 
 	/**
 	 * Deletes the user.
@@ -331,16 +240,6 @@ public class UsersResource {
 			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
-
-	/**
-	 * Identifier generator.
-	 * 
-	 * @param length
-	 * @return
-	 *//*
-	private String getRandomString(int length) {
-		return (String) UUID.randomUUID().toString().subSequence(0, length);
-	}*/
 
 	/**
 	 * Launches the sessions resource.

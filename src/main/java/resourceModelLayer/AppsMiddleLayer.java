@@ -12,19 +12,10 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriInfo;
 
@@ -81,12 +72,6 @@ public class AppsMiddleLayer {
 		service = new PasswordEncryptionService();
 		sessions = new RedisSessions();
 		emailOp = new EmailOperationsClass();
-	}
-
-	private void simulate() {
-		// apps = new HashMap<String, Application>();
-		// apps.put("1", new DefaultApplication("1"));
-		// UserSimulator userSim = new UserSimulator(apps, "1");
 	}
 
 	/**

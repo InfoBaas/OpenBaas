@@ -1,8 +1,4 @@
 package ACLs;
-//pp
-import java.util.List;
-
-import javax.ws.rs.core.PathSegment;
 
 public interface AclInterface {
 

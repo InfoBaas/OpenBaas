@@ -26,7 +26,6 @@ import javax.ws.rs.core.UriInfo;
 
 import modelInterfaces.Image;
 
-
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -85,6 +84,7 @@ public class ImageResource {
 		return code;
 	}
 	
+	//TODO: PAGINATION
 	/**
 	 * Retrieve all the image Ids for this application.
 	 * @return

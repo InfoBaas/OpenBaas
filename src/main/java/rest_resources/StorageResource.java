@@ -58,8 +58,6 @@ public class StorageResource {
 	 * Forbidden -1 -> Bad request 1 -> sessionExists
 	 */
 	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		/*MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();*/
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
@@ -95,6 +93,7 @@ public class StorageResource {
 		return code;
 	}
 
+	//TODO: PAGINATION
 	/**
 	 * Gets all the storage Identifiers in the application.
 	 * 
@@ -266,13 +265,5 @@ public class StorageResource {
 					.build();
 		return response;
 	}
-	/**
-	 * Identifier generator
-	 * 
-	 * @param length
-	 * @return
-	 *//*
-	private String getRandomString(int length) {
-		return (String) UUID.randomUUID().toString().subSequence(0, length);
-	}*/
+
 }

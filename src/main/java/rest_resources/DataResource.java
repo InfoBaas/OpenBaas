@@ -24,10 +24,8 @@ import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-
 import resourceModelLayer.AppsMiddleLayer;
 import rest_resources.AppsResource.PATCH;
 
@@ -50,8 +48,6 @@ public class DataResource {
 	 * 1 -> sessionExists
 	 */
 	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		/*MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();*/
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
@@ -119,6 +115,7 @@ public class DataResource {
 		return response;
 	}
 
+	//TODO: PAGINATION
 	/*DEV NOTES:
 	 * Geolocation between points was done in a rude manner, we iterate all the points and calculate
 	 * the distance between the two using haversine.
