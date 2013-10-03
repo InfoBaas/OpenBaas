@@ -87,9 +87,8 @@ public class Model {
 		return dataModel.deleteApp(appId);
 	}
 
-	public boolean createUser(String appId, String userId, String userName,
-			String email, byte[] salt, byte[] hash, String userFile)
-			throws UnsupportedEncodingException {
+	public boolean createUser(String appId, String userId, String userName,	String email, byte[] salt,
+			byte[] hash, String userFile) throws UnsupportedEncodingException {
 		boolean databaseOK = false;
 		if(userFile != null) 
 			databaseOK = dataModel.createUserWithFlag(appId, userId, userName,
@@ -107,10 +106,8 @@ public class Model {
 		return dataModel.getAllAppIds();
 	}
 
-	public Map<String, String> getUserFields(String appId, String userId)
-			throws UnsupportedEncodingException {
+	public Map<String, String> getUserFields(String appId, String userId)throws UnsupportedEncodingException {
 		return dataModel.getUser(appId, userId);
-
 	}
 
 	public Set<String> getAllUserIdsForApp(String appId) {
@@ -121,8 +118,7 @@ public class Model {
 		dataModel.updateAllAppFields(appId, alive, newAppName, confirmUsersEmail);
 	}
 
-	public void updateUser(String appId, String userId, String email,
-			byte[] hash, byte[] salt, String alive) {
+	public void updateUser(String appId, String userId, String email, byte[] hash, byte[] salt, String alive) {
 		dataModel.updateUser(appId, userId, email, hash, salt, alive);
 	}
 
@@ -170,8 +166,8 @@ public class Model {
 		return fileModel.createAppAWS(appId);
 	}
 
-	public boolean uploadFileToServer(String appId, String id,
-			String folderType, String requestType, String fileDirectory, String location, String fileType, String fileName) {
+	public boolean uploadFileToServer(String appId, String id, String folderType, String requestType, 
+			String fileDirectory, String location, String fileType, String fileName) {
 		boolean upload = false;
 		boolean databaseOk = false;
 		String fileFormat = "";
@@ -188,8 +184,7 @@ public class Model {
 			String destinationDirectory = "apps/" + appId + "/" + folderType
 					+ "/" + requestType + "/" + id + fileFormat;
 			File fileToUpload = new File(fileDirectory);
-			upload = fileModel.upload(appId, destinationDirectory, id,
-					fileToUpload);
+			upload = fileModel.upload(appId, destinationDirectory, id, fileToUpload);
 			databaseOk = false;
 			
 			if (upload) {
@@ -212,18 +207,15 @@ public class Model {
 		} else if (folderType.equalsIgnoreCase(STORAGEFOLDER)) {
 			fileDirectory += "/"+ id+"."+fileType;
 			fileFormat = FilenameUtils.getExtension(fileDirectory);
-			String destinationDirectory = "apps/" + appId + "/" + folderType
-					+ "/" + id + "." + fileFormat;
+			String destinationDirectory = "apps/" + appId + "/" + folderType + "/" + id + "." + fileFormat;
 			System.out.println(destinationDirectory);
 			File fileToUpload = new File(fileDirectory);
-			upload = fileModel.upload(appId, destinationDirectory, id,
-					fileToUpload);
+			upload = fileModel.upload(appId, destinationDirectory, id,	fileToUpload);
 			if (upload) {
 				fileExtension = FilenameUtils.getExtension(fileDirectory);
 				fileSize = "" + fileToUpload.length();
-				databaseOk = dataModel.createStorageInApp(appId, id,
-						destinationDirectory, fileExtension, fileSize,
-						new Date().toString(), fileName, location);
+				databaseOk = dataModel.createStorageInApp(appId, id, destinationDirectory, fileExtension, 
+						fileSize, new Date().toString(), fileName, location);
 			}
 		}
 		// Finalizing

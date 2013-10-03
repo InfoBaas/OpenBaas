@@ -718,14 +718,40 @@ public class AppsMiddleLayer {
 		return model.getAllImagesIdsInRadius(appId, latitude, longitude, radius);
 	}
 
-	public String createLocalFile(InputStream uploadedInputStream,
-			FormDataContentDisposition fileDetail, String appId, String extension, String dir) {
+	public String createLocalFile(InputStream uploadedInputStream,FormDataContentDisposition fileDetail, 
+			String appId, String extension, String dir) {
 		String id = this.getRandomString(IDLENGTH);
 		File dirFolders = new File(dir);
 		dirFolders.mkdirs();
 		File f = new File(dir + id + "." + extension);
 		while (f.exists()) {
 			id = this.getRandomString(IDLENGTH);
+			f = new File(dir + id);
+		}
+		OutputStream out;
+		try {
+			out = new FileOutputStream(f);
+			IOUtils.copy(uploadedInputStream, out);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return id;
+	}
+	public String createLocalFile2(InputStream uploadedInputStream,FormDataContentDisposition fileDetail, 
+			String appId, String extension, String dir, String imageId) {
+		String id = this.getRandomString(IDLENGTH);
+		id = imageId;
+		File dirFolders = new File(dir);
+		dirFolders.mkdirs();
+		File f = new File(dir + id + "." + extension);
+		while (f.exists()) {
+			id = this.getRandomString(IDLENGTH);
+			id = imageId;
 			f = new File(dir + id);
 		}
 		OutputStream out;

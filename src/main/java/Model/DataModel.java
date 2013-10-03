@@ -403,12 +403,10 @@ public class DataModel {
 		boolean operationOk = false;
 		if (redisModel.getCacheSize() <= MAXCACHESIZE) {
 			cacheOk = redisModel.createAudioInApp(appId, audioId, directory,
-					fileExtension, fileSize, bitRate, creationDate, fileName,
-					location);
+					fileExtension, fileSize, bitRate, creationDate, fileName, location);
 			if (auxDatabase.equalsIgnoreCase(MONGODB))
 				auxOk = mongoModel.createAudioInApp(appId, audioId, directory,
-						fileExtension, fileSize, bitRate, creationDate,
-						fileName, location);
+						fileExtension, fileSize, bitRate, creationDate, fileName, location);
 			if (auxOk && cacheOk)
 				operationOk = true;
 		} else {
@@ -505,21 +503,18 @@ public class DataModel {
 		boolean cacheOk = false;
 		boolean operationOk = false;
 		if (redisModel.getCacheSize() <= MAXCACHESIZE) {
-			cacheOk = redisModel.createImageInApp(appId, id,
-					destinationDirectory, type, size, pixelsSize, creationDate,
-					fileName, location);
+			cacheOk = redisModel.createImageInApp(appId, id, destinationDirectory, type,
+					size, pixelsSize, creationDate,	fileName, location);
 			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				auxOk = mongoModel.createImageInApp(appId, id,
-						destinationDirectory, type, size, pixelsSize,
-						creationDate, fileName, location);
+				auxOk = mongoModel.createImageInApp(appId, id, destinationDirectory, 
+						type, size, pixelsSize,	creationDate, fileName, location);
 			if (auxOk && cacheOk)
 				operationOk = true;
 		} else {
 			System.out.println("Warning: Cache is full.");
 			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				auxOk = mongoModel.createImageInApp(appId, id,
-						destinationDirectory, type, size, pixelsSize,
-						creationDate, fileName, location);
+				auxOk = mongoModel.createImageInApp(appId, id, destinationDirectory, 
+						type, size, pixelsSize,	creationDate, fileName, location);
 		}
 		if (auxOk)
 			operationOk = true;

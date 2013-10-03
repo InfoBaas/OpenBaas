@@ -179,8 +179,7 @@ public class ImageResource {
 						extension += charArray[j];
 				}
 			}
-			String imageId = appsMid.createLocalFile(uploadedInputStream,
-					fileDetail, appId, extension, fileDirectory);
+			String imageId = appsMid.createLocalFile(uploadedInputStream,fileDetail, appId, extension, fileDirectory);
 			if(location!= null)
 				uploadOk = this.appsMid.uploadImageFileToServerWithGeoLocation(this.appId, 
 					location.get(0), extension, fileName, imageId);
