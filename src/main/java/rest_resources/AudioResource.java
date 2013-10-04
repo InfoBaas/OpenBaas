@@ -14,6 +14,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response.Status;
 import modelInterfaces.Audio;
 import resourceModelLayer.AppsMiddleLayer;
+import rest_Models.IdsResultSet;
 import rest_Models.MP3;
 
 //@Path("/apps/{appId}/media/audio")
@@ -92,22 +95,23 @@ public class AudioResource {
 	 */
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response findAllAudioIds(@Context UriInfo ui, @Context HttpHeaders hh,
-			@QueryParam("lat") String latitude,
-			@QueryParam("long") String longitude, 
-			@QueryParam("radius") String radius) {
+	public Response findAllAudioIds(@Context UriInfo ui, @Context HttpHeaders hh,@QueryParam("lat") 
+		String latitude,@QueryParam("long") String longitude,@QueryParam("radius") String radius,
+		@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+		@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
 		Response response = null;
 		int code = this.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("***********************************");
 			System.out.println("********Finding all Audio**********");
-			Set<String> audioIds = null;
+			ArrayList<String> audioIds = null;
 			if (latitude != null && longitude != null && radius != null) {
 				audioIds = appsMid.getAllAudioIdsInRadius(appId, Double.parseDouble(latitude),
 						Double.parseDouble(longitude), Double.parseDouble(radius));
 			}else
-				audioIds = appsMid.getAllAudioIds(appId);
-			response = Response.status(Status.OK).entity(audioIds).build();
+				audioIds = appsMid.getAllAudioIds(appId,pageNumber,pageSize,orderBy,orderType);
+			IdsResultSet res = new IdsResultSet(audioIds,pageNumber);
+			response = Response.status(Status.OK).entity(res).build();
 		} else if(code == -2){
 			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
 		 .build();

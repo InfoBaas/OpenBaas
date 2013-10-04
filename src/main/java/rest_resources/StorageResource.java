@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,6 +20,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
@@ -32,6 +34,8 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.commons.io.FilenameUtils;
 
 import resourceModelLayer.AppsMiddleLayer;
+import rest_Models.IdsResultSet;
+import utils.Const;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
@@ -102,20 +106,25 @@ public class StorageResource {
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response findAllStorageIds(@Context UriInfo ui,
-			@Context HttpHeaders hh) {
+			@Context HttpHeaders hh,
+			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
+		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
+		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
+		if (orderBy == null) 	orderBy = Const.ORDER_BY;
+		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
 		int code = this.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("***********************************");
 			System.out.println("********Finding all Storage********");
-			Set<String> storageIds = appsMid.getAllStorageIdsInApp(appId);
-			response = Response.status(Status.OK).entity(storageIds).build();
+			ArrayList<String> storageIds = appsMid.getAllStorageIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
+			IdsResultSet res = new IdsResultSet(storageIds,pageNumber);
+			response = Response.status(Status.OK).entity(res).build();
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 	/*Attention! A file octet-stream has no explicit file type, this has to be changed to inform the client of 

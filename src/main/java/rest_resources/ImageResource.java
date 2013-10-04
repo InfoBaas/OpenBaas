@@ -1,9 +1,9 @@
 package rest_resources;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.ws.rs.Consumes;
@@ -30,6 +30,8 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
 import resourceModelLayer.AppsMiddleLayer;
+import rest_Models.IdsResultSet;
+import utils.Const;
 
 //apps/{appId}/media/images
 public class ImageResource {
@@ -92,18 +94,28 @@ public class ImageResource {
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response findAllImagesIds(@Context UriInfo ui, @Context HttpHeaders hh,
-			@QueryParam("lat") String latitude,	@QueryParam("long") String longitude,@QueryParam("radius") String radius) {
+			@QueryParam("lat") String latitude,	@QueryParam("long") String longitude,@QueryParam("radius") String radius, 
+			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
+		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
+		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
+		if (orderBy == null) 	orderBy = Const.ORDER_BY;
+		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
 		int code = this.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("******************************************");
 			System.out.println("********Finding all Images - GEO**********");
-			Set<String> imagesIds = null;
+			ArrayList<String> imagesIds = new ArrayList<String>();
 			if (latitude != null && longitude != null && radius != null) {
-				imagesIds = appsMid.getAllImagesIdsInRadius(appId, Double.parseDouble(latitude),Double.parseDouble(longitude), Double.parseDouble(radius));
+				imagesIds = appsMid.getAllImagesIdsInRadius(appId, Double.parseDouble(latitude),Double.parseDouble(longitude), 
+						Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
 			}else
-				imagesIds = appsMid.getAllImageIdsInApp(appId);
-			response = Response.status(Status.OK).entity(imagesIds).build();
+				imagesIds = appsMid.getAllImageIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
+			
+			IdsResultSet res = new IdsResultSet(imagesIds,pageNumber);
+			
+			response = Response.status(Status.OK).entity(res).build();
 		} else if(code == -2){
 			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		 }else if(code == -1)

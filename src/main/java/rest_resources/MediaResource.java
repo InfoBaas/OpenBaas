@@ -1,13 +1,14 @@
 package rest_resources;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.Map.Entry;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
@@ -17,23 +18,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 
-
-import modelInterfaces.Application;
-import modelInterfaces.Media;
-import modelInterfaces.User;
-
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
-
 import resourceModelLayer.AppsMiddleLayer;
-import rest_Models.DefaultApplication;
-import rest_Models.DefaultUser;
-import rest_Models.JPG;
-import rest_Models.MP3;
-import rest_Models.MPEG;
-import rest_Models.Storage;
+import rest_Models.IdsResultSet;
+import utils.Const;
 
 //@Path("/apps/{appId}/media")
 public class MediaResource {
@@ -47,7 +34,7 @@ public class MediaResource {
 		this.appId = appId;
 		this.appsMid = appsMid;
 		
-		String id = getRandomString(idGenerator);
+		//String id = getRandomString(idGenerator);
 	}
 	/*
 	 * Returns a code corresponding to the sucess or failure Codes: 
@@ -57,8 +44,8 @@ public class MediaResource {
 	 * sessionExists
 	 */
 	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();
+		/*MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+		MultivaluedMap<String, String> pathParams = ui.getPathParameters();*/
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
@@ -93,27 +80,33 @@ public class MediaResource {
 		}
 		return code;
 	}
-	private String getRandomString(int length) {
+	/*private String getRandomString(int length) {
 		return (String) UUID.randomUUID().toString().subSequence(0, length);
-	}
+	}*/
 
 	//TODO: PAGINATION
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response findAll(@Context UriInfo ui, @Context HttpHeaders hh) {
+	public Response findAll(@Context UriInfo ui, @Context HttpHeaders hh,
+			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
+		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
+		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
+		if (orderBy == null) 	orderBy = Const.ORDER_BY;
+		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
 		int code = this.treatParameters(ui, hh);
 		if (code == 1) {
 			if(appsMid.appExists(appId)){
-				Set<String> mediaIds = appsMid.getAllMediaIds(appId);
-				response = Response.status(Status.OK).entity(mediaIds).build();
+				ArrayList<String> mediaIds = appsMid.getAllMediaIds(appId,pageNumber,pageSize,orderBy,orderType);
+				IdsResultSet res = new IdsResultSet(mediaIds,pageNumber);
+				response = Response.status(Status.OK).entity(res).build();
 			}else{
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
 			
 		}else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
+			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		 }else if(code == -1)
 			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
 			 .build();

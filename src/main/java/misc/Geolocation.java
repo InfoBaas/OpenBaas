@@ -1,5 +1,6 @@
 package misc;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -223,7 +224,7 @@ public class Geolocation implements GeoLocationOperations{
 	 * insert (objectsdsd, pointerparaltypeictionary);
 	 */
 
-	public Set<String> searchObjectsInGrid(double latitude, double longitude, String type, double radius,String appId) {
+	public ArrayList<String> searchObjectsInGrid(double latitude, double longitude, String type, double radius,String appId) {
 		/*
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",	RedisGeoPORT);
 		Jedis jedis = pool.getResource();
@@ -281,10 +282,10 @@ public class Geolocation implements GeoLocationOperations{
 		
 	}
 
-	private Set<String> searchObjectsInGridJM(double latitude,double longitude, String type, double meters, String appId) {
-		Set<String> elementsInGrid = new HashSet<String>();
+	private ArrayList<String> searchObjectsInGridJM(double latitude,double longitude, String type, double meters, String appId) {
+		ArrayList<String> elementsInGrid = new ArrayList<String>();
 		HashMap<String,Double> elementsResult = new HashMap<String, Double>();
-		Set<String> elementsOrder = new HashSet<String>();
+		ArrayList<String> elementsOrder = new ArrayList<String>();
 		if(type.equals("jpg")) type = "image";
 		if(type.equals("wmv")) type = "video";
 		if(type.equals("mp3")) type = "audio";
@@ -377,7 +378,7 @@ public class Geolocation implements GeoLocationOperations{
 		    elementsOrder = orderHash(elementsResult);
 		}catch(Exception e){
 			System.err.println(e.toString());
-		}		
+		}
 		return elementsOrder;
 	}
 	
@@ -396,9 +397,9 @@ public class Geolocation implements GeoLocationOperations{
 	double deg2rad2(double deg) {
 		  return deg * (Math.PI/180);
 		}
-	private Set<String> orderHash(HashMap<String,Double> hash2Order) {
+	private ArrayList<String> orderHash(HashMap<String,Double> hash2Order) {
 	{  
-			Set<String> res = new HashSet<String>();
+			ArrayList<String> res = new ArrayList<String>();
 	        ValueComparator bvc =  new ValueComparator(hash2Order);
 	        TreeMap<String,Double> sorted_map = new TreeMap<String,Double>(bvc);
 	        sorted_map.putAll(hash2Order);

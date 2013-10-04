@@ -1,6 +1,7 @@
 package dataModels;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,19 +61,7 @@ public class RedisDataModel implements CacheInterface {
 		throw new CloneNotSupportedException();
 	}
 
-	/**
-	 * Keep it safe, this method should not be accessible.
-	 */
-	public Set<String> getAllUserIdsForApp(String appId) {
-		Jedis jedis = pool.getResource();
-		Set<String> usersId;
-		try{
-			usersId = jedis.smembers("app:" + appId + ":users");
-		}finally {
-			pool.returnResource(jedis);
-		}
-		return usersId;
-	}
+	
 
 	public Set<String> getAllAppIds() {
 		Jedis jedis = pool.getResource();
@@ -377,7 +366,7 @@ public class RedisDataModel implements CacheInterface {
 		}
 	}
 
-	public Set<String> getAllAudioIds(String appId) {
+	public ArrayList<String> getAllAudioIds(String appId) {
 		Jedis jedis = pool.getResource();
 		Set<String> audioIds = null;
 		try {
@@ -385,7 +374,7 @@ public class RedisDataModel implements CacheInterface {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		return audioIds;
+		return new ArrayList<String>(audioIds);
 	}
 
 	public Boolean audioExistsInApp(String appId, String audioId) {
@@ -457,7 +446,7 @@ public class RedisDataModel implements CacheInterface {
 		return sucess;
 	}
 
-	public Set<String> getAllImageIdsInApp(String appId) {
+	public ArrayList<String> getAllImageIdsInApp(String appId) {
 		Jedis jedis = pool.getResource();
 		Set<String> imageIds = null;
 		try {
@@ -465,7 +454,7 @@ public class RedisDataModel implements CacheInterface {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		return imageIds;
+		return new ArrayList<String>(imageIds);
 	}
 
 	public Set<String> getAllVideoIdsInApp(String appId) {
@@ -974,7 +963,7 @@ public class RedisDataModel implements CacheInterface {
 		}
 		return null;
 	}
-
+/*
 	@Override
 	public Set<String> getAllStorageIdsInApp(String appId) {
 		Jedis jedis = pool.getResource();
@@ -986,7 +975,7 @@ public class RedisDataModel implements CacheInterface {
 		}
 		return op;
 	}
-
+*/
 	@Override
 	/**
 	 * Return codes: 1 = Created application -1 = Application exists;
@@ -1058,9 +1047,9 @@ public class RedisDataModel implements CacheInterface {
 	 * Not implemented.
 	 */
 	@Override
-	public Set<String> getAllMediaIds(String appId) {
+	public ArrayList<String> getAllMediaIds(String appId,Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		Jedis jedis = pool.getResource();
-		Set<String> mediaIds = new HashSet<String>();
+		ArrayList<String> mediaIds = new ArrayList<String>();
 		try {
 			mediaIds.addAll(jedis.smembers("app:" + appId + ":audio"));
 			mediaIds.addAll(jedis.smembers("app:" + appId + ":images"));
@@ -1268,4 +1257,53 @@ public class RedisDataModel implements CacheInterface {
 	public void destroyPool(){
 		pool.destroy();
 	}
+
+	@Override
+	public ArrayList<String> getAllAppIds(Integer pageNumber, Integer pageSize,
+			String orderBy, String orderType) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ArrayList<String> getAllUserIdsForApp(String appId,
+			Integer pageNumber, Integer pageSize, String orderBy,
+			String orderType) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ArrayList<String> getAllImageIdsInApp(String appId,
+			Integer pageNumber, Integer pageSize, String orderBy,
+			String orderType) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ArrayList<String> getAllStorageIdsInApp(String appId, Integer pageNumber,
+			Integer pageSize, String orderBy, String orderType) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ArrayList<String> getAllAudioIds(String appId, Integer pageNumber,
+			Integer pageSize, String orderBy, String orderType) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ArrayList<String> getAllVideoIdsInApp(String appId,
+			Integer pageNumber, Integer pageSize, String orderBy,
+			String orderType) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
+
+	
 }

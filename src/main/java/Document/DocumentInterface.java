@@ -1,5 +1,6 @@
 package Document;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
@@ -136,12 +137,12 @@ public interface DocumentInterface {
 	 */
 	public boolean createNonPublishableUserDocument(String appId,
 			String userId, JSONObject data, String url, String location);
-	public Set<String> getAllDocsInRadius(String appId, double latitude, double longitude, double radius);
-	public Set<String> getDataInDocumentInRadius(String appId, String url,
+	public ArrayList<String> getAllDocsInRadius(String appId, double latitude, double longitude, double radius);
+	public ArrayList<String> getDataInDocumentInRadius(String appId, String url,
 			double latitude, double longitude, double radius);
-	public Set<String> getAllUserDocsInRadius(String appId, String userId,
-			double latitude, double longitude, double radius);
+	public ArrayList<String> getAllUserDocsInRadius(String appId, String userId,
+			double latitude, double longitude, double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType);
 	public String getAllUserDocs(String appId, String userId);
-	public Set<String> getAllAudioIdsInRadius(String appId, double latitude,double longitude, double radius);
-	public Set<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, double radius);
+	public ArrayList<String> getAllAudioIdsInRadius(String appId, double latitude,double longitude, double radius);
+	public ArrayList<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType);
 }

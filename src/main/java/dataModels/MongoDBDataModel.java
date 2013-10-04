@@ -10,6 +10,7 @@ import com.mongodb.DBCursor;
 
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -69,23 +70,27 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public Set<String> getAllUserIdsForApp(String appId) {
+	public ArrayList<String> getAllUserIdsForApp(String appId,Integer pageNumber, Integer pageSize,String orderBy, String orderType) {
+		Integer order = -1;
+		if(orderType.equals("desc")) order = 1;
 		DBCollection coll = db.getCollection(UsersColl);
-		DBCursor cursor = coll.find();
-		Set<String> userIds = new HashSet<String>();
+		DBCursor cursor = coll.find().skip(pageNumber * pageSize).limit(pageSize).sort(new BasicDBObject(orderBy,order));
+		ArrayList<String> userIds = new ArrayList<String>();
 		while (cursor.hasNext()) {
 			DBObject user = cursor.next();
 			if (user.get("appId").equals(appId))
 				userIds.add((String) user.get("_id"));
 		}
-		return userIds;
+		return new ArrayList<String>(userIds);
 	}
 
 	@Override
-	public Set<String> getAllAppIds() {
+	public ArrayList<String> getAllAppIds(Integer pageNumber,Integer pageSize,String orderBy,String orderType) {
 		DBCollection coll = db.getCollection(AppsColl);
-		Set<String> appIds = new HashSet<String>();
-		DBCursor cursor = coll.find();
+		Integer order = -1;
+		if(orderType.equals("desc")) order = 1;
+		DBCursor cursor = coll.find().skip(pageNumber * pageSize).limit(pageSize).sort(new BasicDBObject(orderBy,order));
+		ArrayList<String> appIds = new ArrayList<String>();
 		while (cursor.hasNext()) {
 			appIds.add((String) cursor.next().get("_id"));
 		}
@@ -285,10 +290,14 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public Set<String> getAllAudioIds(String appId) {
+	public ArrayList<String> getAllAudioIds(String appId,Integer pageNumber,Integer pageSize,String orderBy, String orderType) {
 		DBCollection coll = db.getCollection(AudioColl);
-		Set<String> audioIds = new HashSet<String>();
-		DBCursor cursor = coll.find();
+		ArrayList<String> audioIds = new ArrayList<String>();
+		
+		Integer order = -1;
+		if(orderType.equals("desc")) order = 1;
+		DBCursor cursor = coll.find().skip(pageNumber * pageSize).limit(pageSize).sort(new BasicDBObject(orderBy,order));
+		
 		while (cursor.hasNext()) {
 			audioIds.add((String) cursor.next().get("_id"));
 		}
@@ -355,10 +364,14 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public Set<String> getAllVideoIdsInApp(String appId) {
+	public ArrayList<String> getAllVideoIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		DBCollection coll = db.getCollection(VideoColl);
-		Set<String> videoIds = new HashSet<String>();
-		DBCursor cursor = coll.find();
+		ArrayList<String> videoIds = new ArrayList<String>();
+		
+		Integer order = -1;
+		if(orderType.equals("desc")) order = 1;
+		DBCursor cursor = coll.find().skip(pageNumber * pageSize).limit(pageSize).sort(new BasicDBObject(orderBy,order));
+	
 		while (cursor.hasNext()) {
 			videoIds.add((String) cursor.next().get("_id"));
 		}
@@ -554,14 +567,18 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public Set<String> getAllImageIdsInApp(String appId) {
+	public ArrayList<String> getAllImageIdsInApp(String appId,Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		DBCollection coll = db.getCollection(ImageColl);
-		Set<String> imageIds = new HashSet<String>();
-		DBCursor cursor = coll.find();
+		ArrayList<String> imageIds = new ArrayList<String>();
+		//DBCursor cursor = coll.find();
+		Integer order = -1;
+		if(orderType.equals("desc")) order = 1;
+		DBCursor cursor = coll.find().skip(pageNumber * pageSize).limit(pageSize).sort(new BasicDBObject(orderBy,order));
+		
 		while (cursor.hasNext()) {
 			imageIds.add((String) cursor.next().get("_id"));
 		}
-		return imageIds;
+		return new ArrayList<String>(imageIds);
 	}
 
 	@Override
@@ -699,10 +716,12 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public Set<String> getAllStorageIdsInApp(String appId) {
+	public ArrayList<String> getAllStorageIdsInApp(String appId,Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		Integer order = -1;
+		if(orderType.equals("desc")) order = 1;
 		DBCollection coll = db.getCollection(StorageColl);
-		DBCursor cursor = coll.find();
-		Set<String> storageIds = new HashSet<String>();
+		DBCursor cursor = coll.find().skip(pageNumber * pageSize).limit(pageSize).sort(new BasicDBObject(orderBy,order));
+		ArrayList<String> storageIds = new ArrayList<String>();
 		while (cursor.hasNext()) {
 			DBObject storage = cursor.next();
 			if (storage.get("appId").equals(appId))
@@ -778,10 +797,11 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 	
 	@Override
-	public Set<String> getAllMediaIds(String appId) {
+	public ArrayList<String> getAllMediaIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		//TODO JM Como tratar paginação aqui???
 		// images
 		DBCollection coll = db.getCollection(ImageColl);
-		Set<String> mediaIds = new HashSet<String>();
+		ArrayList<String> mediaIds = new ArrayList<String>();
 		DBCursor cursor = coll.find();
 		while (cursor.hasNext()) {
 			mediaIds.add((String) cursor.next().get("_id"));
@@ -792,7 +812,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 		while (cursor.hasNext()) {
 			mediaIds.add((String) cursor.next().get("_id"));
 		}
-
+		// video
 		coll = db.getCollection(VideoColl);
 		cursor = coll.find();
 		while (cursor.hasNext()) {

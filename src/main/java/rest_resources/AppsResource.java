@@ -4,12 +4,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +20,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
@@ -37,6 +37,8 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import resourceModelLayer.AppsMiddleLayer;
+import rest_Models.IdsResultSet;
+import utils.Const;
 
 
 public class AppsResource {
@@ -61,7 +63,13 @@ public class AppsResource {
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response findAllApplicationIds(@Context HttpServletRequest req,
-			@Context UriInfo ui, @Context HttpHeaders hh) {
+			@Context UriInfo ui, @Context HttpHeaders hh,
+			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
+		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
+		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
+		if (orderBy == null) 	orderBy = Const.ORDER_BY;
+		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
 		// Parameters treatment
 		int code = this.treatParameters(ui, hh);
@@ -69,9 +77,9 @@ public class AppsResource {
 		System.out.println("***********************************");
 		System.out.println("********Finding all apps***********");
 		JSONObject temp = new JSONObject();
-		Set<String> ids = new HashSet<String>();
+		ArrayList<String> ids = new ArrayList<String>();
 		try {
-			ids = appsMid.getAllAppIds();
+			ids = appsMid.getAllAppIds(pageNumber, pageSize, orderBy, orderType);
 			Iterator<String> it = ids.iterator();
 			while (it.hasNext()) {
 				temp.accumulate("appId", it.next());
@@ -80,13 +88,12 @@ public class AppsResource {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		response = Response.status(Status.OK).entity(ids).build();
+		IdsResultSet res = new IdsResultSet(ids,pageNumber);
+		response = Response.status(Status.OK).entity(res).build();
 		 } else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
+			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
+			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 

@@ -1,9 +1,9 @@
 package rest_resources;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -29,6 +29,8 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import resourceModelLayer.AppsMiddleLayer;
+import rest_Models.IdsResultSet;
+import utils.Const;
 
 public class UserDataResource {
 
@@ -143,15 +145,22 @@ public class UserDataResource {
 			@Context UriInfo ui,
 			@Context HttpHeaders hh, @QueryParam("latitude") String latitude,
 			@QueryParam("longitude") String longitude,
-			@QueryParam("radius") String radius) {
+			@QueryParam("radius") String radius,
+			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
+		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
+		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
+		if (orderBy == null) 	orderBy = Const.ORDER_BY;
+		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
 		int code = this.treatParameters(ui, hh);
 		if (code == 1) {
 			//query parameters are present, only return the elements 
 			if (latitude != null && longitude != null && radius != null) {
-				Set<String> all = appsMid.getAllUserDocsInRadius(appId, userId, Double.parseDouble(latitude), 
-						Double.parseDouble(longitude), Double.parseDouble(radius));
-				response = Response.status(Status.OK).entity(all).build();
+				ArrayList<String> all = appsMid.getAllUserDocsInRadius(appId, userId, Double.parseDouble(latitude), 
+						Double.parseDouble(longitude), Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
+				IdsResultSet res = new IdsResultSet(all,pageNumber);
+				response = Response.status(Status.OK).entity(res).build();
 			//no query parameters return all docs
 			} else {
 				String all = appsMid.getAllUserDocs(appId, userId);

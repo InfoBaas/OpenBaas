@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
@@ -102,16 +103,16 @@ public class Model {
 		return false;
 	}
 
-	public Set<String> getAllAppIds() {
-		return dataModel.getAllAppIds();
+	public ArrayList<String> getAllAppIds(Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return dataModel.getAllAppIds(pageNumber, pageSize, orderBy, orderType);
 	}
 
 	public Map<String, String> getUserFields(String appId, String userId)throws UnsupportedEncodingException {
 		return dataModel.getUser(appId, userId);
 	}
 
-	public Set<String> getAllUserIdsForApp(String appId) {
-		return dataModel.getAllUserIdsForApp(appId);
+	public ArrayList<String> getAllUserIdsForApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return dataModel.getAllUserIdsForApp(appId,pageNumber,pageSize,orderBy,orderType);
 	}
 
 	public void updateAllAppFields(String appId, String alive, String newAppName, boolean confirmUsersEmail) {
@@ -122,8 +123,8 @@ public class Model {
 		dataModel.updateUser(appId, userId, email, hash, salt, alive);
 	}
 
-	public Set<String> getAllAudioIds(String appId) {
-		return dataModel.getAllAudioIds(appId);
+	public ArrayList<String> getAllAudioIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return dataModel.getAllAudioIds(appId,pageNumber,pageSize,orderBy,orderType);
 	}
 
 	public boolean audioExistsInApp(String appId, String audioId) {
@@ -224,12 +225,12 @@ public class Model {
 		return false;
 	}
 
-	public Set<String> getAllImageIdsInApp(String appId) {
-		return dataModel.getAllImageIdsInApp(appId);
+	public ArrayList<String> getAllImageIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return dataModel.getAllImageIdsInApp(appId, pageNumber, pageSize, orderBy, orderType);
 	}
 
-	public Set<String> getAllVideoIdsInApp(String appId) {
-		return dataModel.getAllVideoIdsInApp(appId);
+	public ArrayList<String> getAllVideoIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return dataModel.getAllVideoIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
 	}
 
 	public boolean imageExistsInApp(String appId, String imageId) {
@@ -240,8 +241,8 @@ public class Model {
 		return dataModel.getImageInApp(appId, imageId);
 	}
 
-	public Set<String> getAllStorageIdsInApp(String appId) {
-		return dataModel.getAllStorageIdsInApp(appId);
+	public ArrayList<String> getAllStorageIdsInApp(String appId,Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return dataModel.getAllStorageIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
 	}
 
 	// public void createSession(String sessionId, String appId, String userId)
@@ -358,8 +359,8 @@ public class Model {
 		return dataModel.getAllDocInApp(appId);
 	}
 
-	public Set<String> getAllMediaIds(String appId) {
-		return dataModel.getAllMediaIds(appId);
+	public ArrayList<String> getAllMediaIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return dataModel.getAllMediaIds(appId, pageNumber, pageSize, orderBy, orderType);
 	}
 
 	public boolean createNonPublishableDocument(String appId, JSONObject data,
@@ -418,32 +419,32 @@ public class Model {
 		return dataModel.getStorageInApp(appId, storageId);
 	}
 
-	public Set<String> getAllDocsInRadius(String appId, double latitude,
+	public ArrayList<String> getAllDocsInRadius(String appId, double latitude,
 			double longitude, double radius) {
 		return dataModel.getAllDocsInRadius(appId, latitude, longitude, radius);
 	}
 
-	public Set<String> getElementInDocumentInRadius(String appId, String url,
+	public ArrayList<String> getElementInDocumentInRadius(String appId, String url,
 			double latitude, double longitude, double radius) {
 		return dataModel.getElementInDocumentInRadius(appId, url, latitude, longitude, radius);
 	}
 
-	public Set<String> getAllUserDocsInRadius(String appId, String userId, double latitude,
-			double longitude, double radius) {
-		return dataModel.getAllUserDocsInRadius(appId, userId, latitude, longitude, radius);
+	public ArrayList<String> getAllUserDocsInRadius(String appId, String userId, double latitude,
+			double longitude, double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return dataModel.getAllUserDocsInRadius(appId, userId, latitude, longitude, radius, pageNumber,pageSize,orderBy,orderType);
 	}
 
 	public String getAllUserDocs(String appId, String userId) {
 		return dataModel.getAllUserDocs(appId, userId);
 	}
 
-	public Set<String> getAllAudioIdsInRadius(String appId, double latitude,
+	public ArrayList<String> getAllAudioIdsInRadius(String appId, double latitude,
 			double longitude, double radius) {
 		return dataModel.getAllAudioIdsInRadius(appId, latitude, longitude, radius);
 	}
-	public Set<String> getAllImagesIdsInRadius(String appId, double latitude,
-			double longitude, double radius) {
-		return dataModel.getAllImagesIdsInRadius(appId, latitude, longitude, radius);
+	public ArrayList<String> getAllImagesIdsInRadius(String appId, double latitude,
+			double longitude, double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return dataModel.getAllImagesIdsInRadius(appId, latitude, longitude, radius,pageNumber,pageSize,orderBy,orderType);
 	}
 
 	public byte[] downloadStorageInApp(String appId, String storageId,String ext) {

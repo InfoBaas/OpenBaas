@@ -3,6 +3,7 @@ package Model;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -185,9 +186,9 @@ public class DataModel {
 		}
 		return operationOk;
 	}
-	public Set<String> getAllAppIds() {
+	public ArrayList<String> getAllAppIds(Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		if (auxDatabase.equalsIgnoreCase(MONGODB))
-			return mongoModel.getAllAppIds();
+			return mongoModel.getAllAppIds(pageNumber, pageSize, orderBy, orderType);
 		else if (!auxDatabase.equalsIgnoreCase(MONGODB))
 			System.out.println("Database not implemented.");
 		return null;
@@ -263,9 +264,9 @@ public class DataModel {
 		return userFields;
 	}
 
-	public Set<String> getAllUserIdsForApp(String appId) {
+	public ArrayList<String> getAllUserIdsForApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		if (auxDatabase.equalsIgnoreCase(MONGODB))
-			return mongoModel.getAllUserIdsForApp(appId);
+			return mongoModel.getAllUserIdsForApp(appId,pageNumber,pageSize,orderBy,orderType);
 		else if (!auxDatabase.equalsIgnoreCase(MONGODB))
 			System.out.println("Database not implemented.");
 		return null;
@@ -302,9 +303,9 @@ public class DataModel {
 			System.out.println("Database not implemented.");
 	}
 
-	public Set<String> getAllAudioIds(String appId) {
+	public ArrayList<String> getAllAudioIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		if (auxDatabase.equalsIgnoreCase(MONGODB))
-			return mongoModel.getAllAudioIds(appId);
+			return mongoModel.getAllAudioIds(appId,pageNumber,pageSize,orderBy,orderType);
 		else if (!auxDatabase.equalsIgnoreCase(MONGODB))
 			System.out.println("Database not implemented.");
 		return null;
@@ -421,17 +422,17 @@ public class DataModel {
 		return operationOk;
 	}
 
-	public Set<String> getAllImageIdsInApp(String appId) {
+	public ArrayList<String> getAllImageIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			return mongoModel.getAllImageIdsInApp(appId);
+			return mongoModel.getAllImageIdsInApp(appId,pageNumber, pageSize, orderBy, orderType);
 		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
 			System.out.println("Database not implemented.");
 		return null;
 	}
 
-	public Set<String> getAllVideoIdsInApp(String appId) {
+	public ArrayList<String> getAllVideoIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			return mongoModel.getAllVideoIdsInApp(appId);
+			return mongoModel.getAllVideoIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
 		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
 			System.out.println("Database not implemented.");
 		return null;
@@ -565,9 +566,9 @@ public class DataModel {
 
 	}
 
-	public Set<String> getAllStorageIdsInApp(String appId) {
+	public ArrayList<String> getAllStorageIdsInApp(String appId,Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			return mongoModel.getAllStorageIdsInApp(appId);
+			return mongoModel.getAllStorageIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
 		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
 			System.out.println("Database not implemented.");
 		return null;
@@ -834,9 +835,9 @@ public class DataModel {
 		}
 	}
 
-	public Set<String> getAllMediaIds(String appId) {
+	public ArrayList<String> getAllMediaIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			return mongoModel.getAllMediaIds(appId);
+			return mongoModel.getAllMediaIds(appId, pageNumber, pageSize, orderBy, orderType);
 		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
 			System.out.println("Database not implemented.");
 		return null;
@@ -983,7 +984,7 @@ public class DataModel {
 		return storageFields;
 	}
 
-	public Set<String> getAllDocsInRadius(String appId, double latitude,
+	public ArrayList<String> getAllDocsInRadius(String appId, double latitude,
 			double longitude, double radius) {
 		try {
 			return docModel.getAllDocsInRadius(appId, latitude, longitude, radius);
@@ -992,7 +993,7 @@ public class DataModel {
 		}
 	}
 
-	public Set<String> getElementInDocumentInRadius(String appId, String url,
+	public ArrayList<String> getElementInDocumentInRadius(String appId, String url,
 			double latitude, double longitude, double radius) {
 		try {
 			return docModel.getDataInDocumentInRadius(appId, url, latitude, longitude,radius);
@@ -1001,10 +1002,10 @@ public class DataModel {
 		}
 	}
 
-	public Set<String> getAllUserDocsInRadius(String appId, String userId, double latitude,
-			double longitude, double radius) {
+	public ArrayList<String> getAllUserDocsInRadius(String appId, String userId, double latitude,
+			double longitude, double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		try {
-			return docModel.getAllUserDocsInRadius(appId, userId, latitude, longitude, radius);
+			return docModel.getAllUserDocsInRadius(appId, userId, latitude, longitude, radius, pageNumber,pageSize,orderBy,orderType);
 		} catch (Exception e) {
 			return null;
 		}
@@ -1018,16 +1019,17 @@ public class DataModel {
 		}
 	}
 
-	public Set<String> getAllAudioIdsInRadius(String appId, double latitude,double longitude, double radius) {
+	public ArrayList<String> getAllAudioIdsInRadius(String appId, double latitude,double longitude, double radius) {
 		try {
 			return docModel.getAllAudioIdsInRadius(appId, latitude, longitude, radius);
 		} catch (Exception e) {
 			return null;
 		}
 	}
-	public Set<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, double radius) {
-		try {
-			return docModel.getAllImagesIdsInRadius(appId, latitude, longitude, radius);
+	public ArrayList<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, double radius, 
+			Integer pageNumber, Integer pageSize, String orderBy, String orderType){
+		try{
+			return docModel.getAllImagesIdsInRadius(appId, latitude, longitude, radius,pageNumber,pageSize,orderBy,orderType);
 		} catch (Exception e) {
 			return null;
 		}

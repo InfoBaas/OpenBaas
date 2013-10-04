@@ -2,9 +2,9 @@ package rest_resources;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.ws.rs.DELETE;
@@ -12,6 +12,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
@@ -27,8 +28,10 @@ import modelInterfaces.User;
 import org.codehaus.jettison.json.JSONObject;
 
 import resourceModelLayer.AppsMiddleLayer;
+import rest_Models.IdsResultSet;
 import rest_Models.PasswordEncryptionService;
 import rest_resources.AppsResource.PATCH;
+import utils.Const;
 
 public class UsersResource {
 
@@ -94,7 +97,13 @@ public class UsersResource {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response findAll(@Context UriInfo ui, @Context HttpHeaders hh) {
+	public Response findAll(@Context UriInfo ui, @Context HttpHeaders hh,
+			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
+		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
+		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
+		if (orderBy == null) 	orderBy = Const.ORDER_BY;
+		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
 		int code = this.treatParameters(ui, hh);
 		if (code == 1) {
@@ -103,8 +112,9 @@ public class UsersResource {
 			if (!appsMid.appExists(appId))
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			else {
-				Set<String> temp = appsMid.getAllUserIdsForApp(appId);
-				response = Response.status(Status.OK).entity(temp).build();
+				ArrayList<String> temp = appsMid.getAllUserIdsForApp(appId,pageNumber,pageSize,orderBy,orderType);
+				IdsResultSet res = new IdsResultSet(temp,pageNumber);
+				response = Response.status(Status.OK).entity(res).build();
 			}
 		} else if (code == -2) {
 			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();

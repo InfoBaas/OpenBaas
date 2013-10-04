@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -119,10 +120,14 @@ public class AppsMiddleLayer {
 	 * Horrible complexity, paginate this.
 	 * 
 	 * @param appId
+	 * @param pageSize 
+	 * @param pageNumber 
+	 * @param orderType 
+	 * @param orderBy 
 	 * @return
 	 */
-	public Set<String> getAllUserIdsForApp(String appId) {
-		return model.getAllUserIdsForApp(appId);
+	public ArrayList <String> getAllUserIdsForApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return model.getAllUserIdsForApp(appId,pageNumber,pageSize,orderBy,orderType);
 	}
 
 	/**
@@ -177,8 +182,8 @@ public class AppsMiddleLayer {
 		return temp;
 	}
 
-	public Set<String> getAllAppIds() {
-		return this.model.getAllAppIds();
+	public ArrayList<String> getAllAppIds(Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return this.model.getAllAppIds(pageNumber, pageSize, orderBy, orderType);
 	}
 
 	public void updateAllAppFields(String appId, String alive, String newAppName, boolean confirmUsersEmail) {
@@ -190,8 +195,8 @@ public class AppsMiddleLayer {
 		this.model.updateUser(appId, userId, email, hash, salt, alive);
 	}
 
-	public Set<String> getAllAudioIds(String appId) {
-		return this.model.getAllAudioIds(appId);
+	public ArrayList<String> getAllAudioIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return this.model.getAllAudioIds(appId,pageNumber,pageSize,orderBy,orderType);
 	}
 
 	public boolean audioExistsInApp(String appId, String audioId) {
@@ -256,8 +261,8 @@ public class AppsMiddleLayer {
 		return (String) UUID.randomUUID().toString().subSequence(0, length);
 	}
 
-	public Set<String> getAllImageIdsInApp(String appId) {
-		return this.model.getAllImageIdsInApp(appId);
+	public ArrayList<String> getAllImageIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return this.model.getAllImageIdsInApp(appId, pageNumber, pageSize, orderBy, orderType);
 	}
 
 	public boolean uploadImageFileToServerWithGeoLocation(String appId, String location, String fileType,
@@ -276,8 +281,8 @@ public class AppsMiddleLayer {
 			opOk = true;
 		return opOk;
 	}
-	public Set<String> getAllVideoIdsInApp(String appId) {
-		return this.model.getAllVideoIdsInApp(appId);
+	public ArrayList<String> getAllVideoIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return this.model.getAllVideoIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
 	}
 
 	public boolean imageExistsInApp(String appId, String imageId) {
@@ -330,8 +335,8 @@ public class AppsMiddleLayer {
 			opOk = true;
 		return opOk;
 	}
-	public Set<String> getAllStorageIdsInApp(String appId) {
-		return this.model.getAllStorageIdsInApp(appId);
+	public ArrayList<String> getAllStorageIdsInApp(String appId,Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return this.model.getAllStorageIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
 	}
 
 	public String uploadStorageFileToServer(String appId, String fileIdentfier, String fileType, String fileName) {
@@ -606,8 +611,8 @@ public class AppsMiddleLayer {
 		return model.getAllDocInApp(appId);
 	}
 
-	public Set<String> getAllMediaIds(String appId) {
-		return model.getAllMediaIds(appId);
+	public ArrayList<String> getAllMediaIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return model.getAllMediaIds(appId, pageNumber, pageSize, orderBy, orderType);
 	}
 
 	public boolean createNonPublishableAppDocument(String appId, JSONObject data, 
@@ -673,34 +678,34 @@ public class AppsMiddleLayer {
 		return temp;
 	}
 
-	public Set<String> getAllDocsInRadius(String appId, double latitude,
+	public ArrayList<String> getAllDocsInRadius(String appId, double latitude,
 			double longitude, double radius) {
 		return model.getAllDocsInRadius(appId, latitude, longitude, radius);
 	}
 
-	public Set<String> getElementInAppInRadius(String appId, List<PathSegment> path, double latitude,
+	public ArrayList<String> getElementInAppInRadius(String appId, List<PathSegment> path, double latitude,
 			double longitude, double radius) {
 		String url = createAppDocPathFromListWithComas(appId, path);
 		return model.getElementInDocumentInRadius(appId, url, latitude, longitude, radius);
 	}
 
-	public Set<String> getAllUserDocsInRadius(String appId, String userId, double latitude,
-			double longitude, double radius) {
-		return model.getAllUserDocsInRadius(appId, userId, latitude, longitude, radius);
+	public ArrayList<String> getAllUserDocsInRadius(String appId, String userId, double latitude,
+			double longitude, double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return model.getAllUserDocsInRadius(appId, userId, latitude, longitude, radius, pageNumber,pageSize,orderBy,orderType);
 	}
 
 	public String getAllUserDocs(String appId, String userId) {
 		return model.getAllUserDocs(appId, userId);
 	}
 
-	public Set<String> getAllAudioIdsInRadius(String appId, double latitude,
+	public ArrayList<String> getAllAudioIdsInRadius(String appId, double latitude,
 			double longitude, double radius) {
 		return model.getAllAudioIdsInRadius(appId, latitude, longitude, radius);
 	}
 	
-	public Set<String> getAllImagesIdsInRadius(String appId, double latitude,
-			double longitude, double radius) {
-		return model.getAllImagesIdsInRadius(appId, latitude, longitude, radius);
+	public ArrayList<String> getAllImagesIdsInRadius(String appId, double latitude,
+			double longitude, double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return model.getAllImagesIdsInRadius(appId, latitude, longitude, radius,pageNumber,pageSize,orderBy,orderType);
 	}
 
 	public String createLocalFile(InputStream uploadedInputStream,FormDataContentDisposition fileDetail, 

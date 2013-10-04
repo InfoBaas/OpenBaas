@@ -1,6 +1,7 @@
 package rest_resources;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
@@ -31,6 +33,8 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
 import resourceModelLayer.AppsMiddleLayer;
+import rest_Models.IdsResultSet;
+import utils.Const;
 
 public class VideoResource {
 
@@ -93,13 +97,20 @@ public class VideoResource {
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response findAllVideoIds(
-			@CookieParam(value = "sessionToken") String sessionToken) {
+			@CookieParam(value = "sessionToken") String sessionToken,
+			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
+		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
+		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
+		if (orderBy == null) 	orderBy = Const.ORDER_BY;
+		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
 		if (appsMid.sessionTokenExists(sessionToken)) {
 			System.out.println("***********************************");
 			System.out.println("********Finding all Video**********");
-			Set<String> videoIds = appsMid.getAllVideoIdsInApp(appId);
-			response = Response.status(Status.OK).entity(videoIds).build();
+			ArrayList<String> videoIds = appsMid.getAllVideoIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
+			IdsResultSet res = new IdsResultSet(videoIds,pageNumber);
+			response = Response.status(Status.OK).entity(res).build();
 		} else
 			response = Response.status(Status.FORBIDDEN).entity(sessionToken)
 					.build();
@@ -126,14 +137,11 @@ public class VideoResource {
 					Video video = this.appsMid.getVideoInApp(appId, videoId);
 					response = Response.status(Status.OK).entity(video).build();
 				} else
-					response = Response.status(Status.NOT_FOUND)
-							.entity(videoId).build();
+					response = Response.status(Status.NOT_FOUND).entity(videoId).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(sessionToken)
-					.build();
+			response = Response.status(Status.FORBIDDEN).entity(sessionToken).build();
 		return response;
 	}
 
@@ -186,7 +194,7 @@ public class VideoResource {
 				sucess = appsMid.downloadVideoInApp(appId, videoId,video.getType());
 				if (sucess!=null)
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
-					.header("content-disposition","attachment; filename = "+video.getFileName()+"."+video.getType()).build();
+							.header("content-disposition","attachment; filename = "+video.getFileName()+"."+video.getType()).build();
 			} else
 				response = Response.status(Status.NOT_FOUND).entity(videoId).build();
 		} else

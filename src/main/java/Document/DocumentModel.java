@@ -1,6 +1,7 @@
 package Document;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -621,15 +622,15 @@ public class DocumentModel implements DocumentInterface {
 //		return allDoc;
 //	}
 	@Override
-	public Set<String> getAllDocsInRadius(String appId, double latitude,
+	public ArrayList<String> getAllDocsInRadius(String appId, double latitude,
 			double longitude, double radius) {
 		DBCollection coll = db.getCollection(DataColl);
 		Geolocation geo =new Geolocation();
 		geo.createGridCache(180, 360);
 		String type = appId+"docs";
-		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius,appId);
+		ArrayList<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius,appId);
 		Iterator<String> allIt = all.iterator();
-		Set<String> allElements = new HashSet<String>();
+		ArrayList<String> allElements = new ArrayList<String>();
 		while(allIt.hasNext()){
 			String next = allIt.next();
 			BasicDBObject query = new BasicDBObject();
@@ -667,15 +668,15 @@ public class DocumentModel implements DocumentInterface {
 //		}
 //		return all;
 //	}
-	public Set<String> getDataInDocumentInRadius(String appId, String url, double latitude, double longitude,
+	public ArrayList<String> getDataInDocumentInRadius(String appId, String url, double latitude, double longitude,
 			double radius){
 		DBCollection coll = db.getCollection(DataColl);
 		Geolocation geo =new Geolocation();
 		geo.createGridCache(180, 360);
 		String type = appId+"docs";
-		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius, appId);
+		ArrayList<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius, appId);
 		Iterator<String> allIt = all.iterator();
-		Set<String> allElements = new HashSet<String>();
+		ArrayList<String> allElements = new ArrayList<String>();
 		while(allIt.hasNext()){
 			String next = allIt.next();
 			BasicDBObject query = new BasicDBObject();
@@ -688,15 +689,16 @@ public class DocumentModel implements DocumentInterface {
 		}
 		return allElements;
 	}
-	public Set<String> getAllUserDocsInRadius(String appId, String userId, double latitude, double longitude,
-			double radius){
+	public ArrayList<String> getAllUserDocsInRadius(String appId, String userId, double latitude, double longitude,
+			double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType){
+		//TODO JM Tem GeoLocalizacao. Ver como se faz a paginacao
 		DBCollection coll = db.getCollection(UserDataColl);
 		Geolocation geo =new Geolocation();
 		geo.createGridCache(180, 360);
 		String type = appId+"docs";
-		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius, appId);
+		ArrayList<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius, appId);
 		Iterator<String> allIt = all.iterator();
-		Set<String> allElements = new HashSet<String>();
+		ArrayList<String> allElements = new ArrayList<String>();
 		while(allIt.hasNext()){
 			String next = allIt.next();
 			BasicDBObject query = new BasicDBObject();
@@ -748,14 +750,14 @@ public class DocumentModel implements DocumentInterface {
 	}
 
 	@Override
-	public Set<String> getAllAudioIdsInRadius(String appId, double latitude, double longitude, double radius) {
+	public ArrayList<String> getAllAudioIdsInRadius(String appId, double latitude, double longitude, double radius) {
 		DBCollection coll = db.getCollection(UserDataColl);
 		Geolocation geo =new Geolocation();
 		geo.createGridCache(180, 360);
 		String type = appId+"docs";
-		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, AUDIO , radius, appId);
+		ArrayList<String> all = geo.searchObjectsInGrid(latitude, longitude, AUDIO , radius, appId);
 		Iterator<String> allIt = all.iterator();
-		Set<String> allElements = new HashSet<String>();
+		ArrayList<String> allElements = new ArrayList<String>();
 		while(allIt.hasNext()){
 			String next = allIt.next();
 			BasicDBObject query = new BasicDBObject();
@@ -769,12 +771,13 @@ public class DocumentModel implements DocumentInterface {
 		return allElements;
 	}
 	@Override
-	public Set<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, double radius) {
+	public ArrayList<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, 
+			double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		DBCollection coll = db.getCollection(UserDataColl);
 		Geolocation geo =new Geolocation();
 		geo.createGridCache(10, 10);
 		//String type = appId+"docs";
-		Set<String> all = geo.searchObjectsInGrid(latitude, longitude, IMAGE , radius, appId);
+		ArrayList<String> all = geo.searchObjectsInGrid(latitude, longitude, IMAGE , radius, appId);
 		Iterator<String> allIt = all.iterator();
 		Set<String> allElements = new HashSet<String>();
 		while(allIt.hasNext()){
@@ -790,4 +793,5 @@ public class DocumentModel implements DocumentInterface {
 		//return allElements;
 		return all;
 	}
+
 }

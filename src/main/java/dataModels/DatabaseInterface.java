@@ -1,6 +1,7 @@
 package dataModels;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,10 +56,14 @@ public interface DatabaseInterface {
 
 	/**
 	 * Returns all the application Identifiers.
+	 * @param orderType 
+	 * @param orderBy 
+	 * @param pageSize 
+	 * @param pageNumber 
 	 * 
 	 * @return
 	 */
-	public Set<String> getAllAppIds();
+	public ArrayList<String> getAllAppIds(Integer pageNumber, Integer pageSize, String orderBy, String orderType);
 
 	/**
 	 * Converts an application identifier to its rightful appName.
@@ -89,9 +94,13 @@ public interface DatabaseInterface {
 	 * Retrieves all the User Identifiers for the application.
 	 * 
 	 * @param appId
+	 * @param pageSize 
+	 * @param pageNumber 
+	 * @param orderType 
+	 * @param orderBy 
 	 * @return
 	 */
-	public Set<String> getAllUserIdsForApp(String appId);
+	public ArrayList<String> getAllUserIdsForApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType);
 
 	/**
 	 * Verifies if an userId is currently in use for an application.
@@ -228,9 +237,13 @@ public interface DatabaseInterface {
 	 * Retrieves all the audio Identifiers contained in the application.
 	 * 
 	 * @param appId
+	 * @param orderType 
+	 * @param orderBy 
+	 * @param pageSize 
+	 * @param pageNumber 
 	 * @return
 	 */
-	public Set<String> getAllAudioIds(String appId);
+	public ArrayList<String> getAllAudioIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType);
 
 	/**
 	 * Verifies if the audio file with audioId exists in the application.
@@ -283,9 +296,13 @@ public interface DatabaseInterface {
 	 * application.
 	 * 
 	 * @param appId
+	 * @param orderType 
+	 * @param orderBy 
+	 * @param pageSize 
+	 * @param pageNumber 
 	 * @return
 	 */
-	public Set<String> getAllImageIdsInApp(String appId);
+	public ArrayList<String> getAllImageIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType);
 
 	/**
 	 * Verifies if an image with imageId exists in the application.
@@ -328,9 +345,13 @@ public interface DatabaseInterface {
 	 * Retrieves all the ids of Video files contained in the application.
 	 * 
 	 * @param appId
+	 * @param orderType 
+	 * @param orderBy 
+	 * @param pageSize 
+	 * @param pageNumber 
 	 * @return
 	 */
-	public Set<String> getAllVideoIdsInApp(String appId);
+	public ArrayList<String> getAllVideoIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType);
 
 	/**
 	 * Creates a video entry with the specified params.
@@ -399,9 +420,13 @@ public interface DatabaseInterface {
 	 * Retrieves all the ids of the storage files contained in the application.
 	 * 
 	 * @param appId
+	 * @param orderType 
+	 * @param orderBy 
+	 * @param pageSize 
+	 * @param pageNumber 
 	 * @return
 	 */
-	public Set<String> getAllStorageIdsInApp(String appId);
+	public ArrayList<String> getAllStorageIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType);
 
 	// public Set<String> getAllStorageIds(String appId);
 
@@ -422,9 +447,13 @@ public interface DatabaseInterface {
 	 * Retrieves all the ids of media files (images, video, audio).
 	 * 
 	 * @param appId
+	 * @param orderType 
+	 * @param orderBy 
+	 * @param pageSize 
+	 * @param pageNumber 
 	 * @return
 	 */
-	public Set<String> getAllMediaIds(String appId);
+	public ArrayList<String> getAllMediaIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType);
 
 	public void updateUserLocationAndDate(String userId, String appId,
 			String sessionToken, String location, String date);
