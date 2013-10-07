@@ -62,8 +62,11 @@ public class ImageResource {
 		if (orderBy == null) 	orderBy = Const.ORDER_BY;
 		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
+		List<String> listRes = new ArrayList<String>();
 		int code = utils.treatParameters(ui, hh);
 		Integer totalNumberPages=null;
+		Integer iniIndex = (pageNumber-1)*pageSize;
+		Integer finIndex = (((pageNumber-1)*pageSize)+pageSize);
 		if (code == 1) {
 			System.out.println("******************************************");
 			System.out.println("********Finding all Images - GEO**********");
@@ -71,12 +74,20 @@ public class ImageResource {
 			if (latitude != null && longitude != null && radius != null) {
 				imagesIds = appsMid.getAllImagesIdsInRadius(appId, Double.parseDouble(latitude),Double.parseDouble(longitude), 
 						Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
+				if(iniIndex>imagesIds.size())
+					return Response.status(Status.BAD_REQUEST).entity("Invalid pagination indexes.").build();
+				if(finIndex>imagesIds.size())
+					listRes = imagesIds.subList(iniIndex, imagesIds.size());
+				else
+					listRes = imagesIds.subList(iniIndex, finIndex);
+				totalNumberPages = (int) utils.roundUp(imagesIds.size(),pageSize);
 			}else{
 				imagesIds = appsMid.getAllImageIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
+				listRes = imagesIds;
 				totalNumberPages = appsMid.countAllImages(appId)/pageSize;
 			}
 			
-			IdsResultSet res = new IdsResultSet(imagesIds,pageNumber,totalNumberPages);
+			IdsResultSet res = new IdsResultSet(listRes,pageNumber,totalNumberPages);
 			
 			response = Response.status(Status.OK).entity(res).build();
 		} else if(code == -2){
@@ -159,16 +170,14 @@ public class ImageResource {
 				uploadOk = this.appsMid.uploadImageFileToServerWithGeoLocation(this.appId, 
 					location.get(0), extension, fileName, imageId);
 			else
-				uploadOk = this.appsMid.uploadImageFileToServerWithoutGeoLocation(this.appId, 
-						extension, fileName, imageId);
+				uploadOk = this.appsMid.uploadImageFileToServerWithoutGeoLocation(this.appId,extension, fileName, imageId);
 			if(imageId != null && uploadOk != false)
 				response = Response.status(Status.OK).entity(imageId).build();
 			else{
 				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			}
 		}else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
+			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		 }else if(code == -1)
 			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
 			 .build();

@@ -25,9 +25,9 @@ public class Geolocation implements GeoLocationOperations{
 	final static char[] digits = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
 			'9', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'm', 'n', 'p',
 			'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
-	private final static String server = "localhost";
-	public static final int MongoPort = 27017;
-	private final static String MongoServer = "localhost";
+	//private final static String server = "localhost";
+	//public static final int MongoPort = 27017;
+	//private final static String MongoServer = "localhost";
 	
 	public Geolocation() {
 	}
@@ -294,7 +294,7 @@ public class Geolocation implements GeoLocationOperations{
 		try{
 			JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.SERVER, Const.REDIS_GEO_PORT);
 			Jedis jedis = pool.getResource();
-			JedisPool poolServer = new JedisPool(new JedisPoolConfig(), server);
+			JedisPool poolServer = new JedisPool(new JedisPoolConfig(), Const.SERVER);
 			Jedis jedisServer = poolServer.getResource();
 			//latitude += 90;
 			//longitude += 180;
@@ -340,14 +340,14 @@ public class Geolocation implements GeoLocationOperations{
 		    		location = jedisServer.hget("images:"+objId,"location");
 		    		if(location==null)
 		    		{
-		    			MongoDBDataModel mongoModel = new MongoDBDataModel(MongoServer, MongoPort);
+		    			MongoDBDataModel mongoModel = new MongoDBDataModel(Const.SERVER, Const.MONGO_PORT);
 		    			location = mongoModel.getImageLocationUsingImageId(appId, objId);
 		    		}
 	        	if(type.equals("audio")){
 	        		location = jedisServer.hget("audios:"+objId,"location");
 	        		if(location==null)
 		    		{
-		    			MongoDBDataModel mongoModel = new MongoDBDataModel(MongoServer, MongoPort);
+		    			MongoDBDataModel mongoModel = new MongoDBDataModel(Const.SERVER, Const.MONGO_PORT);
 		    			location = mongoModel.getAudioLocationUsingAudioId(appId, objId);
 		    		}
 	        	}
@@ -355,7 +355,7 @@ public class Geolocation implements GeoLocationOperations{
 	        		location = jedisServer.hget("videos:"+objId,"location");
 	        		if(location==null)
 		    		{
-		    			MongoDBDataModel mongoModel = new MongoDBDataModel(MongoServer, MongoPort);
+		    			MongoDBDataModel mongoModel = new MongoDBDataModel(Const.SERVER, Const.MONGO_PORT);
 		    			location = mongoModel.getVideoLocationUsingVideoId(appId, objId);
 		    		}
 	        	}

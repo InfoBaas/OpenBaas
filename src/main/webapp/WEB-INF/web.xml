@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
   <listener>
-    <listener-class>management.Startup</listener-class>
+    <listener-class>infosistema.openbaas.management.Startup</listener-class>
 </listener>
 	<resource-ref>
   <description>
@@ -25,7 +25,7 @@
     <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer </servlet-class>
     <init-param>
       <param-name>com.sun.jersey.config.property.packages</param-name>
-      <param-value>rest_resources</param-value>
+      <param-value>infosistema.openbaas.rest_resources</param-value>
     </init-param>
     <init-param>
 		<param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>

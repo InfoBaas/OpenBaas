@@ -10,7 +10,9 @@ import java.util.UUID;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Response.Status;
 
 
 public class Utils {
@@ -63,6 +65,10 @@ public class Utils {
 	
 	public String getRandomString(int length) {
 		return (String) UUID.randomUUID().toString().subSequence(0, length);
+	}
+	
+	public long roundUp(long num, long divisor) {
+	    return (num + divisor - 1) / divisor;
 	}
 	
 }
