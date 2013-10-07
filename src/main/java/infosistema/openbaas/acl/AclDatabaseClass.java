@@ -1,8 +1,9 @@
 package infosistema.openbaas.acl;
 
+import infosistema.openbaas.utils.Const;
+
 import java.net.UnknownHostException;
 
-import utils.Const;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
