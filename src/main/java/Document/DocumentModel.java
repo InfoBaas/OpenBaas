@@ -70,7 +70,6 @@ public class DocumentModel implements DocumentInterface {
 	@Override
 	public boolean elementExistsInDocument(String url) {
 		DBCollection coll = db.getCollection(DataColl);
-		String[] array = url.split(",");
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("path", url);
 		DBCursor cursor = coll.find(searchQuery);
@@ -97,7 +96,7 @@ public class DocumentModel implements DocumentInterface {
 		searchQuery.append("path", url);
 		searchQuery.append("data", new BasicDBObject("$exists", true));
 		DBCursor cursor = coll.find(searchQuery);
-		DBObject obj = null;
+		//DBObject obj = null;
 		boolean sucess = false;
 		if (cursor.hasNext())
 			sucess = true;
@@ -141,7 +140,7 @@ public class DocumentModel implements DocumentInterface {
 			if (location != null)
 				obj.put("location", location);
 			coll.insert(obj);
-			Iterator<String> keys = data.keys();
+			Iterator<?> keys = data.keys();
 			while (keys.hasNext()) {
 				String key = (String) keys.next();
 				BasicDBObject temp = new BasicDBObject();
@@ -284,10 +283,10 @@ public class DocumentModel implements DocumentInterface {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("path", url);
 		String[] array = url.split("/");
-		Iterator<String> keys = inputJson.keys();
+		Iterator<?> keys = inputJson.keys();
 		String tempURL = array[0]; // appId
 		while (keys.hasNext()) {
-			String element = keys.next();
+			String element = (String) keys.next();
 			if (element.equalsIgnoreCase("data")) {// update the content of the
 													// url
 				BasicDBObject newDocument = new BasicDBObject().append("$set",	new BasicDBObject().append("data",inputJson.toString()));
@@ -303,13 +302,13 @@ public class DocumentModel implements DocumentInterface {
 	public void patchDataInElementRec(DBCollection coll, String tempURL,
 			JSONObject inputJson, String location, String element) {
 		JSONObject childs = null;
-		String value = null;
+		//String value = null;
 		String child = null;
 		try {
 			childs = (JSONObject) inputJson.get(element);
-			Iterator<String> childsIt = childs.keys();
+			Iterator<?> childsIt = childs.keys();
 			if (childsIt.hasNext()) {
-				child = childsIt.next();
+				child = (String) childsIt.next();
 				tempURL += "," + child;
 				patchDataInElementRec(coll, tempURL, (JSONObject) childs,location, child);
 			}
@@ -317,14 +316,14 @@ public class DocumentModel implements DocumentInterface {
 									// but
 			// < 7 doesn't!
 			try {
-				value = (String) inputJson.get(element);
+				inputJson.get(element);
 			} catch (JSONException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		} catch (ClassCastException e1) {
 			try {
-				value = (String) inputJson.get(element);
+				inputJson.get(element);
 			} catch (JSONException e2) {
 				// TODO Auto-generated catch block
 				e2.printStackTrace();
@@ -361,7 +360,7 @@ public class DocumentModel implements DocumentInterface {
 			String location) throws JSONException {
 		DBCollection coll = db.getCollection(DataColl);
 		String tempURL = appId;
-		Iterator it = data.keys();// iterate the new content and
+		Iterator<?> it = data.keys();// iterate the new content and
 		// make it accessible
 		while (it.hasNext()) {
 			String key = (String) it.next();
@@ -433,11 +432,11 @@ public class DocumentModel implements DocumentInterface {
 		DBCollection coll = db.getCollection(UserDataColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("path", url);
-		String[] array = url.split("/");
-		Iterator<String> keys = data.keys();
+		//String[] array = url.split("/");
+		Iterator<?> keys = data.keys();
 		String tempURL = appId + ",users," + userId; // appId
 		while (keys.hasNext()) {
-			String element = keys.next();
+			String element = (String) keys.next();
 			if (element.equalsIgnoreCase("data")) {// update the content of the
 													// url
 				BasicDBObject newDocument = new BasicDBObject()
@@ -457,12 +456,12 @@ public class DocumentModel implements DocumentInterface {
 			String userId, String tempURL, JSONObject data, String location,
 			String element) {
 		JSONObject childs = null;
-		String value = null;
+		//String value = null;
 		try {
 			childs = (JSONObject) data.get(element);
-			Iterator<String> childsIt = childs.keys();
+			Iterator<?> childsIt = childs.keys();
 			if (childsIt.hasNext()) {
-				String child = childsIt.next();
+				String child = (String) childsIt.next();
 				tempURL += "," + child;
 				patchDataInElementRec(coll, tempURL, (JSONObject) childs,
 						location, child);
@@ -470,14 +469,14 @@ public class DocumentModel implements DocumentInterface {
 			//Java 7 allows multiple exception catches but version < 7 doesn't
 		} catch (JSONException e) {
 			try {
-				value = (String) data.get(element);
+				data.get(element);
 			} catch (JSONException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		} catch (ClassCastException e1) {
 			try {
-				value = (String) data.get(element);
+				data.get(element);
 			} catch (JSONException e2) {
 				// TODO Auto-generated catch block
 				e2.printStackTrace();
@@ -530,7 +529,7 @@ public class DocumentModel implements DocumentInterface {
 			JSONObject data, String location) throws JSONException {
 		DBCollection coll = db.getCollection(DataColl);
 		String tempURL = appId + ",users," + userId;
-		Iterator it = data.keys();// iterate the new content and
+		Iterator<?> it = data.keys();// iterate the new content and
 		// make it accessible
 		while (it.hasNext()) {
 			String key = (String) it.next();
@@ -754,7 +753,7 @@ public class DocumentModel implements DocumentInterface {
 		DBCollection coll = db.getCollection(UserDataColl);
 		Geolocation geo =new Geolocation();
 		geo.createGridCache(180, 360);
-		String type = appId+"docs";
+		//String type = appId+"docs";
 		ArrayList<String> all = geo.searchObjectsInGrid(latitude, longitude, AUDIO , radius, appId);
 		Iterator<String> allIt = all.iterator();
 		ArrayList<String> allElements = new ArrayList<String>();

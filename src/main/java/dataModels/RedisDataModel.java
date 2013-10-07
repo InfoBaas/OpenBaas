@@ -12,6 +12,7 @@ import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import utils.Const;
 //******************************REDIS DATA LAYER********************************
 /*Don't forget that as redis is a cache we have to keep track of the oldest element in the system.
  /*Other options are using the redis TTL or even keeping track of the hits each id has.
@@ -33,14 +34,12 @@ public class RedisDataModel implements CacheInterface {
 	private static final String IMAGES = "images";
 	private static final String VIDEO = "video";
 	private static final String STORAGE = "storage";
-	private JedisPool pool = new JedisPool(new JedisPoolConfig(), server);
+	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.SERVER);
 	Jedis jedis;
-	private final static String server = "localhost";
-
-	private static final int RedisCachePORT = 6379;
+	
 
 	public RedisDataModel() {
-		jedis = new Jedis(server, RedisCachePORT);
+		jedis = new Jedis(Const.SERVER, Const.REDIS_CACHE_PORT);
 	}
 
 	public long getCacheSize() {
@@ -1299,6 +1298,12 @@ public class RedisDataModel implements CacheInterface {
 	public ArrayList<String> getAllVideoIdsInApp(String appId,
 			Integer pageNumber, Integer pageSize, String orderBy,
 			String orderType) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Integer countAllImagesInApp(String appId) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -14,8 +14,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
 
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriInfo;
@@ -40,6 +38,8 @@ import sessionsAndEmailConfirmations.EmailOperations;
 import sessionsAndEmailConfirmations.EmailOperationsClass;
 import sessionsAndEmailConfirmations.RedisSessions;
 import sessionsAndEmailConfirmations.SessionDBInterface;
+import utils.Const;
+import utils.Utils;
 import Model.Model;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
@@ -49,7 +49,6 @@ public class AppsMiddleLayer {
 	// ****************SIMULATION OBJECT**********************
 	// static Map<String, Application> apps;
 	// *******************************************************
-	private static final int IDLENGTH = 3;
 	// ******************SINGLETON****************************
 	Model model;
 	SessionDBInterface sessions;
@@ -63,8 +62,9 @@ public class AppsMiddleLayer {
 	private static final String STORAGEFOLDER = "storage";
 	private static final String MEDIAFOLDER = "media";
 	private static final String IMAGESFOLDER = "/media/images";
-	private static final String AUDIOFOlDER = "/media/audio";
+	//private static final String AUDIOFOlDER = "/media/audio";
 	private static final String VIDEOFOLDER = "/media/video";
+	private static final Utils utils = new Utils();
 	private static String OPENBAASADMIN = "openbaasAdmin";
 	
 	public AppsMiddleLayer() {
@@ -248,7 +248,7 @@ public class AppsMiddleLayer {
 
 	public String uploadAudioFileToServer(String appId, String fileDirectory, String location, String fileType,
 			String fileName) {
-		String audioId = this.getRandomString(IDLENGTH);
+		String audioId = utils.getRandomString(Const.IDLENGTH);
 		if (this.model.uploadFileToServer(appId, audioId, MEDIAFOLDER,
 				AUDIOTYPE, fileDirectory, location, fileType, fileName))
 			return audioId;
@@ -257,12 +257,12 @@ public class AppsMiddleLayer {
 		}
 	}
 
-	private String getRandomString(int length) {
-		return (String) UUID.randomUUID().toString().subSequence(0, length);
-	}
-
 	public ArrayList<String> getAllImageIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		return this.model.getAllImageIdsInApp(appId, pageNumber, pageSize, orderBy, orderType);
+	}
+	
+	public Integer countAllImages(String appId) {
+		return this.model.countAllImagesInApp(appId);
 	}
 
 	public boolean uploadImageFileToServerWithGeoLocation(String appId, String location, String fileType,
@@ -321,8 +321,7 @@ public class AppsMiddleLayer {
 			String fileName) {
 		String dir = "apps/"+appId+VIDEOFOLDER;
 		boolean opOk = false;
-		if (this.model.uploadFileToServer(appId, videoId, MEDIAFOLDER,
-				VIDEOTYPE,dir, null, fileType,fileName)) 
+		if (this.model.uploadFileToServer(appId, videoId, MEDIAFOLDER, VIDEOTYPE,dir, null, fileType,fileName)) 
 			opOk = true;
 		return opOk;
 	}
@@ -330,8 +329,7 @@ public class AppsMiddleLayer {
 			String location){
 		String dir = "apps/"+appId+VIDEOFOLDER;
 		boolean opOk = false;
-		if(this.model.uploadFileToServer(appId, videoId, MEDIAFOLDER, 
-				VIDEOFOLDER, dir, location, fileType, fileName))
+		if(this.model.uploadFileToServer(appId, videoId, MEDIAFOLDER, VIDEOFOLDER, dir, location, fileType, fileName))
 			opOk = true;
 		return opOk;
 	}
@@ -340,7 +338,7 @@ public class AppsMiddleLayer {
 	}
 
 	public String uploadStorageFileToServer(String appId, String fileIdentfier, String fileType, String fileName) {
-		if (this.model.uploadFileToServer(appId, fileIdentfier, STORAGEFOLDER,
+		if (this.model.uploadFileToServer(appId, fileIdentfier, STORAGEFOLDER, 
 				null, "apps/"+appId+"/storage", null, fileType, fileName))
 			return fileIdentfier;
 		else
@@ -710,12 +708,12 @@ public class AppsMiddleLayer {
 
 	public String createLocalFile(InputStream uploadedInputStream,FormDataContentDisposition fileDetail, 
 			String appId, String extension, String dir) {
-		String id = this.getRandomString(IDLENGTH);
+		String id = utils.getRandomString(Const.IDLENGTH);
 		File dirFolders = new File(dir);
 		dirFolders.mkdirs();
 		File f = new File(dir + id + "." + extension);
 		while (f.exists()) {
-			id = this.getRandomString(IDLENGTH);
+			id = utils.getRandomString(Const.IDLENGTH);
 			f = new File(dir + id);
 		}
 		OutputStream out;
@@ -734,13 +732,13 @@ public class AppsMiddleLayer {
 	}
 	public String createLocalFile2(InputStream uploadedInputStream,FormDataContentDisposition fileDetail, 
 			String appId, String extension, String dir, String imageId) {
-		String id = this.getRandomString(IDLENGTH);
+		String id = utils.getRandomString(Const.IDLENGTH);
 		id = imageId;
 		File dirFolders = new File(dir);
 		dirFolders.mkdirs();
 		File f = new File(dir + id + "." + extension);
 		while (f.exists()) {
-			id = this.getRandomString(IDLENGTH);
+			id = utils.getRandomString(Const.IDLENGTH);
 			id = imageId;
 			f = new File(dir + id);
 		}
@@ -778,14 +776,12 @@ public class AppsMiddleLayer {
 	public boolean createUserWithEmailConfirmation(String appId, String userId,String userName, 
 			String email, byte[] salt, byte[] hash,	String flag, boolean emailConfirmed, UriInfo uriInfo) {
 		boolean sucessModel = false;
-		boolean sucessIdEmail = false;
 		try {
 			sucessModel = this.model.createUserWithEmailConfirmation(appId, userId, userName, email, salt, hash, flag, emailConfirmed);
-			String ref = this.getRandomString(IDLENGTH);
+			String ref = utils.getRandomString(Const.IDLENGTH);
 			emailOp.sendRegistrationEmailWithRegistrationCode(appId, userId, userName, email, ref, uriInfo.getAbsolutePath().toASCIIString());
-			sucessIdEmail = this.emailOp.addUrlToUserId(appId, userId, ref);
+			this.emailOp.addUrlToUserId(appId, userId, ref);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return sucessModel;
@@ -866,6 +862,8 @@ public class AppsMiddleLayer {
 	public boolean userExistsInApp(String appId, String userId) {
 		return this.model.userExistsInApp(appId, userId);
 	}
+
+	
 
 	
 }

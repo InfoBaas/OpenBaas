@@ -36,13 +36,11 @@ public class UserConfirmationResource {
 				if (registrationCodeFromDB.equalsIgnoreCase(registrationCode)) {
 					appsMid.removeUrlToUserId(appId, userId);
 					appsMid.confirmUserEmail(appId, userId);
-					response = Response.status(Status.OK).entity("User confirmed, you can now perform operations")
-							.build();
+					response = Response.status(Status.OK).entity("User confirmed, you can now perform operations").build();
 				}
 			}
 		} else {
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		}
 		return response;
 	}

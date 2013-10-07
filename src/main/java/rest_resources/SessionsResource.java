@@ -1,7 +1,5 @@
 package rest_resources;
 
-import java.util.UUID;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -25,14 +23,17 @@ import org.codehaus.jettison.json.JSONObject;
 
 import resourceModelLayer.AppsMiddleLayer;
 import rest_resources.AppsResource.PATCH;
+import utils.Const;
+import utils.Utils;
 
 //@Path(/users/{userId}/sessions)
 public class SessionsResource {
 	private static final int IDGENERATOR = 3;
+	private static final Utils utils = new Utils();
 	private AppsMiddleLayer appsMid;
 	private String appId;
 	private String userId;
-	private static final String EMAILCONFIRMATIONERROR = "Please confirm your email first.";
+	
 
 	@Context
 	UriInfo uriInfo;
@@ -76,7 +77,7 @@ public class SessionsResource {
 			if (usersConfirmedOption) {
 				if (appsMid.userEmailIsConfirmed(appId, userId)) {
 					System.out.println("userId of " + userName + " is: " + userId);
-					String sessionToken = getRandomString(IDGENERATOR);
+					String sessionToken = utils.getRandomString(IDGENERATOR);
 					boolean validation = appsMid.createSession(sessionToken, appId, userId, attemptedPassword);
 					if (validation) {
 						NewCookie identifier = new NewCookie("sessionToken", sessionToken);
@@ -85,7 +86,7 @@ public class SessionsResource {
 					}
 					response = Response.status(Status.OK).entity(sessionToken).build();
 				} else {
-					response = Response.status(Status.FORBIDDEN).entity(EMAILCONFIRMATIONERROR).build();
+					response = Response.status(Status.FORBIDDEN).entity(Const.EMAIL_CONFIRMATION_ERROR).build();
 				}
 			} else
 				response = Response.status(Status.UNAUTHORIZED).entity("").build();
@@ -129,10 +130,6 @@ public class SessionsResource {
 		} else
 			response = Response.status(Status.NOT_FOUND).entity(sessionToken).build();
 		return response;
-	}
-
-	private String getRandomString(int length) {
-		return (String) UUID.randomUUID().toString().subSequence(0, length);
 	}
 
 	/**

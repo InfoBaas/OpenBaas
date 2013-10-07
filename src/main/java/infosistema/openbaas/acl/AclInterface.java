@@ -1,4 +1,4 @@
-package ACLs;
+package infosistema.openbaas.acl;
 
 public interface AclInterface {
 

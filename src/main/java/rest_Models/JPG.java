@@ -1,9 +1,5 @@
 package rest_Models;
 
-
-
-import java.util.Map;
-
 import javax.xml.bind.annotation.XmlRootElement;
 
 
@@ -16,7 +12,6 @@ import org.codehaus.jettison.json.JSONObject;
 @XmlRootElement
 public class JPG extends Media implements Image{
 	private String type;
-	private Map<String, String> sizes;
 	private String defaultResolution;
 	public JPG(String id, String dir, long size, String location) {
 		super(id, dir, size, location);

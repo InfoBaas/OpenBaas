@@ -31,26 +31,21 @@ import resourceModelLayer.AppsMiddleLayer;
 import rest_Models.DefaultUser;
 import rest_Models.PasswordEncryptionService;
 import rest_resources.AppsResource.PATCH;
+import utils.Const;
+import utils.Utils;
 
 public class AccountResource {
 
 	
 	private static final int IDGENERATOR = 3;
+	private static final Utils utils = new Utils();
 	private AppsMiddleLayer appsMid;
 	private String appId;
-	private String userId;
-	private static final String EMAILCONFIRMATIONERROR = "Please confirm your email first.";
-	private static final int IDLENGTH = 3;
+	
 
 	@Context
 	UriInfo uriInfo;
-	
-	public AccountResource(AppsMiddleLayer appsMid, String appId, String userId) {
-		this.appsMid = appsMid;
-		this.appId = appId;
-		this.userId = userId;
-	}
-	
+		
 	public AccountResource(AppsMiddleLayer appsMid, String appId) {
 		this.appsMid = appsMid;
 		this.appId = appId;
@@ -111,9 +106,9 @@ public class AccountResource {
 				userName = email;
 			}
 			if (readOk && appsMid.appExists(appId)) {
-				userId = getRandomString(IDLENGTH);
+				userId = utils.getRandomString(Const.IDLENGTH);
 				while (appsMid.identifierInUseByUserInApp(appId, userId))
-					userId = getRandomString(IDLENGTH);
+					userId = utils.getRandomString(Const.IDLENGTH);
 
 				if (!appsMid.userExistsInApp(appId, userId, email)) {
 				//if(true){
@@ -226,7 +221,7 @@ public class AccountResource {
 						response = Response.status(Status.OK).entity(outUser).build();
 					}
 				} else {
-					response = Response.status(Status.FORBIDDEN).entity(EMAILCONFIRMATIONERROR).build();
+					response = Response.status(Status.FORBIDDEN).entity(Const.EMAIL_CONFIRMATION_ERROR).build();
 				}
 			} else{
 				System.out.println("userId of email: " + email + " is: " + userId);

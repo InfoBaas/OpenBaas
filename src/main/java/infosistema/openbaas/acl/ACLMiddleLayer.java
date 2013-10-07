@@ -1,6 +1,5 @@
-package ACLs;
+package infosistema.openbaas.acl;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.ws.rs.core.PathSegment;
@@ -39,7 +38,7 @@ public class ACLMiddleLayer {
 		JSONArray ancestors = new JSONArray();
 		ancestors.put("acl");
 		for(int i = 0; i < path.size(); i++){
-			String pathTemp = path.get(i).getPath();
+			//String pathTemp = path.get(i).getPath();
 			if(i != path.size()-1){
 				pathAncestors += path.get(i).getPath() + ":";
 				ancestors.put(path.get(i).getPath());
@@ -51,7 +50,6 @@ public class ACLMiddleLayer {
 		ancestors.put("~acl");
 		
 		String parent = "~acl";
-		String r = null;
 		acl.writePermissions(pathAncestors, permissions, parent, ancestors.toString());
 		return true;
 	}
@@ -93,7 +91,7 @@ public class ACLMiddleLayer {
 			String parent, String userId) {
 		String pathAncestors = "acl:";
 		for(int i = 0; i < path.size(); i++){
-			String pathTemp = path.get(i).getPath();
+			//String pathTemp = path.get(i).getPath();
 			if(i != path.size()-1){
 				pathAncestors += path.get(i).getPath() + ":";
 			}else{

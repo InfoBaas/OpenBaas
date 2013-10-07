@@ -2,8 +2,6 @@ package rest_resources;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -16,10 +14,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -31,9 +27,11 @@ import org.codehaus.jettison.json.JSONObject;
 import resourceModelLayer.AppsMiddleLayer;
 import rest_Models.IdsResultSet;
 import utils.Const;
+import utils.Utils;
 
 public class UserDataResource {
 
+	private static final Utils utils = new Utils();
 	private AppsMiddleLayer appsMid;
 	private String appId;
 	private String userId;
@@ -48,47 +46,7 @@ public class UserDataResource {
 		this.userId = userId;
 	}
 
-	/*
-	 * Returns a code corresponding to the sucess or failure Codes: -2 ->
-	 * Forbidden -1 -> Bad request 1 -> sessionExists
-	 */
-	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		/*MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		MultivaluedMap<String, String> pathParams = ui.getPathParameters();*/
-		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
-		Map<String, Cookie> cookiesParams = hh.getCookies();
-		int code = -1;
-		List<String> location = null;
-		Cookie sessionToken = null;
-		List<String> userAgent = null;
-		// iterate cookies
-		for (Entry<String, Cookie> entry : cookiesParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
-				sessionToken = entry.getValue();
-		}
-		// iterate headers
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
-				sessionToken = new Cookie("sessionToken", entry.getValue().get(0));
-			if (entry.getKey().equalsIgnoreCase("location"))
-				location = entry.getValue();
-			else if (entry.getKey().equalsIgnoreCase("user-agent"))
-				userAgent = entry.getValue();
-		}
-		if (sessionToken != null) {
-			if (appsMid.sessionTokenExists(sessionToken.getValue())) {
-				code = 1;
-				if (location != null) {
-					appsMid.refreshSession(sessionToken.getValue(),
-							location.get(0), userAgent.get(0));
-				} else
-					appsMid.refreshSession(sessionToken.getValue());
-			} else {
-				code = -2;
-			}
-		}
-		return code;
-	}
+	
 
 	/**
 	 * Create or replace existing elements.
@@ -106,7 +64,7 @@ public class UserDataResource {
 			@Context HttpHeaders hh,
 			@HeaderParam(value = "location") String location) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			JSONObject data = null;
 			try {
@@ -153,7 +111,7 @@ public class UserDataResource {
 		if (orderBy == null) 	orderBy = Const.ORDER_BY;
 		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			//query parameters are present, only return the elements 
 			if (latitude != null && longitude != null && radius != null) {
@@ -188,7 +146,7 @@ public class UserDataResource {
 			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
 			@Context HttpHeaders hh) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			if (appsMid.dataExistsForElement(appId, path)) {
 				String data = appsMid.getElementInUserDocument(appId, userId,
@@ -226,7 +184,7 @@ public class UserDataResource {
 			@Context UriInfo ui, @Context HttpHeaders hh,
 			@HeaderParam(value = "location") String location) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			JSONObject data = null;
 			try {
@@ -269,7 +227,7 @@ public class UserDataResource {
 			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
 			@Context HttpHeaders hh) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			if (appsMid.dataExistsForUserElement(appId, userId, path)) {
 				if (appsMid.deleteUserDataInElement(appId, userId, path))
@@ -299,7 +257,7 @@ public class UserDataResource {
 			@Context HttpHeaders hh,
 			@HeaderParam(value = "location") String location) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			JSONObject data = null;
 			try {

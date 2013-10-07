@@ -1,5 +1,7 @@
 package rest_resources;
 
+import infosistema.openbaas.acl.ACLMiddleLayer;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
@@ -24,7 +25,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import resourceModelLayer.AppsMiddleLayer;
 
-import ACLs.ACLMiddleLayer;
 // test MARCIO
 public class AclResource {
 
@@ -89,7 +89,6 @@ public class AclResource {
 			response = Response.status(Status.BAD_REQUEST).entity(ERROR_TOKEN)
 					.build();
 		} else {
-			boolean sucess = false;
 			boolean permissionsError = false;
 			String permissions = null;
 			try {
@@ -120,7 +119,7 @@ public class AclResource {
 					response = Response.status(Status.BAD_REQUEST)
 							.entity("Error with the permissions").build();
 				else {
-					sucess = aclMid.writePermissions(path, permissions, userId);
+					aclMid.writePermissions(path, permissions, userId);
 				}
 			}
 			response = Response.status(Status.OK).entity(SUCESS_ACL).build();

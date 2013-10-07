@@ -7,13 +7,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import rest_Models.PasswordEncryptionService;
-import rest_Models.Storage;
+import utils.Const;
 import Document.DocumentInterface;
 import Document.DocumentModel;
 
@@ -42,13 +41,13 @@ public class DataModel {
 	DatabaseInterface mongoModel;
 	DocumentInterface docModel;
 	public static final long MAXCACHESIZE = 10485760; // bytes
-	public static final String SERVER = "localhost";
-	public static final int PORT = 27017;
+	//public static final String SERVER = "localhost";
+	//public static final int PORT = 27017;
 
 	public DataModel() {
 		redisModel = new RedisDataModel();
 		if (auxDatabase.equalsIgnoreCase("mongodb"))
-			mongoModel = new MongoDBDataModel(SERVER, PORT);
+			mongoModel = new MongoDBDataModel(Const.SERVER, Const.MONGO_PORT);
 		docModel = new DocumentModel();
 	}
 
@@ -117,16 +116,12 @@ public class DataModel {
 	public Map<String, String> getApplication(String appId) {
 		Map<String, String> map = redisModel.getApplication(appId);
 		String creationDate = null;
-		String alive = null;
 		String appName = null;
 		Boolean confirmUsersEmail = false;
 		if (map == null || map.size() == 0) {
 			map = mongoModel.getApplication(appId);
 			if (redisModel.getCacheSize() <= MAXCACHESIZE) {
 				for (Entry<String, String> entry : map.entrySet()) {
-					if (entry.getKey().equalsIgnoreCase("alive")
-							&& entry.getValue().equalsIgnoreCase("false"))
-						alive = entry.getValue();
 					if (entry.getKey().equalsIgnoreCase("creationdate"))
 						creationDate = entry.getValue();
 					else if (entry.getKey().equalsIgnoreCase("appName"))
@@ -217,13 +212,12 @@ public class DataModel {
 		Map<String, String> userFields = redisModel.getUser(appId, userId);
 		String email = null;
 		String creationDate = null;
-		String updatedDate = null;
 		String userName = null;
-		String alive = null;
+		
 		byte[] hash = null;
 		byte[] salt = null;
 		String flag = null;
-		String location = null;
+		
 		if (userFields == null || userFields.size() == 0) {
 			if (auxDatabase.equalsIgnoreCase(MONGODB)) {
 				userFields = mongoModel.getUser(appId, userId);
@@ -234,12 +228,8 @@ public class DataModel {
 						else if (entry.getKey()
 								.equalsIgnoreCase("creationDate"))
 							creationDate = entry.getValue();
-						else if (entry.getKey().equalsIgnoreCase("updatedDate"))
-							updatedDate = entry.getValue();
 						else if (entry.getKey().equalsIgnoreCase("userName"))
 							userName = entry.getValue();
-						else if (entry.getKey().equalsIgnoreCase("alive"))
-							alive = entry.getValue();
 						else if (entry.getKey().equalsIgnoreCase("hash"))
 							hash = JSONSerializers.getStrict()
 									.serialize(entry.getValue()).getBytes();
@@ -289,14 +279,12 @@ public class DataModel {
 			try {
 				mongoModel.updateUser(appId, userId, email, hash, salt, alive);
 			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			if (redisModel.userExistsInApp(appId, email))
 				try {
 					redisModel.updateUser(appId, userId, email, hash, salt,	alive);
 				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
@@ -521,6 +509,10 @@ public class DataModel {
 			operationOk = true;
 		return operationOk;
 	}
+	
+	public Integer countAllImagesInApp(String appId) {
+		return mongoModel.countAllImagesInApp(appId);
+	}
 
 	/**
 	 * Creates a video in the Database using the params.
@@ -731,14 +723,12 @@ public class DataModel {
 			try {
 				mongoModel.updateUser(appId, userId, email, hash, salt);
 			} catch (UnsupportedEncodingException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			if (redisModel.userExistsInApp(appId, email))
 				try {
 					redisModel.updateUser(appId, userId, email, hash, salt);
 				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
@@ -819,7 +809,6 @@ public class DataModel {
 		try {
 			return docModel.insertDocumentRoot(appId, data, location);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
 			return false;
@@ -1114,16 +1103,11 @@ public class DataModel {
 	}
 
 	public void confirmUserEmail(String appId, String userId) {
-		boolean cacheOk = false;
-		boolean operationOk = false;
-		boolean auxOk = false;
 		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
 			mongoModel.confirmUserEmail(appId, userId);
 			String email = redisModel.getEmailUsingUserId(appId, userId);
 			if (redisModel.userExistsInApp(appId, email)) {
-				cacheOk = redisModel.confirmUserEmail(appId, userId);
-				if (auxOk && cacheOk)
-					operationOk = true;
+				redisModel.confirmUserEmail(appId, userId);
 			}
 		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
 			System.out.println("Database not implemented.");
@@ -1173,7 +1157,6 @@ public class DataModel {
 					redisModel.updateUserPassword(appId, userId, hash, salt);
 				}
 			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -1190,6 +1173,8 @@ public class DataModel {
 			System.out.println("Database not implemented.");
 		return false;
 	}
+
+	
 
 	
 }

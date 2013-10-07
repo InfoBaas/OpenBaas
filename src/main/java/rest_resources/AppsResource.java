@@ -6,10 +6,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -23,10 +19,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -39,12 +33,14 @@ import org.codehaus.jettison.json.JSONObject;
 import resourceModelLayer.AppsMiddleLayer;
 import rest_Models.IdsResultSet;
 import utils.Const;
+import utils.Utils;
 
 
 public class AppsResource {
 
 	private AppsMiddleLayer appsMid;
 	private static final int IDLENGTH = 3;
+	private static final Utils utils = new Utils();
 
 	public AppsResource() {
 		appsMid = new AppsMiddleLayer();
@@ -72,7 +68,7 @@ public class AppsResource {
 		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
 		// Parameters treatment
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if(code == 1){
 		System.out.println("***********************************");
 		System.out.println("********Finding all apps***********");
@@ -97,50 +93,7 @@ public class AppsResource {
 		return response;
 	}
 
-	/*
-	 * Returns a code corresponding to the sucess or failure Codes: 
-	 * -2 -> Forbidden
-	 * -1 -> Bad request
-	 * 1 ->
-	 * sessionExists
-	 */
-	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		//MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
-		//MultivaluedMap<String, String> pathParams = ui.getPathParameters();
-		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
-		Map<String, Cookie> cookiesParams = hh.getCookies();
-		int code = -1;
-		List<String> location = null;
-		Cookie sessionToken = null;
-		List<String> userAgent = null;
-		// iterate cookies
-		for (Entry<String, Cookie> entry : cookiesParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
-				sessionToken = entry.getValue();
-		}
-		// iterate headers
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
-				sessionToken = new Cookie("sessionToken", entry.getValue().get(0));
-			if (entry.getKey().equalsIgnoreCase("location"))
-				location = entry.getValue();
-			else if (entry.getKey().equalsIgnoreCase("user-agent"))
-				userAgent = entry.getValue();
-		}
-		if (sessionToken != null) {
-			if (appsMid.sessionTokenExists(sessionToken.getValue())) {
-				code = 1;
-				if (location != null) {
-					appsMid.refreshSession(sessionToken.getValue(),
-							location.get(0), userAgent.get(0));
-				} else
-					appsMid.refreshSession(sessionToken.getValue());
-			}else{
-				code = -2;
-			}
-		}
-		return code;
-	}
+	
 
 	/**
 	 * Get Application Information using its Application Identifier.
@@ -154,7 +107,7 @@ public class AppsResource {
 	public Response findById(@PathParam("appId") String appId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("********Finding App info************");
@@ -183,7 +136,7 @@ public class AppsResource {
 	public Response deleteApp(@PathParam("appId") String appId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("*Deleting App (setting as inactive)*");
@@ -215,7 +168,7 @@ public class AppsResource {
 	public Response createApp(JSONObject inputJsonObj,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			long start = System.currentTimeMillis();
 			System.out.println("************************************");
@@ -235,7 +188,7 @@ public class AppsResource {
 				return Response.status(Status.BAD_REQUEST).entity(temp).build();
 			}
 			if (readSucess) {
-				appId = getRandomString(IDLENGTH);
+				appId = utils.getRandomString(IDLENGTH);
 				created = appsMid.createApp(appId, appName, confirmUsersEmail);
 			}
 			if (created) {
@@ -290,7 +243,7 @@ public class AppsResource {
 	public Response updateApp(@PathParam("appId") String appId,	JSONObject inputJsonObj,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String alive = null;
 			String newAppName = null;
@@ -437,15 +390,5 @@ public class AppsResource {
 		} catch (IllegalArgumentException e) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
-	}
-	
-	/**
-	 * Identifier generator
-	 * 
-	 * @param length
-	 * @return
-	 */
-	private String getRandomString(int length) {
-		return (String) UUID.randomUUID().toString().subSequence(0, length);
 	}
 }

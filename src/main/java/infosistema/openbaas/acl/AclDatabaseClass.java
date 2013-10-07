@@ -1,10 +1,8 @@
-package ACLs;
+package infosistema.openbaas.acl;
 
 import java.net.UnknownHostException;
-import java.util.List;
-import java.util.Map;
 
-import javax.ws.rs.core.PathSegment;
+import utils.Const;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -17,8 +15,8 @@ public class AclDatabaseClass implements AclInterface{
 
 	private MongoClient mongoClient;
 	private DB db;
-	public static final String SERVER = "localhost";
-	public static final int PORT = 27017;
+	//public static final String SERVER = "localhost";
+	//public static final int PORT = 27017;
 	private static final String ACLTREE = "acl";
 	
 	/*_id is unique in all collections of MongoDB. For this reason the tree design is potentially flawed.
@@ -36,12 +34,13 @@ public class AclDatabaseClass implements AclInterface{
 	*/
 	public AclDatabaseClass(){
 		try {
-			mongoClient = new MongoClient(SERVER, PORT);
+			mongoClient = new MongoClient(Const.SERVER, Const.MONGO_PORT);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
+		
 		db = mongoClient.getDB("openbaas");
-		DBCollection coll = db.getCollection(ACLTREE);
+		//DBCollection coll = db.getCollection(ACLTREE);
 	}
 	public boolean checkIfExists(String id, String pathAncestors, String parent, String userId){
 		boolean result = false;

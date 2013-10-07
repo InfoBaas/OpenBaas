@@ -16,9 +16,10 @@ import management.ValueComparator;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import utils.Const;
 
 public class Geolocation implements GeoLocationOperations{
-	private static final int RedisGeoPORT = 6381;
+	
 	private static final int numberGenerator = 7;
 	final static char[] digits = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
 			'9', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'm', 'n', 'p',
@@ -83,7 +84,7 @@ public class Geolocation implements GeoLocationOperations{
 		if(type.equals("wmv")) type = "video";
 		if(type.equals("mp3")) type = "audio";
 		try{
-			JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisGeoPORT);
+			JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.SERVER, Const.REDIS_GEO_PORT);
 			Jedis jedis = pool.getResource();
 			if(type.equals("image")){
 				jedis.zadd("latitudesImages",latitude, objectId);
@@ -111,7 +112,7 @@ public class Geolocation implements GeoLocationOperations{
 
 	private void createObject(String latitudePointer, String longitudePointer,
 			String typePointer, String objectId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisGeoPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.SERVER, Const.REDIS_GEO_PORT);
 		Jedis jedis = pool.getResource();
 		try {
 			if (!jedis.exists(latitudePointer + ":" + longitudePointer + ":"+ typePointer))
@@ -128,7 +129,7 @@ public class Geolocation implements GeoLocationOperations{
 
 
 	private String getLatitudeIndex(double latitude) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",	RedisGeoPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.SERVER, Const.REDIS_GEO_PORT);
 		Jedis jedis = pool.getResource();
 		String id = null;
 		try {
@@ -160,7 +161,7 @@ public class Geolocation implements GeoLocationOperations{
 	}
 
 	private String getLongitudeIndex(String latitudePointer, double longitude) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisGeoPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.SERVER, Const.REDIS_GEO_PORT);
 		Jedis jedis = pool.getResource();
 		String id = null;
 		try {
@@ -194,7 +195,7 @@ public class Geolocation implements GeoLocationOperations{
 	}
 
 	private String getTypeIndex(String latitudePointer,	String longitudePointer, double longitude, String type) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisGeoPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.SERVER, Const.REDIS_GEO_PORT);
 		Jedis jedis = pool.getResource();
 		try {
 			Set<String> elements = jedis.smembers(latitudePointer + ":"+ longitudePointer + ":types");
@@ -290,7 +291,7 @@ public class Geolocation implements GeoLocationOperations{
 		if(type.equals("wmv")) type = "video";
 		if(type.equals("mp3")) type = "audio";
 		try{
-			JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",	RedisGeoPORT);
+			JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.SERVER, Const.REDIS_GEO_PORT);
 			Jedis jedis = pool.getResource();
 			JedisPool poolServer = new JedisPool(new JedisPoolConfig(), server);
 			Jedis jedisServer = poolServer.getResource();

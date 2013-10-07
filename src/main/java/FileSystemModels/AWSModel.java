@@ -1,7 +1,7 @@
 package FileSystemModels;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,7 +19,6 @@ import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
 import com.amazonaws.services.identitymanagement.model.AddUserToGroupRequest;
 import com.amazonaws.services.identitymanagement.model.CreateAccessKeyRequest;
 import com.amazonaws.services.identitymanagement.model.CreateUserRequest;
-import com.amazonaws.services.identitymanagement.model.CreateUserResult;
 import com.amazonaws.services.identitymanagement.model.DeleteUserRequest;
 import com.amazonaws.services.identitymanagement.model.EntityAlreadyExistsException;
 import com.amazonaws.services.identitymanagement.model.NoSuchEntityException;
@@ -35,9 +34,9 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 public class AWSModel implements FileSystemInterface{
 	private static AWSModel ref;
 	private static final String OPENBAASBUCKET = "openbaas";
-	private static final String DEFAULTIMAGEFORMAT = ".jpg";
-	private static final String DEFAULTVIDEOFORMAT = ".mpg";
-	private static final String DEFAULTAUDIOFORMAT = ".mp3";
+	//private static final String DEFAULTIMAGEFORMAT = ".jpg";
+	//private static final String DEFAULTVIDEOFORMAT = ".mpg";
+	//private static final String DEFAULTAUDIOFORMAT = ".mp3";
 
 	private static final String APPMASTERSGROUP = "ApplicationMasters";
 	private AmazonS3 s3;
@@ -168,7 +167,7 @@ public class AWSModel implements FileSystemInterface{
 		key.withUserName(user.getUserName());
 		user.setRequestCredentials(key.getRequestCredentials());
 		user.setPath("/");
-		CreateUserResult result = client.createUser(user);
+		/*CreateUserResult result = */client.createUser(user);
 
 		AddUserToGroupRequest addUserToGroupRequest = new AddUserToGroupRequest()
 			.withGroupName(APPMASTERSGROUP).withUserName(appId);
@@ -201,7 +200,7 @@ public class AWSModel implements FileSystemInterface{
 		key.withUserName(user.getUserName());
 		user.setRequestCredentials(key.getRequestCredentials());
 		user.setPath("/");
-		CreateUserResult result = client.createUser(user); //Occasional error here, WHY?
+		/*CreateUserResult result = */client.createUser(user); //Occasional error here, WHY?
 		AddUserToGroupRequest addUserToGroupRequest = new AddUserToGroupRequest()
 				.withGroupName(APPMASTERSGROUP).withUserName(appId);
 		client.addUserToGroup(addUserToGroupRequest);

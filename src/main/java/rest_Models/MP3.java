@@ -4,8 +4,6 @@ package rest_Models;
 
 import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -22,10 +20,12 @@ public class MP3 extends Media implements Audio{
 	private static final int [] allBitRates = new int[]{32,40,48, 56, 64,80,96,112,128,144,160,192,224,256,320};
 	
 	private ArrayList<Integer> accessibleBitRates = new ArrayList<Integer>();;
+	@SuppressWarnings("unused")
 	private int defaultBitRate;
 	private int maxBitRate;
 	private String type;
-	private String location;
+	
+	
 	public MP3(String audioId, String dir, long size, int defaultBitRate, String type, String location) {
 		super(audioId, dir, size, location);
 

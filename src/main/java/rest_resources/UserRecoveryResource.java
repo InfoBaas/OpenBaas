@@ -17,6 +17,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import resourceModelLayer.AppsMiddleLayer;
 import rest_resources.AppsResource.PATCH;
+import utils.Const;
 
 public class UserRecoveryResource {
 
@@ -53,11 +54,9 @@ public class UserRecoveryResource {
 			String newPass="aaa";
 			boolean opOk = appsMid.recoverUser(appId, userId, email, ui,newPass,null,null);
 			if(opOk)
-				response = Response.status(Status.OK)
-				.entity("Email sent with recovery details.").build();
+				response = Response.status(Status.OK).entity(Const.EMAIL_CONFIRMATION_SENDED).build();
 			else
-				response = Response.status(Status.BAD_REQUEST)
-				.entity("Wrong email.").build();
+				response = Response.status(Status.BAD_REQUEST).entity("Wrong email.").build();
 		return response;
 		
 	}
@@ -68,8 +67,7 @@ public class UserRecoveryResource {
 		String password = null;
 		Response response = null;
 		if(recoveryCode == null){
-			return Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			return Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		}
 		try {
 			password = (String) inputJson.get("password");
@@ -81,11 +79,9 @@ public class UserRecoveryResource {
 	
 		if(dbRecoveryCode.equalsIgnoreCase(recoveryCode)){
 			this.appsMid.updateUserPassword(appId, userId, password);
-			response = Response.status(Status.OK)
-					.entity("Your password has been changed.").build();
+			response = Response.status(Status.OK).entity("Your password has been changed.").build();
 		}else{
-			Response.status(Status.BAD_REQUEST)
-			.entity("Error handling the request.").build();
+			Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		}
 		return response;		
 	}

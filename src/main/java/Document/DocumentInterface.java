@@ -1,7 +1,6 @@
 package Document;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;

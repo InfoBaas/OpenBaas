@@ -11,9 +11,7 @@ import com.mongodb.DBCursor;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import misc.GeoLocationOperations;
 import misc.Geolocation;
@@ -54,8 +52,6 @@ public class MongoDBDataModel implements DatabaseInterface {
 //	private static final int EXPIRETIME = 86400; // 24hours in seconds
 	
 	
-	public static final String server = "localhost";
-	
 	GeoLocationOperations geo;
 	public MongoDBDataModel(String server, int port) {
 		geo = new Geolocation();
@@ -63,7 +59,6 @@ public class MongoDBDataModel implements DatabaseInterface {
 		try {
 			mongoClient = new MongoClient(server, port);
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		db = mongoClient.getDB("openbaas");
@@ -142,12 +137,13 @@ public class MongoDBDataModel implements DatabaseInterface {
 		return true;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, String> getApplication(String appId) {
 		DBCollection coll = db.getCollection(AppsColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("_id", appId);
-		return (Map) coll.findOne(searchQuery);
+		return coll.findOne(searchQuery).toMap();
 
 	}
 
@@ -250,13 +246,14 @@ public class MongoDBDataModel implements DatabaseInterface {
 		users.update(query, updateUser);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, String> getUser(String appId, String userId) {
 		DBCollection coll = db.getCollection(UsersColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("_id", userId);
 		searchQuery.put("appId", appId);
-		return (Map) coll.findOne(searchQuery);
+		return coll.findOne(searchQuery).toMap();
 	}
 
 	@Override
@@ -317,13 +314,14 @@ public class MongoDBDataModel implements DatabaseInterface {
 		return audioExistsInApp;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, String> getAudioInApp(String appId, String audioId) {
 		DBCollection coll = db.getCollection(AudioColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("_id", audioId);
 		searchQuery.put("appId", appId);
-		return (Map) coll.findOne(searchQuery);
+		return  coll.findOne(searchQuery).toMap();
 	}
 
 	@Override
@@ -391,13 +389,14 @@ public class MongoDBDataModel implements DatabaseInterface {
 		return imageExistsInApp;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, String> getImageInApp(String appId, String imageId) {
 		DBCollection coll = db.getCollection(ImageColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("_id", imageId);
 		searchQuery.put("appId", appId);
-		return (Map<String, String>) coll.findOne(searchQuery);
+		return coll.findOne(searchQuery).toMap();
 	}
 
 	@Override
@@ -543,13 +542,14 @@ public class MongoDBDataModel implements DatabaseInterface {
 		return dir;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, String> getVideoInApp(String appId, String videoId) {
 		DBCollection coll = db.getCollection(VideoColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.append("_id", videoId);
 		searchQuery.append("appId", appId);
-		return (Map) coll.findOne(searchQuery);
+		return coll.findOne(searchQuery).toMap();
 	}
 
 	@Override
@@ -849,13 +849,14 @@ public class MongoDBDataModel implements DatabaseInterface {
 		return storageExistsInApp;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, String> getStorageInApp(String appId, String storageId) {
 		DBCollection coll = db.getCollection(StorageColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.append("_id", storageId);
 		searchQuery.append("appId", appId);
-		return (Map) coll.findOne(searchQuery);
+		return coll.findOne(searchQuery).toMap();
 	}
 
 	@Override
@@ -873,7 +874,8 @@ public class MongoDBDataModel implements DatabaseInterface {
 		DBCollection coll = db.getCollection(AppsColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.append("_id", appId);
-		Map<String, Object> temp = (Map) coll.findOne(searchQuery);
+		@SuppressWarnings("unchecked")
+		Map<String, Object> temp = coll.findOne(searchQuery).toMap();
 		for(Map.Entry<String, Object> entry : temp.entrySet()){
 			if(entry.getKey().equalsIgnoreCase(CONFIRMUSERSEMAIL))
 				return ((Boolean)(entry.getValue()));
@@ -962,8 +964,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public Boolean updateConfirmUsersEmailOption(String appId,
-			Boolean confirmUsersEmail) {
+	public Boolean updateConfirmUsersEmailOption(String appId,	Boolean confirmUsersEmail) {
 		DBCollection coll = db.getCollection(AppsColl);
 		BasicDBObject query = new BasicDBObject();
 		query.put("_id", appId);
@@ -975,6 +976,15 @@ public class MongoDBDataModel implements DatabaseInterface {
 		updateObj.append("$set", newDocument);
 		coll.update(query, updateObj);
 		return true;
+	}
+
+	@Override
+	public Integer countAllImagesInApp(String appId) {
+		DBCollection images = db.getCollection(ImageColl);
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.append("appId", appId);
+		long number = images.count(searchQuery);
+		return (int) number;
 	}
 
 	

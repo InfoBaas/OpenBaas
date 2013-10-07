@@ -7,11 +7,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
@@ -22,10 +17,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
@@ -36,6 +29,7 @@ import org.apache.commons.io.FilenameUtils;
 import resourceModelLayer.AppsMiddleLayer;
 import rest_Models.IdsResultSet;
 import utils.Const;
+import utils.Utils;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
@@ -43,6 +37,7 @@ import com.sun.jersey.multipart.FormDataParam;
 //@Path("/apps/{appId}/storage")
 public class StorageResource {
 	
+	private static final Utils utils = new Utils();
 	private String appId;
 	private AppsMiddleLayer appsMid;
 //	private static final int IDLENGTH = 3;
@@ -55,46 +50,6 @@ public class StorageResource {
 	public StorageResource(AppsMiddleLayer appsMid, String appId) {
 		this.appId = appId;
 		this.appsMid = appsMid;
-	}
-
-	/*
-	 * Returns a code corresponding to the sucess or failure Codes: -2 ->
-	 * Forbidden -1 -> Bad request 1 -> sessionExists
-	 */
-	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
-		Map<String, Cookie> cookiesParams = hh.getCookies();
-		int code = -1;
-		List<String> location = null;
-		Cookie sessionToken = null;
-		List<String> userAgent = null;
-		// iterate cookies
-		for (Entry<String, Cookie> entry : cookiesParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
-				sessionToken = entry.getValue();
-		}
-		// iterate headers
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
-				sessionToken = new Cookie("sessionToken", entry.getValue().get(0));
-			if (entry.getKey().equalsIgnoreCase("location"))
-				location = entry.getValue();
-			else if (entry.getKey().equalsIgnoreCase("user-agent"))
-				userAgent = entry.getValue();
-		}
-		if (sessionToken != null) {
-			if (appsMid.sessionTokenExists(sessionToken.getValue())) {
-				code = 1;
-				if (location != null) {
-					appsMid.refreshSession(sessionToken.getValue(),
-							location.get(0), userAgent.get(0));
-				} else
-					appsMid.refreshSession(sessionToken.getValue());
-			} else {
-				code = -2;
-			}
-		}
-		return code;
 	}
 
 	//TODO: PAGINATION
@@ -114,7 +69,7 @@ public class StorageResource {
 		if (orderBy == null) 	orderBy = Const.ORDER_BY;
 		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("***********************************");
 			System.out.println("********Finding all Storage********");
@@ -197,7 +152,7 @@ public class StorageResource {
 			@PathParam("appId") String appId,
 			@FormDataParam("location") String location) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		String fileNameWithType = null;
 		String fileType = new String();
 		String fileName = new String();

@@ -6,10 +6,8 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import com.sun.jersey.core.header.FormDataContentDisposition;
@@ -17,10 +15,7 @@ import com.sun.jersey.multipart.FormDataParam;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PathParam;
@@ -31,61 +26,20 @@ import modelInterfaces.Audio;
 import resourceModelLayer.AppsMiddleLayer;
 import rest_Models.IdsResultSet;
 import rest_Models.MP3;
+import utils.Utils;
 
 //@Path("/apps/{appId}/media/audio")
 public class AudioResource {
 	static Map<String, MP3> audio = new HashMap<String, MP3>();
 	String appId;
 	static final int idGenerator = 3;
+	private static final Utils utils = new Utils();
 	private AppsMiddleLayer appsMid;
 
 	public AudioResource(AppsMiddleLayer appsMid, String appId) {
 		this.appId = appId;
 		this.appsMid = appsMid;
 		// AudioSimulator audioSim = new AudioSimulator(this.audio);
-	}
-
-	/*
-	 * Returns a code corresponding to the sucess or failure Codes: 
-	 * -2 -> Forbidden
-	 * -1 -> Bad request
-	 * 1 ->
-	 * sessionExists
-	 */
-	private int treatParameters(UriInfo ui, HttpHeaders hh) {
-		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
-		Map<String, Cookie> cookiesParams = hh.getCookies();
-		int code = -1;
-		List<String> location = null;
-		Cookie sessionToken = null;
-		List<String> userAgent = null;
-		// iterate cookies
-		for (Entry<String, Cookie> entry : cookiesParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
-				sessionToken = entry.getValue();
-		}
-		// iterate headers
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
-				sessionToken = new Cookie("sessionToken", entry.getValue().get(0));
-			if (entry.getKey().equalsIgnoreCase("location"))
-				location = entry.getValue();
-			else if (entry.getKey().equalsIgnoreCase("user-agent"))
-				userAgent = entry.getValue();
-		}
-		if (sessionToken != null) {
-			if (appsMid.sessionTokenExists(sessionToken.getValue())) {
-				code = 1;
-				if (location != null) {
-					appsMid.refreshSession(sessionToken.getValue(),
-							location.get(0), userAgent.get(0));
-				} else
-					appsMid.refreshSession(sessionToken.getValue());
-			}else{
-				code = -2;
-			}
-		}
-		return code;
 	}
 	
 	//TODO PAGINATION
@@ -100,7 +54,7 @@ public class AudioResource {
 		@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
 		@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("***********************************");
 			System.out.println("********Finding all Audio**********");
@@ -133,7 +87,7 @@ public class AudioResource {
 			@Context UriInfo ui, @Context HttpHeaders hh
 			) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("********Finding Audio Meta**********");
@@ -168,7 +122,7 @@ public class AudioResource {
 	public Response deleteAudio(@PathParam("audioId") String audioId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("***********Deleting Audio***********");
@@ -198,7 +152,7 @@ public class AudioResource {
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
 		byte[] sucess = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("*********Downloading Audio**********");
@@ -241,7 +195,7 @@ public class AudioResource {
 			@PathParam("appId") String appId,
 			@FormDataParam("location") String location) {
 		Response response = null;
-		int code = this.treatParameters(ui, hh);
+		int code = utils.treatParameters(ui, hh);
 		String fileNameWithType = null;
 		String fileType = new String();
 		String fileName = new String();

@@ -3,7 +3,6 @@ package dataModels;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 
 public interface DatabaseInterface {
 
@@ -489,6 +488,8 @@ public interface DatabaseInterface {
 			byte[] salt) throws UnsupportedEncodingException;
 
 	public String getUserIdUsingEmail(String appId, String email);
+
+	public Integer countAllImagesInApp(String appId);
 
 
 }

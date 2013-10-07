@@ -4,13 +4,12 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 @XmlRootElement
 public class IdsResultSet {
 
 	List<String> ids;
 	Integer pageNumber;
-	@JsonIgnore
+	//@JsonIgnore
 	Integer totalnumberpages;
 	
 	public IdsResultSet(){

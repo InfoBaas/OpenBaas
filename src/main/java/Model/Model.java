@@ -162,6 +162,10 @@ public class Model {
 	public byte[] downloadImageInApp(String appId, String imageId,String ext) {
 		return fileModel.download(appId, MEDIAFOLDER, IMAGES, imageId,ext);
 	}
+	
+	public Integer countAllImagesInApp(String appId) {
+		return dataModel.countAllImagesInApp(appId);
+	}
 
 	public boolean createAppFoldersAWS(String appId) {
 		return fileModel.createAppAWS(appId);
@@ -501,5 +505,7 @@ public class Model {
 	public boolean userExistsInApp(String appId, String userId) {
 		return dataModel.userExistsInApp(appId, userId);
 	}
+
+	
 
 }
