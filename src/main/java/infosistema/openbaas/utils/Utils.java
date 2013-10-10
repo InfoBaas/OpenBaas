@@ -1,22 +1,22 @@
 package infosistema.openbaas.utils;
 
-import infosistema.openbaas.resourceModelLayer.AppsMiddleLayer;
-
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
-
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
+import infosistema.openbaas.dataaccess.sessions.RedisSessions;
+import infosistema.openbaas.dataaccess.sessions.SessionInterface;
+import infosistema.openbaas.middleLayer.SessionMiddleLayer;
+import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 
 public class Utils {
 
-	
-	private static final AppsMiddleLayer appsMid = new AppsMiddleLayer();
 	
 	/*
 	 * Returns a code corresponding to the sucess or failure Codes: 
@@ -47,14 +47,14 @@ public class Utils {
 				userAgent = entry.getValue();
 		}
 		if (sessionToken != null) {
-			if (appsMid.sessionTokenExists(sessionToken.getValue())) {
+			SessionInterface sessions = new RedisSessions();
+			if (sessions.sessionTokenExists(sessionToken.getValue())) {
 				code = 1;
 				if (location != null) {
-					appsMid.refreshSession(sessionToken.getValue(),
-							location.get(0), userAgent.get(0));
+					sessions.refreshSession(sessionToken.getValue(), location.get(0), new Date().toString(), userAgent.get(0));
 				} else
-					appsMid.refreshSession(sessionToken.getValue());
-			}else{
+					sessions.refreshSession(sessionToken.getValue(), new Date().toString());
+			} else {
 				code = -2;
 			}
 		}

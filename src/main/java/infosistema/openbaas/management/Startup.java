@@ -1,16 +1,14 @@
 package infosistema.openbaas.management;
 
-import infosistema.openbaas.resourceModelLayer.AppsMiddleLayer;
-import infosistema.openbaas.rest_Models.PasswordEncryptionService;
-
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-
 import javax.servlet.*;
 
-
-
-
+import infosistema.openbaas.middleLayer.AppsMiddleLayer;
+import infosistema.openbaas.middleLayer.MiddleLayerFactory;
+import infosistema.openbaas.middleLayer.SessionMiddleLayer;
+import infosistema.openbaas.middleLayer.UsersMiddleLayer;
+import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
 /**
  * Administrator class
@@ -29,8 +27,9 @@ public class Startup implements ServletContextListener {
 
 	public void contextInitialized(ServletContextEvent event) {
 		this.context = event.getServletContext();
-//		DataModel dataModel = new DataModel();
-		AppsMiddleLayer appsMid = new AppsMiddleLayer();
+		AppsMiddleLayer appsMid = MiddleLayerFactory.getAppsMiddleLayer();
+		UsersMiddleLayer usersMid = MiddleLayerFactory.getUsersMiddleLayer();
+		SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
 		PasswordEncryptionService service = new PasswordEncryptionService();
 		byte[] hash = null;
 		byte[] salt = null;
@@ -45,11 +44,11 @@ public class Startup implements ServletContextListener {
 			System.out.println("Invalid Key.");
 			e.printStackTrace();
 		}
-		if (!appsMid.userExistsInApp(AdminAppId, AdminId, AdminEmail)) {
+		if (!usersMid.userExistsInApp(AdminAppId, AdminId, AdminEmail)) {
 			System.out.println("*****************Creating user***************");
 			System.out.println("userId: " + AdminId + " email: " + AdminEmail);
 			System.out.println("********************************************");
-			appsMid.createUser(this.AdminAppId, AdminId,OPENBAASADMIN, AdminEmail, salt, hash, null);
+			usersMid.createUser(this.AdminAppId, AdminId,OPENBAASADMIN, AdminEmail, salt, hash, null);
 			// Output a simple message to the server's console
 			System.out
 					.println("***********************************************");
@@ -62,7 +61,7 @@ public class Startup implements ServletContextListener {
 			System.out
 					.println("***********************************************");
 		}
-		if(appsMid.createSession(AdminSessionId, AdminAppId,AdminId, ADMINPASSWORD))
+		if(sessionMid.createSession(AdminSessionId, AdminAppId,AdminId, ADMINPASSWORD))
 			System.out.println("Admin Session created. Id: ~session");
 		else{
 			System.out.println("No admin Session created.");

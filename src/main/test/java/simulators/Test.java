@@ -68,7 +68,7 @@ public class Test {
 				String location = latitude+":"+longitude;
 				//System.out.println(latitude+";"+longitude+";"+imageName+";"+imageName+" - "+locationRand);
 				System.out.println(i);
-				String imageId = appsMid.createLocalFile2(is,null, "296", "jpg", "apps/296/media/images/",imageName);
+				String imageId = appsMid.createLocalFile(is,null, "296", "jpg", "apps/296/media/images/",imageName);
 				appsMid.uploadImageFileToServerWithGeoLocation("296",location, "jpg", imageName, imageId);
 				i++;
 			}
