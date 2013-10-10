@@ -1,4 +1,4 @@
-package infosistema.openbaas.rest.resources;
+package infosistema.openbaas.rest;
 
 import infosistema.openbaas.middleLayer.AclMiddleLayer;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;

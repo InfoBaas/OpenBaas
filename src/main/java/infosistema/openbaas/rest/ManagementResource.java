@@ -1,4 +1,4 @@
-package infosistema.openbaas.rest.resources;
+package infosistema.openbaas.rest;
 
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;

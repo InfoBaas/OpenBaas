@@ -1,9 +1,9 @@
-package infosistema.openbaas.rest.resources;
+package infosistema.openbaas.rest;
 
 import infosistema.openbaas.middleLayer.DocumentMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.model.IdsResultSet;
-import infosistema.openbaas.rest.resources.AppsResource.PATCH;
+import infosistema.openbaas.rest.AppsResource.PATCH;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 
