@@ -78,10 +78,6 @@ public class Test {
 		
 	}
 
-	private String getRandomString(int length) {
-		return (String) UUID.randomUUID().toString().subSequence(0, length);
-	}
-	
 	private static Integer getRandomLat() {
 		int latitude = (int) (Math.random() * 180);
 		return latitude -90;

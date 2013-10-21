@@ -8,7 +8,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.DBCursor;
 
-import infosistema.openbaas.dataaccess.geolocation.GeoLocationInterface;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 
 import java.io.UnsupportedEncodingException;
@@ -53,9 +52,10 @@ public class MongoDBDataModel implements DatabaseInterface {
 //	private static final int EXPIRETIME = 86400; // 24hours in seconds
 	
 	
-	GeoLocationInterface geo;
+	Geolocation geo;
+	
 	public MongoDBDataModel(String server, int port) {
-		geo = new Geolocation();
+		geo = Geolocation.getInstance();
 		mongoClient = null;
 		try {
 			mongoClient = new MongoClient(server, port);
@@ -66,7 +66,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public ArrayList<String> getAllUserIdsForApp(String appId,Integer pageNumber, Integer pageSize,String orderBy, String orderType) {
+	public ArrayList<String> getAllUserIdsForApp(String appId, Integer pageNumber, Integer pageSize,String orderBy, String orderType) {
 		Integer order = -1;
 		if(orderType.equals("desc")) order = 1;
 		DBCollection coll = db.getCollection(UsersColl);
@@ -348,8 +348,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 					.append("creationDate", creationDate)
 					.append("fileName", fileName).append("location", location);
 			String[] array = location.split(":");
-			geo.insertObjectInGrid(Double.parseDouble(array[0]),
-					Double.parseDouble(array[1]), type, audioId);
+			geo.insertObjectInGrid(Double.parseDouble(array[0]), Double.parseDouble(array[1]), type, appId, audioId);
 		} else {
 			audio = new BasicDBObject().append("_id", audioId)
 					.append("appId", appId).append("dir", directory)
@@ -414,7 +413,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 					.append("creationDate", creationDate)
 					.append("fileName", fileName).append("location", location);
 			String[] array = location.split(":");
-			geo.insertObjectInGrid(Double.parseDouble(array[0]),Double.parseDouble(array[1]), type, imageId);
+			geo.insertObjectInGrid(Double.parseDouble(array[0]),Double.parseDouble(array[1]), type, appId, imageId);
 		} else
 			image = new BasicDBObject().append("_id", imageId)
 					.append("appId", appId).append("dir", directory)
@@ -440,8 +439,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 					.append("creationDate", creationDate)
 					.append("fileName", fileName).append("location", location);
 			String[] array = location.split(":");
-			geo.insertObjectInGrid(Double.parseDouble(array[0]),
-					Double.parseDouble(array[1]), type, videoId);
+			geo.insertObjectInGrid(Double.parseDouble(array[0]), Double.parseDouble(array[1]), type, appId, videoId);
 		} else
 			video = new BasicDBObject().append("_id", videoId)
 					.append("appId", appId).append("dir", directory)
@@ -490,8 +488,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 					.append("creationDate", creationDate)
 					.append("fileName", fileName).append("location", location);
 			String[] array = location.split(":");
-			geo.insertObjectInGrid(Double.parseDouble(array[0]),
-					Double.parseDouble(array[1]), type, storageId);
+			geo.insertObjectInGrid(Double.parseDouble(array[0]), Double.parseDouble(array[1]), type, appId, storageId);
 		}
 		else
 			storage = new BasicDBObject().append("_id", storageId)
@@ -823,15 +820,13 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public void updateUserLocationAndDate(String userId, String appId,
-			String sessionToken, String location, String date) {
+	public void updateUserLocationAndDate(String userId, String appId, String sessionToken, String location, String date) {
 		DBCollection users = db.getCollection(UsersColl);
 		BasicDBObject query = new BasicDBObject();
 		query.append("_id", userId);
 		query.append("appId", appId);
 		BasicDBObject updateUser = new BasicDBObject();
-		updateUser
-				.append("$set", new BasicDBObject().append("location", location));
+		updateUser.append("$set", new BasicDBObject().append("location", location));
 		updateUser.append("$set", new BasicDBObject().append("date", date));
 		users.update(query, updateUser);
 

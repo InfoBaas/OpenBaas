@@ -1079,8 +1079,7 @@ public class RedisDataModel implements CacheInterface {
 	}
 
 	@Override
-	public void updateUserLocationAndDate(String userId, String appId,
-			String sessionToken, String location, String date) {
+	public void updateUserLocationAndDate(String userId, String appId, String sessionToken, String location, String date) {
 		Jedis jedis = pool.getResource();
 		try{
 			jedis.hset(("users:" + userId), "lastActive", date);

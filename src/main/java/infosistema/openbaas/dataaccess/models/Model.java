@@ -341,8 +341,8 @@ public class Model {
 		return dataModel.deleteDataInElement(appId, url);
 	}
 
-	public String patchDataInElement(String url, JSONObject inputJson, String location) {
-		return dataModel.patchDataInElement(url, inputJson, location);
+	public String patchDataInElement(String url, JSONObject inputJson, String appId, String location) {
+		return dataModel.patchDataInElement(url, inputJson, appId, location);
 	}
 
 	public boolean insertDocumentRoot(String appId, JSONObject data, String location) {
@@ -372,8 +372,7 @@ public class Model {
 		return dataModel.getElementInUserDocument(appId, userId, url);
 	}
 
-	public boolean insertUserDocumentRoot(String appId, String userId,
-			JSONObject data, String location) {
+	public boolean insertUserDocumentRoot(String appId, String userId, JSONObject data, String location) {
 		return dataModel.insertUserDocumentRoot(appId, userId, data, location);
 	}
 
@@ -382,10 +381,9 @@ public class Model {
 		return dataModel.createNonPublishableUserDocument(appId, userId, data,
 				url, location);
 	}
-	public void updateUserLocationAndDate(String userId, String appId, String sessionToken,
-			String location, String date) {
-		dataModel.updateUserLocationAndDate(userId, appId, sessionToken, location,
-				date);
+	
+	public void updateUserLocationAndDate(String userId, String appId, String sessionToken, String location, String date) {
+		dataModel.updateUserLocationAndDate(userId, appId, sessionToken, location, date);
 	}
 
 	public boolean authenticateUser(String appId, String userId,

@@ -13,5 +13,8 @@ public class Const {
 	public static final String EMAIL_CONFIRMATION_ERROR = "Please confirm your email first.";
 	public static final String EMAIL_CONFIRMATION_SENDED = "Email sent with recovery details.";
 	public static final int IDLENGTH = 3;
+	public static final int PASSWORD_LENGTH = 7;
+	public static final double LATITUDE_PRECISION = 10;
+	public static final double LONGITUDE_PRECISION = 10;
 
 }

@@ -136,14 +136,6 @@ public class SessionMiddleLayer {
 		return adminExists;
 	}
 
-	public void refreshSession(String sessionToken) {
-		sessions.refreshSession(sessionToken, new Date().toString());
-	}
-
-	public void addLocationToSession(String location, String sessionToken, String userAgent) {
-		sessions.addLocationToSession(location, sessionToken, userAgent);
-	}
-
 	public boolean refreshSession(String sessionToken, String location, String userAgent) {
 		return sessions.refreshSession(sessionToken, location, new Date().toString(), userAgent);
 	}

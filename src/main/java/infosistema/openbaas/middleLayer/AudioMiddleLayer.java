@@ -22,7 +22,6 @@ public class AudioMiddleLayer {
 	private static final String AUDIOTYPE = "audio";
 	private static final String MEDIAFOLDER = "media";
 	private static final String AUDIOFOLDER = "/media/audio";
-	private static final Utils utils = new Utils();
 
 	// *** INSTANCE *** ///
 	
@@ -51,7 +50,7 @@ public class AudioMiddleLayer {
 	
 	public String uploadAudioFileToServer(String appId, String fileDirectory, String location, String fileType,
 			String fileName) {
-		String audioId = utils.getRandomString(Const.IDLENGTH);
+		String audioId = Utils.getRandomString(Const.IDLENGTH);
 		if (this.model.uploadFileToServer(appId, audioId, MEDIAFOLDER, AUDIOTYPE, fileDirectory, location, fileType, fileName))
 			return audioId;
 		else {

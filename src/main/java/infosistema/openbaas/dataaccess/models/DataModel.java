@@ -794,9 +794,9 @@ public class DataModel {
 		}
 	}
 
-	public String patchDataInElement(String url, JSONObject inputJson, String location) {
+	public String patchDataInElement(String url, JSONObject inputJson, String appId, String location) {
 			try {
-				return docModel.patchDataInElement(url, inputJson, location);
+				return docModel.patchDataInElement(url, inputJson, appId, location);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -857,8 +857,7 @@ public class DataModel {
 		}
 	}
 
-	public boolean insertUserDocumentRoot(String appId, String userId,
-			JSONObject data, String location) {
+	public boolean insertUserDocumentRoot(String appId, String userId, JSONObject data, String location) {
 		try {
 			return docModel.insertUserDocumentRoot(appId, userId, data, location);
 		} catch (Exception e) {
@@ -878,10 +877,8 @@ public class DataModel {
 		}
 	}
 
-	public void updateUserLocationAndDate(String userId, String appId,
-			String sessionToken, String location, String date) {
-		mongoModel.updateUserLocationAndDate(userId, appId, sessionToken,
-				location, date);
+	public void updateUserLocationAndDate(String userId, String appId, String sessionToken, String location, String date) {
+		mongoModel.updateUserLocationAndDate(userId, appId, sessionToken, location, date);
 	}
 
 	public boolean authenticateUser(String appId, String userId,

@@ -4,6 +4,7 @@ import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.rest.AppsResource.PATCH;
 import infosistema.openbaas.utils.Const;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -15,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
+
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -32,6 +34,18 @@ public class UserRecoveryResource {
 		this.uriInfo = uriInfo;
 		this.userId = userId;
 	}
+
+	// *** CREATE *** ///
+	
+	// *** UPDATE *** ///
+	
+	// *** DELETE *** ///
+	
+	// *** GET *** ///
+	
+	// *** OTHERS *** ///
+
+	//TODO: LOCATION (location de defeito???)
 	/*
 	 * Returns a code corresponding to the sucess or failure Codes: -2 ->
 	 * Forbidden -1 -> Bad request 1 -> sessionExists
@@ -58,6 +72,7 @@ public class UserRecoveryResource {
 		return response;
 		
 	}
+
 	@PATCH
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)

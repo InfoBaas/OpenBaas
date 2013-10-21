@@ -4,14 +4,15 @@ import infosistema.openbaas.dataaccess.models.Model;
 import infosistema.openbaas.model.media.image.Image;
 import infosistema.openbaas.model.media.image.ImageInterface;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
+import com.sun.jersey.core.header.FormDataContentDisposition;
 
-public class ImageMiddleLayer {
+public class ImageMiddleLayer extends MediaMiddleLayer {
 
 	// *** MEMBERS *** ///
 
-	private Model model;
 	private static final String IMAGETYPE = "image";
 	private static final String MEDIAFOLDER = "media";
 	private static final String IMAGESFOLDER = "/media/images";
@@ -31,34 +32,64 @@ public class ImageMiddleLayer {
 
 	// *** CREATE *** ///
 	
+	public String uploadImage(InputStream uploadedInputStream, FormDataContentDisposition fileDetail, String appId, String location) {
+		String fileNameWithType = null;
+		String fileType = new String();
+		String fileName = new String();
+		boolean uploadOk = false;
+		fileNameWithType = fileDetail.getFileName();
+		String fileDirectory = "apps/"+appId+"/media/images/";
+		char[] charArray = fileNameWithType.toCharArray();
+		boolean pop = false;
+		int i = 0;
+		while (!pop) {
+			fileName += charArray[i];
+			if (charArray[i++] == '.')
+				pop = true;
+		}
+		for (int k = 0; k < charArray.length - 1; k++) {
+			if (charArray[k] == '.') {
+				for (int j = k + 1; j < charArray.length; j++)
+					fileType += charArray[j];
+			}
+		}
+		String id = MiddleLayerFactory.getStorageMiddleLayer().createLocalFile(uploadedInputStream, fileDetail, appId, fileType, fileDirectory);
+		uploadOk = uploadImageFileToServer(appId, location, fileType, fileName, id);
+		if(id != null && uploadOk)
+			return id;
+		else
+			return null;
+	}
+	
+	public boolean uploadImageFileToServer(String appId, String location, String fileType, String fileName, String imageId) {
+		return this.model.uploadFileToServer(appId, imageId, MEDIAFOLDER, IMAGETYPE, "apps/"+appId+IMAGESFOLDER, location, fileType, fileName);
+	}
+
+	
 	// *** UPDATE *** ///
+	
 	
 	// *** DELETE *** ///
 	
-	// *** GET *** ///
 	
-	// *** OTHERS *** ///
+	// *** GET LIST *** ///
+	
+	public ArrayList<String> getAllImageIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		return this.model.getAllImageIdsInApp(appId, pageNumber, pageSize, orderBy, orderType);
+	}
+
+	
+	// *** GET *** ///
 	
 	public byte[] downloadImageInApp(String appId, String imageId,String ext) {
 		return this.model.downloadImageInApp(appId, imageId,ext);
 	}
 
-	public ArrayList<String> getAllImageIdsInApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
-		return this.model.getAllImageIdsInApp(appId, pageNumber, pageSize, orderBy, orderType);
-	}
 
+	// *** OTHERS *** ///
+	
 	public Integer countAllImages(String appId) {
 		return this.model.countAllImagesInApp(appId);
-	}
-
-	public boolean uploadImageFileToServerWithGeoLocation(String appId, String location, String fileType,
-			String fileName, String imageId) {
-		return this.model.uploadFileToServer(appId, imageId, MEDIAFOLDER, IMAGETYPE, "apps/"+appId+IMAGESFOLDER, location, fileType, fileName);
-	}
-
-	public boolean uploadImageFileToServerWithoutGeoLocation(String appId, String fileType,
-			String fileName, String imageId) {
-		return this.model.uploadFileToServer(appId, imageId, MEDIAFOLDER, IMAGETYPE, "apps/"+appId+IMAGESFOLDER, null, fileType, fileName);
 	}
 
 	public boolean imageExistsInApp(String appId, String imageId) {

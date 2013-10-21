@@ -454,8 +454,7 @@ public interface DatabaseInterface {
 	 */
 	public ArrayList<String> getAllMediaIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType);
 
-	public void updateUserLocationAndDate(String userId, String appId,
-			String sessionToken, String location, String date);
+	public void updateUserLocationAndDate(String userId, String appId, String sessionToken, String location, String date);
 
 	public Boolean storageExistsInApp(String appId, String storageId);
 

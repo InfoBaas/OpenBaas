@@ -22,6 +22,7 @@ public class RootResource {
 					.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
+
 	@Path("/{pathId:.+}/~ACL")
 	public AclResource aclResource(@PathParam("pathId") List<PathSegment> path) {
 		try {
@@ -31,4 +32,5 @@ public class RootResource {
 					.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
+
 }

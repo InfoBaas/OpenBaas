@@ -2,6 +2,7 @@ package infosistema.openbaas.middleLayer;
 
 import infosistema.openbaas.dataaccess.email.EmailInterface;
 import infosistema.openbaas.dataaccess.email.Email;
+import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.dataaccess.models.Model;
 import infosistema.openbaas.dataaccess.sessions.RedisSessions;
 import infosistema.openbaas.dataaccess.sessions.SessionInterface;
@@ -15,9 +16,16 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Response.Status;
 
 public class UsersMiddleLayer {
 
@@ -26,7 +34,6 @@ public class UsersMiddleLayer {
 	Model model;
 	SessionInterface sessions;
 	EmailInterface emailOp;
-	private static final Utils utils = new Utils();
 	private static PasswordEncryptionService service;
 	
 	// *** INSTANCE *** ///
@@ -46,7 +53,66 @@ public class UsersMiddleLayer {
 	}
 
 	// *** CREATE *** ///
-	
+
+	public UserInterface createUserAndLogin(MultivaluedMap<String, String> headerParams, UriInfo uriInfo, String appId, String userName, 
+			String email, String password, String userFile) {
+		UserInterface outUser = new User();
+
+		String userId = null;
+		List<String> userAgentList = null;
+		List<String> locationList = null;
+		String userAgent = null;
+		String location = null;
+		
+		userId = Utils.getRandomString(Const.IDLENGTH);
+		while (identifierInUseByUserInApp(appId, userId))
+			userId = Utils.getRandomString(Const.IDLENGTH);
+		byte[] salt = null;
+		byte[] hash = null;
+		PasswordEncryptionService service = new PasswordEncryptionService();
+		try {
+			salt = service.generateSalt();
+			hash = service.getEncryptedPassword(password, salt);
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Hashing Algorithm failed, please review the PasswordEncryptionService.");
+			e.printStackTrace();
+		} catch (InvalidKeySpecException e) {
+			System.out.println("Invalid Key.");
+			e.printStackTrace();
+		}
+
+		if (!confirmUsersEmailOption(appId)) {
+			SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+			createUser(appId, userId,	userName, email, salt, hash, userFile);
+			String sessionToken = Utils.getRandomString(Const.IDLENGTH);
+			boolean validation = sessionMid.createSession(sessionToken, appId, userId, password);
+			for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+				if (entry.getKey().equalsIgnoreCase("location"))
+					locationList = entry.getValue();
+				else if (entry.getKey().equalsIgnoreCase("user-agent")){
+					userAgentList = entry.getValue();
+				}	
+			}
+			if (locationList != null)
+				location = locationList.get(0);
+			if (userAgentList != null)
+				userAgent = userAgentList.get(0);
+			
+			sessionMid.refreshSession(sessionToken, location, userAgent);
+
+			if (validation) {
+				outUser.setUserID2(userId);
+				outUser.setReturnToken(sessionToken);
+			}
+		} else if (confirmUsersEmailOption(appId)) {
+			boolean emailConfirmed = false;
+			createUserWithEmailConfirmation(appId, userId, userName, email, salt,hash, userFile, emailConfirmed, uriInfo);
+			outUser.setUserID2(userId);
+		}
+		return outUser;
+		
+	}
+
 	/**
 	 * Password already comes hashed, it's safer than having the password
 	 * floating around.
@@ -58,8 +124,7 @@ public class UsersMiddleLayer {
 	 * @param password
 	 * @return
 	 */
-	public boolean createUser(String appId, String userId, String userName,
-			String email, byte[] salt, byte[] hash, String userFile) {
+	public boolean createUser(String appId, String userId, String userName, String email, byte[] salt, byte[] hash, String userFile) {
 		boolean sucess = false;
 		try {
 			sucess = this.model.createUser(appId, userId, userName, email, salt, hash, userFile);
@@ -74,7 +139,7 @@ public class UsersMiddleLayer {
 		boolean sucessModel = false;
 		try {
 			sucessModel = this.model.createUserWithEmailConfirmation(appId, userId, userName, email, salt, hash, flag, emailConfirmed);
-			String ref = utils.getRandomString(Const.IDLENGTH);
+			String ref = Utils.getRandomString(Const.IDLENGTH);
 			emailOp.sendRegistrationEmailWithRegistrationCode(appId, userId, userName, email, ref, uriInfo.getAbsolutePath().toASCIIString());
 			this.emailOp.addUrlToUserId(appId, userId, ref);
 		} catch (Exception e) {
@@ -121,18 +186,13 @@ public class UsersMiddleLayer {
 
 	// *** GET *** ///
 	
-	/**
-	 * Horrible complexity, paginate this.
-	 * 
-	 * @param appId
-	 * @param pageSize 
-	 * @param pageNumber 
-	 * @param orderType 
-	 * @param orderBy 
-	 * @return
-	 */
-	public ArrayList <String> getAllUserIdsForApp(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
-		return model.getAllUserIdsForApp(appId,pageNumber,pageSize,orderBy,orderType);
+	public ArrayList <String> getAllUserIdsForApp(String appId, Double latitude, Double longitude, Double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
+		if (latitude != null && longitude != null && radius != null) {
+			Geolocation geo = Geolocation.getInstance();
+			return geo.getObjectsInDistance(latitude, longitude, radius, appId, "user");
+		} else {
+			return model.getAllUserIdsForApp(appId, pageNumber, pageSize, orderBy, orderType);
+		}
 	}
 
 	public UserInterface getUserInApp(String appId, String userId) {

@@ -16,6 +16,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -40,14 +41,84 @@ public class VideoResource {
 
 	private VideoMiddleLayer videoMid;
 	private SessionMiddleLayer sessionMid;
-	private static final Utils utils = new Utils();
 	
 	public VideoResource(String appId) {
 		this.appId = appId;
 		this.videoMid = MiddleLayerFactory.getVideoMiddleLayer();
 	}
 
-	//TODO: PAGINATION
+	// *** CREATE *** //
+
+	//TODO: LOCATION
+	/**
+	 * Uploads an audio File.
+	 * 
+	 * @param request
+	 * @param headers
+	 * @param inputJsonObj
+	 * @return
+	 */
+	@POST
+	@Consumes({ MediaType.MULTIPART_FORM_DATA })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response uploadVideo(@Context HttpHeaders hh, @Context UriInfo ui,
+			@FormDataParam("file") InputStream uploadedInputStream,
+			@FormDataParam("file") FormDataContentDisposition fileDetail,
+			@HeaderParam(value = "location") String location) {
+
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			String videoId = videoMid.uploadVideo(uploadedInputStream, fileDetail, appId, location);
+			if (videoId == null) { 
+				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
+			} else {
+				response = Response.status(Status.OK).entity(videoId).build();
+			}
+		} else if(code == -2)
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
+			 .build();
+		else if(code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
+			 .build();
+		return response;
+	}
+	
+	// *** UPDATE *** //
+	
+	
+	// *** DELETE *** //
+	
+	//TODO: LOCATION
+	/**
+	 * Deletes the video (from filesystem and database).
+	 * 
+	 * @param videoId
+	 * @return
+	 */
+	@Path("{videoId}")
+	@DELETE
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response deleteVideo(@PathParam("videoId") String videoId,
+			@CookieParam(value = "sessionToken") String sessionToken) {
+		Response response = null;
+		if (sessionMid.sessionTokenExists(sessionToken)) {
+			System.out.println("************************************");
+			System.out.println("***********Deleting Video***********");
+			if (videoMid.videoExistsInApp(appId, videoId)) {
+				videoMid.deleteVideoInApp(appId, videoId);
+				response = Response.status(Status.OK).entity(appId).build();
+			} else
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+		} else
+			response = Response.status(Status.FORBIDDEN).entity(sessionToken).build();
+		return response;
+	}
+
+	
+	// *** GET LIST *** //
+	
+	//TODO: LOCATION
 	/**
 	 * Gets all Video Identifiers.
 	 * 
@@ -75,6 +146,9 @@ public class VideoResource {
 		return response;
 	}
 
+	
+	// *** GET *** //
+	
 	/**
 	 * Gets the video metadata.
 	 * 
@@ -103,31 +177,9 @@ public class VideoResource {
 		return response;
 	}
 
-	/**
-	 * Deletes the video (from filesystem and database).
-	 * 
-	 * @param videoId
-	 * @return
-	 */
-	@Path("{videoId}")
-	@DELETE
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response deleteVideo(@PathParam("videoId") String videoId,
-			@CookieParam(value = "sessionToken") String sessionToken) {
-		Response response = null;
-		if (sessionMid.sessionTokenExists(sessionToken)) {
-			System.out.println("************************************");
-			System.out.println("***********Deleting Video***********");
-			if (videoMid.videoExistsInApp(appId, videoId)) {
-				videoMid.deleteVideoInApp(appId, videoId);
-				response = Response.status(Status.OK).entity(appId).build();
-			} else
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
-		} else
-			response = Response.status(Status.FORBIDDEN).entity(sessionToken).build();
-		return response;
-	}
-
+	
+	// *** DOWNLOAD *** //
+	
 	/**
 	 * Downloads the audio File.
 	 * 
@@ -158,72 +210,4 @@ public class VideoResource {
 		return response;
 	}
 
-	/**
-	 * Uploads an audio File.
-	 * 
-	 * @param request
-	 * @param headers
-	 * @param inputJsonObj
-	 * @return
-	 */
-	@POST
-	@Consumes({ MediaType.MULTIPART_FORM_DATA })
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response uploadVideo(@Context HttpServletRequest request,
-			@Context HttpHeaders hh,@Context UriInfo ui,
-			@FormDataParam("file") InputStream uploadedInputStream,
-			@FormDataParam("file") FormDataContentDisposition fileDetail,
-			@FormDataParam("location") String location) {
-		Response response = null;
-		int code = utils.treatParameters(ui, hh);
-		String fileNameWithType = null;
-		String fileType = new String();
-		String fileName = new String();
-		if (code == 1) {
-			System.out.println("***********************************");
-			System.out.println("*******Uploading to Storage********");
-			fileNameWithType = fileDetail.getFileName();
-			char[] charArray = fileNameWithType.toCharArray();
-			boolean pop = false;
-			int i = 0;
-			while (!pop) {
-				fileName += charArray[i];
-				if (charArray[i + 1] == '.')
-					pop = true;
-				i++;
-			}
-			for (int k = 0; k < charArray.length - 1; k++) {
-				if (charArray[k] == '.') {
-					for (int j = k + 1; j < charArray.length; j++)
-						fileType += charArray[j];
-				}
-			}
-			String dir = "apps/" + appId + "/media/video";
-			String videoId = MiddleLayerFactory.getStorageMiddleLayer().createLocalFile(uploadedInputStream,
-					fileDetail, appId, fileType, dir);
-			/* save it
-			 *
-			 * :::::::::::::::::MAJOR WARNING::::::::::::::::::::::Handling the
-			 * Packet inputstream creates an infinite loop, you should not
-			 * attempt it,the ReadMultiStream does not return -1 on EOS, it goes
-			 * to the begining.You can read about it here:
-			 * http://stackoverflow.com
-			 * /questions/17861088/inputstream-infinit-loop
-			 * 
-			 * Solution: use the IOUtils to handle it, they have it implemented
-			 * in a way that this error is handled produces the file
-			 * successfully.
-			 */
-			//String file = dir + videoId + "." + fileType;
-			videoMid.uploadVideoFileToServerWithoutGeoLocation(this.appId, videoId, fileType,
-					fileName);
-			response = Response.status(200).entity(fileNameWithType).build();
-		}else if(code == -2)
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-			 .build();
-		else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
-		return response;
-	}
 }

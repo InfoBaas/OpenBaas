@@ -141,7 +141,7 @@ public class DocumentMiddleLayer {
 	public String patchDataInElement(String appId, List<PathSegment> path,
 			JSONObject inputJson, String location) {
 		String url = createAppDocPathFromListWithComas(appId, path);
-		return model.patchDataInElement(url, inputJson, location);
+		return model.patchDataInElement(url, inputJson, appId, location);
 	}
 
 	public boolean insertAppDocumentRoot(String appId, JSONObject data, String location) {
@@ -183,8 +183,7 @@ public class DocumentMiddleLayer {
 		return model.insertIntoUserDocument(appId, userId, url, data, location);
 	}
 
-	public boolean insertUserDocumentRoot(String appId, String userId,
-			JSONObject data, String location) {
+	public boolean insertUserDocumentRoot(String appId, String userId, JSONObject data, String location) {
 		return model.insertUserDocumentRoot(appId, userId, data, location);
 	}
 

@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -36,7 +37,6 @@ public class AudioResource {
 	static Map<String, Audio> audio = new HashMap<String, Audio>();
 	String appId;
 	static final int idGenerator = 3;
-	private static final Utils utils = new Utils();
 	private AudioMiddleLayer audioMid;
 	private AppsMiddleLayer appsMid;
 
@@ -44,139 +44,11 @@ public class AudioResource {
 		this.appId = appId;
 		this.audioMid = MiddleLayerFactory.getAudioMiddleLayer();
 	}
+
 	
-	//TODO PAGINATION
-	/**
-	 * Retrieve all the audio Ids for this application.
-	 * @return
-	 */
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response findAllAudioIds(@Context UriInfo ui, @Context HttpHeaders hh,@QueryParam("lat") 
-		String latitude,@QueryParam("long") String longitude,@QueryParam("radius") String radius,
-		@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
-		@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
-		Response response = null;
-		int code = utils.treatParameters(ui, hh);
-		if (code == 1) {
-			System.out.println("***********************************");
-			System.out.println("********Finding all Audio**********");
-			ArrayList<String> audioIds = null;
-			if (latitude != null && longitude != null && radius != null) {
-				audioIds = audioMid.getAllAudioIdsInRadius(appId, Double.parseDouble(latitude),
-						Double.parseDouble(longitude), Double.parseDouble(radius));
-			}else
-				audioIds = audioMid.getAllAudioIds(appId,pageNumber,pageSize,orderBy,orderType);
-			IdsResultSet res = new IdsResultSet(audioIds,pageNumber);
-			response = Response.status(Status.OK).entity(res).build();
-		} else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
-		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
-		return response;
-	}
+	// *** CREATE *** //
 
-	/**
-	 * Retrieve the audio Metadata using its ID.
-	 * @param audioId
-	 * @return
-	 */
-	@Path("{audioId}")
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response findAudioById(@PathParam("audioId") String audioId, 
-			@Context UriInfo ui, @Context HttpHeaders hh
-			) {
-		Response response = null;
-		int code = utils.treatParameters(ui, hh);
-		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("********Finding Audio Meta**********");
-			AudioInterface temp = null;
-			if (appsMid.appExists(this.appId)) {
-				if (audioMid.audioExistsInApp(this.appId, audioId)) {
-					temp = audioMid.getAudioInApp(appId, audioId);
-					response = Response.status(Status.OK).entity(temp).build();
-				} else {
-					response = Response.status(Status.NOT_FOUND).entity(temp)
-							.build();
-				}
-			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
-			}
-		}else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
-		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
-		return response;
-	}
-	/**
-	 * Deletes the audio File (from the DB and FileSystem).
-	 * @param audioId
-	 * @return
-	 */
-	@Path("{audioId}")
-	@DELETE
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response deleteAudio(@PathParam("audioId") String audioId,
-			@Context UriInfo ui, @Context HttpHeaders hh) {
-		Response response = null;
-		int code = utils.treatParameters(ui, hh);
-		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("***********Deleting Audio***********");
-			if (audioMid.audioExistsInApp(appId, audioId)) {
-				this.audioMid.deleteAudioInApp(appId, audioId);
-				response = Response.status(Status.OK).entity(appId).build();
-			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
-			}
-		}else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
-		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
-		return response;
-	}
-	/**
-	 * Downloads the audio in the specified quality.
-	 * @param audioId
-	 * @return
-	 */
-	@Path("{audioId}/{quality}/download")
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response downloadAudio(@PathParam("audioId") String audioId,
-			@Context UriInfo ui, @Context HttpHeaders hh) {
-		Response response = null;
-		byte[] sucess = null;
-		int code = utils.treatParameters(ui, hh);
-		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("*********Downloading Audio**********");
-			if (this.audioMid.audioExistsInApp(appId, audioId)) {
-				AudioInterface audio = this.audioMid.getAudioInApp(appId, audioId);
-				sucess = audioMid.downloadAudioInApp(appId, audioId,audio.getType());
-				if (sucess!=null)
-					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
-							.header("content-disposition","attachment; filename = "+audio.getFileName()+"."+audio.getType()).build();
-			} else
-				response = Response.status(Status.NOT_FOUND).entity(audioId)
-						.build();
-		}else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
-		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
-		return response;
-	}
-
+	//TODO: LOCATION
 	/**
 	 * To upload a file simply send a Json object with the directory of the file
 	 * you want to send and send the "compact" flag (it takes the value of true
@@ -196,16 +68,16 @@ public class AudioResource {
 			@FormDataParam("file") InputStream uploadedInputStream,
 			@FormDataParam("file") FormDataContentDisposition fileDetail,
 			@PathParam("appId") String appId,
-			@FormDataParam("location") String location) {
+			@HeaderParam(value = "location") String location) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		String fileNameWithType = null;
 		String fileType = new String();
 		String fileName = new String();
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("*********Uploading Audio************");
-			
+
 			fileNameWithType = fileDetail.getFileName();
 			char[] charArray = fileNameWithType.toCharArray();
 			boolean pop = false;
@@ -238,13 +110,162 @@ public class AudioResource {
 			 * successfully.
 			 */
 			this.audioMid.uploadAudioFileToServerWithGeoLocation(appId, location, fileType, fileName, audioId);
-			
+
 		}else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
-		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
+					.build();
+		}else if(code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
+			.build();
+		return response;
+	}
+
+	
+	// *** UPDATE *** //
+
+	
+	// *** DELETE *** //
+
+	//TODO: LOCATION
+	/**
+	 * Deletes the audio File (from the DB and FileSystem).
+	 * @param audioId
+	 * @return
+	 */
+	@Path("{audioId}")
+	@DELETE
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response deleteAudio(@PathParam("audioId") String audioId,
+			@Context UriInfo ui, @Context HttpHeaders hh) {
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			System.out.println("************************************");
+			System.out.println("***********Deleting Audio***********");
+			if (audioMid.audioExistsInApp(appId, audioId)) {
+				this.audioMid.deleteAudioInApp(appId, audioId);
+				response = Response.status(Status.OK).entity(appId).build();
+			} else {
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+			}
+		}else if(code == -2){
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
+					.build();
+		}else if(code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
+			.build();
+		return response;
+	}
+
+	
+	// *** GET LIST *** //
+
+	//TODO: LOCATION
+	/**
+	 * Retrieve all the audio Ids for this application.
+	 * @return
+	 */
+	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response findAllAudioIds(@Context UriInfo ui, @Context HttpHeaders hh,@QueryParam("lat") 
+	String latitude,@QueryParam("long") String longitude,@QueryParam("radius") String radius,
+	@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+	@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			System.out.println("***********************************");
+			System.out.println("********Finding all Audio**********");
+			ArrayList<String> audioIds = null;
+			if (latitude != null && longitude != null && radius != null) {
+				audioIds = audioMid.getAllAudioIdsInRadius(appId, Double.parseDouble(latitude),
+						Double.parseDouble(longitude), Double.parseDouble(radius));
+			}else
+				audioIds = audioMid.getAllAudioIds(appId,pageNumber,pageSize,orderBy,orderType);
+			IdsResultSet res = new IdsResultSet(audioIds,pageNumber);
+			response = Response.status(Status.OK).entity(res).build();
+		} else if(code == -2){
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
+					.build();
+		}else if(code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
+			.build();
+		return response;
+	}
+
+	
+	// *** GET *** //
+
+	/**
+	 * Retrieve the audio Metadata using its ID.
+	 * @param audioId
+	 * @return
+	 */
+	@Path("{audioId}")
+	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response findAudioById(@PathParam("audioId") String audioId, 
+			@Context UriInfo ui, @Context HttpHeaders hh
+			) {
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			System.out.println("************************************");
+			System.out.println("********Finding Audio Meta**********");
+			AudioInterface temp = null;
+			if (appsMid.appExists(this.appId)) {
+				if (audioMid.audioExistsInApp(this.appId, audioId)) {
+					temp = audioMid.getAudioInApp(appId, audioId);
+					response = Response.status(Status.OK).entity(temp).build();
+				} else {
+					response = Response.status(Status.NOT_FOUND).entity(temp)
+							.build();
+				}
+			} else {
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+			}
+		}else if(code == -2){
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
+					.build();
+		}else if(code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
+			.build();
+		return response;
+	}
+
+	// *** DOWNLOAD *** //
+
+	/**
+	 * Downloads the audio in the specified quality.
+	 * @param audioId
+	 * @return
+	 */
+	@Path("{audioId}/{quality}/download")
+	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response downloadAudio(@PathParam("audioId") String audioId,
+			@Context UriInfo ui, @Context HttpHeaders hh) {
+		Response response = null;
+		byte[] sucess = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			System.out.println("************************************");
+			System.out.println("*********Downloading Audio**********");
+			if (this.audioMid.audioExistsInApp(appId, audioId)) {
+				AudioInterface audio = this.audioMid.getAudioInApp(appId, audioId);
+				sucess = audioMid.downloadAudioInApp(appId, audioId,audio.getType());
+				if (sucess!=null)
+					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
+							.header("content-disposition","attachment; filename = "+audio.getFileName()+"."+audio.getType()).build();
+			} else
+				response = Response.status(Status.NOT_FOUND).entity(audioId)
+				.build();
+		}else if(code == -2){
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
+					.build();
+		}else if(code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
+			.build();
 		return response;
 	}
 

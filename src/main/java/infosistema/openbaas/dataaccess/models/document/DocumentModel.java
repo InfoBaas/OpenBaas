@@ -1,6 +1,5 @@
 package infosistema.openbaas.dataaccess.models.document;
 
-import infosistema.openbaas.dataaccess.geolocation.GeoLocationInterface;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 
 import java.net.UnknownHostException;
@@ -44,10 +43,10 @@ public class DocumentModel implements DocumentInterface {
 	private static final String specialCharacter = "~";
 	private static final String AUDIO = "audio";
 	private static final String IMAGE = "jpg";
-	GeoLocationInterface geo;
+	Geolocation geo;
 	public DocumentModel() {
 		mongoClient = null;
-		geo = new Geolocation();
+		geo = Geolocation.getInstance();
 		try {
 			mongoClient = new MongoClient(SERVER, PORT);
 		} catch (UnknownHostException e) {
@@ -151,7 +150,7 @@ public class DocumentModel implements DocumentInterface {
 				if (location != null){
 					temp.append("location", location);
 					String[] splitted = location.split(":");
-					geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), key, tempURL);
+					geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), key, appId, tempURL);
 				}
 				coll.insert(temp);
 				keys.remove();
@@ -200,76 +199,6 @@ public class DocumentModel implements DocumentInterface {
 		return true;
 	}
 
-	// /**
-	// * DocumentModel method for PATCH HTTP Requests. It partially updates the
-	// * object, modifying existing fields and adds the fields not present in
-	// the
-	// * document.
-	// *
-	// * @throws JSONException
-	// */
-	// @Override
-	// public String patchDataInElement(String url, JSONObject inputJson,
-	// String location) throws JSONException {
-	// DBCollection coll = db.getCollection(DataColl);
-	// BasicDBObject searchQuery = new BasicDBObject();
-	// searchQuery.put("path", url);
-	//
-	// BasicDBObject newDocument = new BasicDBObject();
-	// if (location != null)
-	// newDocument.append("$set",
-	// new BasicDBObject().append("data", inputJson.toString())
-	// .append("location", location));
-	// else
-	// newDocument.append("$set",
-	// new BasicDBObject().append("data", inputJson.toString()));
-	// coll.update(searchQuery, newDocument);
-	// JSONObject dataJson = null;
-	// Iterator it = inputJson.keys();
-	// if (it.hasNext()) {
-	// String data = (String) it.next();
-	// if (data.equals("data")) {
-	// dataJson = (JSONObject) inputJson.get(data);
-	// Iterator dataIt = dataJson.keys();
-	// while (dataIt.hasNext()) { // iterate all the keys inside the
-	// // json
-	// String key = (String) dataIt.next();
-	// BasicDBObject keyQuery = new BasicDBObject().append("_id",
-	// key);
-	// DBCursor cursor = coll.find(keyQuery);
-	// String tempURL = url;
-	// if (!cursor.hasNext()) { // Key does not exist in tree,
-	// // let's create it
-	// BasicDBObject temp = new BasicDBObject();
-	// temp.put("_id", key);
-	// temp.put("data", dataJson.get(key));
-	// tempURL += "," + key;
-	// temp.put("path", tempURL);
-	// if (location != null)
-	// temp.put("location", location);
-	// coll.insert(temp);
-	// dataIt.remove();
-	// } else { // object already exists, let us update it
-	// coll.remove(keyQuery);
-	// tempURL += "," + key;
-	// BasicDBObject newKey = new BasicDBObject()
-	// .append("_id", key)
-	// .append("data", dataJson.toString())
-	// .append("path", tempURL);
-	// if (location != null)
-	// newKey.put("location", location);
-	// coll.insert(newKey);
-	// dataIt.remove();
-	// }
-	// }
-	// }
-	// }
-	//
-	// // TODO Auto-generated method stub
-	// return dataJson.toString();
-	// }
-	// This is a recursive attempt to implement the abstract
-	// data
 	/**
 	 * DocumentModel method for PATCH HTTP Requests. It partially updates the
 	 * object, modifying existing fields and adds the fields not present in the
@@ -278,8 +207,7 @@ public class DocumentModel implements DocumentInterface {
 	 * @throws JSONException
 	 */
 	@Override
-	public String patchDataInElement(String url, JSONObject inputJson,
-			String location) {
+	public String patchDataInElement(String url, JSONObject inputJson, String appId, String location) {
 		DBCollection coll = db.getCollection(DataColl);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("path", url);
@@ -295,12 +223,12 @@ public class DocumentModel implements DocumentInterface {
 				break;
 			}
 			tempURL += "," + element;
-			patchDataInElementRec(coll, tempURL, inputJson, location, element);
+			patchDataInElementRec(coll, appId, tempURL, inputJson, location, element);
 		}
 		return inputJson.toString();
 	}
 
-	public void patchDataInElementRec(DBCollection coll, String tempURL,
+	public void patchDataInElementRec(DBCollection coll, String appId, String tempURL,
 			JSONObject inputJson, String location, String element) {
 		JSONObject childs = null;
 		//String value = null;
@@ -311,7 +239,7 @@ public class DocumentModel implements DocumentInterface {
 			if (childsIt.hasNext()) {
 				child = (String) childsIt.next();
 				tempURL += "," + child;
-				patchDataInElementRec(coll, tempURL, (JSONObject) childs,location, child);
+				patchDataInElementRec(coll, appId, tempURL, (JSONObject) childs, location, child);
 			}
 		} catch (JSONException e) {// Java 7 allows multiple exception catches
 									// but
@@ -338,8 +266,7 @@ public class DocumentModel implements DocumentInterface {
 			if (location != null){
 				newDocument = new BasicDBObject().append("$set",new BasicDBObject().append("data", inputJson.toString()).append("location", location));
 			String[] splitted = location.split(":");
-			geo.insertObjectInGrid(Double.parseDouble(splitted[0]),
-					Double.parseDouble(splitted[1]), child, tempURL);
+			geo.insertObjectInGrid(Double.parseDouble(splitted[0]), Double.parseDouble(splitted[1]), child, appId, tempURL);
 		}
 			else
 				newDocument = new BasicDBObject()
@@ -370,7 +297,7 @@ public class DocumentModel implements DocumentInterface {
 			if (location != null){
 				temp.append("location", location);
 				String[] splitted = location.split(":");
-				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), key, tempURL);
+				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), key, appId, tempURL);
 			}
 			tempURL += "," + key;
 			temp.append("path", tempURL);
@@ -464,8 +391,7 @@ public class DocumentModel implements DocumentInterface {
 			if (childsIt.hasNext()) {
 				String child = (String) childsIt.next();
 				tempURL += "," + child;
-				patchDataInElementRec(coll, tempURL, (JSONObject) childs,
-						location, child);
+				patchDataInElementRec(coll, appId, tempURL, (JSONObject) childs, location, child);
 			}
 			//Java 7 allows multiple exception catches but version < 7 doesn't
 		} catch (JSONException e) {
@@ -526,8 +452,7 @@ public class DocumentModel implements DocumentInterface {
 	}
 	//have a look at the recursive function used in patchDataInElement
 	@Override
-	public boolean insertUserDocumentRoot(String appId, String userId,
-			JSONObject data, String location) throws JSONException {
+	public boolean insertUserDocumentRoot(String appId, String userId, JSONObject data, String location) throws JSONException {
 		DBCollection coll = db.getCollection(DataColl);
 		String tempURL = appId + ",users," + userId;
 		Iterator<?> it = data.keys();// iterate the new content and
@@ -598,37 +523,13 @@ public class DocumentModel implements DocumentInterface {
 		}
 		return sucess;
 	}
-//GEO Location with iteration over all elements and haversine
-//	@Override
-//	public String getAllDocsInRadius(String appId, double latitude,
-//			double longitude, double radius) {
-//		DBCollection coll = db.getCollection(DataColl);
-//		String allDoc = "";
-//		BasicDBObject query = new BasicDBObject();
-//		query.put("path", Pattern.compile(appId));
-//		DBCursor cursor = coll.find(query);
-//		Geolocation geo = new Geolocation();
-//		while (cursor.hasNext()) {
-//			DBObject obj = cursor.next();
-//			String location = (String) obj.get("location");
-//			if (location != null) {
-//				String[] locationArray = location.split(":");
-//				if (geo.distance(Double.parseDouble(locationArray[0]),
-//						Double.parseDouble(locationArray[1]), latitude,
-//						longitude) < radius)
-//					allDoc += obj.toString();
-//			}
-//		}
-//		return allDoc;
-//	}
+
 	@Override
 	public ArrayList<String> getAllDocsInRadius(String appId, double latitude,
 			double longitude, double radius) {
 		DBCollection coll = db.getCollection(DataColl);
-		Geolocation geo =new Geolocation();
-		geo.createGridCache(180, 360);
 		String type = appId+"docs";
-		ArrayList<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius,appId);
+		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, type);
 		Iterator<String> allIt = all.iterator();
 		ArrayList<String> allElements = new ArrayList<String>();
 		while(allIt.hasNext()){
@@ -643,38 +544,12 @@ public class DocumentModel implements DocumentInterface {
 		}
 		return allElements;
 	}
-			//geo location iterating over all elements
-//	@Override
-//	public String getDataInDocumentInRadius(String appId, String url,
-//			double latitude, double longitude, double radius) {
-//		DBCollection coll = db.getCollection(DataColl);
-//		BasicDBObject searchQuery = new BasicDBObject();
-//		searchQuery.put("path", url);
-//		DBCursor cursor = coll.find(searchQuery);
-//		DBObject obj = null;
-//		String data = null;
-//		String all = new String("");
-//		Geolocation geo = new Geolocation();
-//		while (cursor.hasNext()) {
-//			obj = cursor.next();
-//			String location = (String) obj.get("location");
-//			if (location != null) {
-//				String[] locationArray = location.split(":");
-//				if (geo.distance(Double.parseDouble(locationArray[0]),
-//						Double.parseDouble(locationArray[1]), latitude,
-//						longitude) < radius)
-//					all += obj.toString();
-//			}
-//		}
-//		return all;
-//	}
+
 	public ArrayList<String> getDataInDocumentInRadius(String appId, String url, double latitude, double longitude,
 			double radius){
 		DBCollection coll = db.getCollection(DataColl);
-		Geolocation geo =new Geolocation();
-		geo.createGridCache(180, 360);
 		String type = appId+"docs";
-		ArrayList<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius, appId);
+		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, type);
 		Iterator<String> allIt = all.iterator();
 		ArrayList<String> allElements = new ArrayList<String>();
 		while(allIt.hasNext()){
@@ -693,10 +568,8 @@ public class DocumentModel implements DocumentInterface {
 			double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType){
 		//TODO JM Tem GeoLocalizacao. Ver como se faz a paginacao
 		DBCollection coll = db.getCollection(UserDataColl);
-		Geolocation geo =new Geolocation();
-		geo.createGridCache(180, 360);
 		String type = appId+"docs";
-		ArrayList<String> all = geo.searchObjectsInGrid(latitude, longitude, type , radius, appId);
+		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, type);
 		Iterator<String> allIt = all.iterator();
 		ArrayList<String> allElements = new ArrayList<String>();
 		while(allIt.hasNext()){
@@ -752,10 +625,7 @@ public class DocumentModel implements DocumentInterface {
 	@Override
 	public ArrayList<String> getAllAudioIdsInRadius(String appId, double latitude, double longitude, double radius) {
 		DBCollection coll = db.getCollection(UserDataColl);
-		Geolocation geo =new Geolocation();
-		geo.createGridCache(180, 360);
-		//String type = appId+"docs";
-		ArrayList<String> all = geo.searchObjectsInGrid(latitude, longitude, AUDIO , radius, appId);
+		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, AUDIO);
 		Iterator<String> allIt = all.iterator();
 		ArrayList<String> allElements = new ArrayList<String>();
 		while(allIt.hasNext()){
@@ -774,10 +644,7 @@ public class DocumentModel implements DocumentInterface {
 	public ArrayList<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, 
 			double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		DBCollection coll = db.getCollection(UserDataColl);
-		Geolocation geo =new Geolocation();
-		geo.createGridCache(10, 10);
-		//String type = appId+"docs";
-		ArrayList<String> all = geo.searchObjectsInGrid(latitude, longitude, IMAGE , radius, appId);
+		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, IMAGE);
 		Iterator<String> allIt = all.iterator();
 		Set<String> allElements = new HashSet<String>();
 		while(allIt.hasNext()){

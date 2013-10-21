@@ -16,7 +16,6 @@ import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 
 public class Utils {
-
 	
 	/*
 	 * Returns a code corresponding to the sucess or failure Codes: 
@@ -25,13 +24,15 @@ public class Utils {
 	 * 1 ->
 	 * sessionExists
 	 */
-	public int treatParameters(UriInfo ui, HttpHeaders hh) {
+	public static int treatParameters(UriInfo ui, HttpHeaders hh) {
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
-		List<String> location = null;
+		List<String> userAgentList = null;
+		List<String> locationList = null;
+		String userAgent = null;
+		String location = null;
 		Cookie sessionToken = null;
-		List<String> userAgent = null;
 		// iterate cookies
 		for (Entry<String, Cookie> entry : cookiesParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase("sessionToken"))
@@ -41,19 +42,16 @@ public class Utils {
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase("sessionToken"))
 				sessionToken = new Cookie("sessionToken", entry.getValue().get(0));
-			if (entry.getKey().equalsIgnoreCase("location"))
-				location = entry.getValue();
+			else if (entry.getKey().equalsIgnoreCase("location"))
+				locationList = entry.getValue();
 			else if (entry.getKey().equalsIgnoreCase("user-agent"))
-				userAgent = entry.getValue();
+				userAgentList = entry.getValue();
 		}
 		if (sessionToken != null) {
 			SessionInterface sessions = new RedisSessions();
 			if (sessions.sessionTokenExists(sessionToken.getValue())) {
 				code = 1;
-				if (location != null) {
-					sessions.refreshSession(sessionToken.getValue(), location.get(0), new Date().toString(), userAgent.get(0));
-				} else
-					sessions.refreshSession(sessionToken.getValue(), new Date().toString());
+					sessions.refreshSession(sessionToken.getValue(), location, new Date().toString(), userAgent);
 			} else {
 				code = -2;
 			}
@@ -61,11 +59,11 @@ public class Utils {
 		return code;
 	}
 	
-	public String getRandomString(int length) {
+	public static String getRandomString(int length) {
 		return (String) UUID.randomUUID().toString().subSequence(0, length);
 	}
 	
-	public long roundUp(long num, long divisor) {
+	public static long roundUp(long num, long divisor) {
 	    return (num + divisor - 1) / divisor;
 	}
 	

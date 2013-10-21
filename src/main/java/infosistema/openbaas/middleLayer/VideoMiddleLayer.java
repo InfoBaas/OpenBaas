@@ -3,8 +3,14 @@ package infosistema.openbaas.middleLayer;
 import infosistema.openbaas.dataaccess.models.Model;
 import infosistema.openbaas.model.media.video.Video;
 import infosistema.openbaas.model.media.video.VideoInterface;
+
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
+
+import javax.ws.rs.core.Response;
+
+import com.sun.jersey.core.header.FormDataContentDisposition;
 
 public class VideoMiddleLayer {
 
@@ -32,6 +38,36 @@ public class VideoMiddleLayer {
 
 	// *** CREATE *** ///
 
+	public String uploadVideo(InputStream uploadedInputStream, FormDataContentDisposition fileDetail, String appId, String location) {
+		String fileNameWithType = null;
+		String fileType = new String();
+		String fileName = new String();
+		boolean uploadOk = false;
+		fileNameWithType = fileDetail.getFileName();
+		char[] charArray = fileNameWithType.toCharArray();
+		boolean pop = false;
+		int i = 0;
+		while (!pop) {
+			fileName += charArray[i];
+			if (charArray[i + 1] == '.')
+				pop = true;
+			i++;
+		}
+		for (int k = 0; k < charArray.length - 1; k++) {
+			if (charArray[k] == '.') {
+				for (int j = k + 1; j < charArray.length; j++)
+					fileType += charArray[j];
+			}
+		}
+		String dir = "apps/" + appId + "/media/video";
+		String id = MiddleLayerFactory.getStorageMiddleLayer().createLocalFile(uploadedInputStream, fileDetail, appId, fileType, dir);
+		uploadOk = uploadVideoFileToServerWithoutGeoLocation(appId, id, fileType, fileName);
+		if(id != null && uploadOk)
+			return id;
+		else
+			return null;
+	}
+	
 	public boolean uploadVideoFileToServerWithoutGeoLocation(String appId, String videoId, String fileType, String fileName) {
 		String dir = "apps/" + appId + VIDEOFOLDER;
 		boolean opOk = false;

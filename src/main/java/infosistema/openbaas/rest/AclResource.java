@@ -1,13 +1,8 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.middleLayer.AclMiddleLayer;
-import infosistema.openbaas.middleLayer.AppsMiddleLayer;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -21,9 +16,12 @@ import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+
+import infosistema.openbaas.middleLayer.AclMiddleLayer;
+import infosistema.openbaas.middleLayer.AppsMiddleLayer;
+import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 
 
 // test MARCIO
@@ -34,12 +32,27 @@ public class AclResource {
 	AppsMiddleLayer appsMid;
 	private static final String ERROR_TOKEN = "Incorrect session Token";
 	private static final String SUCESS_ACL = "Permissions set";
+
 	public AclResource(List<PathSegment> path) {
 		this.path = path;
 		aclMid = MiddleLayerFactory.getAclMiddleLayer();
 		appsMid = MiddleLayerFactory.getAppsMiddleLayer();
 	}
 
+	// *** CREATE *** ///
+
+	
+ 	// *** UPDATE *** ///
+	
+	
+	// *** DELETE *** ///
+	
+	
+	// *** GET *** ///
+	
+	
+	// *** OTHERS *** ///
+	
 	public String getUserIdFromSessionToken(HttpHeaders hh) {
 		Cookie sessionToken = null;
 		Map<String, Cookie> cookiesParams = hh.getCookies();

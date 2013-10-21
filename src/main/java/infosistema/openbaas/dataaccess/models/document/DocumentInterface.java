@@ -78,7 +78,7 @@ public interface DocumentInterface {
 	 * @return
 	 * @throws JSONException
 	 */
-	public String patchDataInElement(String url, JSONObject inputJson, String location) throws JSONException;
+	public String patchDataInElement(String url, JSONObject inputJson, String appId, String location) throws JSONException;
 	/**
 	 * Gets all the documents starting from the root.
 	 * @param appId
@@ -104,8 +104,7 @@ public interface DocumentInterface {
 	 * @return
 	 * @throws JSONException 
 	 */
-	public boolean insertIntoUserDocument(String appId, String userId, JSONObject data,
-			String url, String location) throws JSONException;
+	public boolean insertIntoUserDocument(String appId, String userId, JSONObject data, String url, String location) throws JSONException;
 	/**
 	 * Retrieves the element in the given url of the user.
 	 * @param appId
@@ -113,8 +112,7 @@ public interface DocumentInterface {
 	 * @param url
 	 * @return
 	 */
-	public String getElementInUserDocument(String appId, String userId,
-			String url);
+	public String getElementInUserDocument(String appId, String userId, String url);
 	/**
 	 * Creates a document in the user data root.
 	 * @param appId
@@ -124,8 +122,7 @@ public interface DocumentInterface {
 	 * @return
 	 * @throws JSONException 
 	 */
-	public boolean insertUserDocumentRoot(String appId, String userId,
-			JSONObject data, String location) throws JSONException;
+	public boolean insertUserDocumentRoot(String appId, String userId, JSONObject data, String location) throws JSONException;
 	/**
 	 * Creates a non publishable user Document.
 	 * @param appId
@@ -134,13 +131,10 @@ public interface DocumentInterface {
 	 * @param location 
 	 * @return
 	 */
-	public boolean createNonPublishableUserDocument(String appId,
-			String userId, JSONObject data, String url, String location);
+	public boolean createNonPublishableUserDocument(String appId, String userId, JSONObject data, String url, String location);
 	public ArrayList<String> getAllDocsInRadius(String appId, double latitude, double longitude, double radius);
-	public ArrayList<String> getDataInDocumentInRadius(String appId, String url,
-			double latitude, double longitude, double radius);
-	public ArrayList<String> getAllUserDocsInRadius(String appId, String userId,
-			double latitude, double longitude, double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType);
+	public ArrayList<String> getDataInDocumentInRadius(String appId, String url, double latitude, double longitude, double radius);
+	public ArrayList<String> getAllUserDocsInRadius(String appId, String userId, double latitude, double longitude, double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType);
 	public String getAllUserDocs(String appId, String userId);
 	public ArrayList<String> getAllAudioIdsInRadius(String appId, double latitude,double longitude, double radius);
 	public ArrayList<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType);

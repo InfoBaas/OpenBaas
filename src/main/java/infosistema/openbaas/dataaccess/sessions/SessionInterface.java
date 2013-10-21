@@ -52,13 +52,7 @@ public interface SessionInterface {
 	 * @param adminId
 	 */
 	public void createAdminSession(String sessionToken, String adminId);
-	/**
-	 * Refreshes the session, setting its reset timer to default. Example: A session with 12 hours left to be killed
-	 * is refreshed, after the refresh, it now has 24 hours until it is killed.
-	 * @param sessionId
-	 * @param date 
-	 */
-	public void refreshSession(String sessionToken, String date);
+
 	/**
 	 * Retrieves aone session identifier for the given user.
 	 * @param userId
@@ -104,12 +98,9 @@ public interface SessionInterface {
 	 * @param adminHash
 	 * @throws UnsupportedEncodingException
 	 */
-	public void createAdmin(String OPENBAASADMIN, byte[] adminSalt,
-			byte[] adminHash) throws UnsupportedEncodingException;
+	public void createAdmin(String OPENBAASADMIN, byte[] adminSalt, byte[] adminHash) throws UnsupportedEncodingException;
 
-	public void addLocationToSession(String location, String sessionToken, String userAgent);
-
-	public boolean refreshSession(String sessionToken, String location,
-			String date, String userAgent);
+	public boolean refreshSession(String sessionToken, String location, String date, String userAgent);
+	
 	public String getUserUsingSessionToken(String sessionToken);
 }

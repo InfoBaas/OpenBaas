@@ -35,7 +35,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class UserDataResource {
 
-	private static final Utils utils = new Utils();
 	private AppsMiddleLayer appsMid;
 	private DocumentMiddleLayer docMid;
 	private UsersMiddleLayer usersMid;
@@ -53,8 +52,17 @@ public class UserDataResource {
 		this.userId = userId;
 	}
 
+	// *** CREATE *** ///
 	
-
+	// *** UPDATE *** ///
+	
+	// *** DELETE *** ///
+	
+	// *** GET *** ///
+	
+	// *** OTHERS *** ///
+	
+	//TODO: LOCATION (location de defeito???)
 	/**
 	 * Create or replace existing elements.
 	 * 
@@ -71,7 +79,7 @@ public class UserDataResource {
 			@Context HttpHeaders hh,
 			@HeaderParam(value = "location") String location) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			JSONObject data = null;
 			try {
@@ -103,14 +111,11 @@ public class UserDataResource {
 		return response;
 	}
 
-	//TODO: PAGINATION
+	//TODO: LOCATION (documents)
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAllElementsInDocument(
-			@Context UriInfo ui,
-			@Context HttpHeaders hh, @QueryParam("latitude") String latitude,
-			@QueryParam("longitude") String longitude,
-			@QueryParam("radius") String radius,
+	public Response getAllElementsInDocument(@Context UriInfo ui, @Context HttpHeaders hh, 
+			@QueryParam("latitude") String latitude, @QueryParam("longitude") String longitude, @QueryParam("radius") String radius,
 			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
 			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
 		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
@@ -118,7 +123,7 @@ public class UserDataResource {
 		if (orderBy == null) 	orderBy = Const.ORDER_BY;
 		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			//query parameters are present, only return the elements 
 			if (latitude != null && longitude != null && radius != null) {
@@ -153,7 +158,7 @@ public class UserDataResource {
 			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
 			@Context HttpHeaders hh) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			if (docMid.dataExistsForElement(appId, path)) {
 				String data = docMid.getElementInUserDocument(appId, userId,
@@ -176,6 +181,7 @@ public class UserDataResource {
 		return response;
 	}
 
+	//TODO: LOCATION (documents)
 	/**
 	 * Creates the document root, this is treated differently than PUT to
 	 * 
@@ -191,7 +197,7 @@ public class UserDataResource {
 			@Context UriInfo ui, @Context HttpHeaders hh,
 			@HeaderParam(value = "location") String location) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			JSONObject data = null;
 			try {
@@ -201,8 +207,7 @@ public class UserDataResource {
 				e.printStackTrace();
 			}
 			if (appsMid.appExists(appId) && usersMid.userExistsInApp(appId, userId)) {
-				if (docMid.insertUserDocumentRoot(appId, userId, data,
-						location)) {
+				if (docMid.insertUserDocumentRoot(appId, userId, data, location)) {
 					response = Response.status(Status.CREATED).entity(appId)
 							.build();
 				} else {
@@ -234,7 +239,7 @@ public class UserDataResource {
 			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
 			@Context HttpHeaders hh) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			if (docMid.dataExistsForUserElement(appId, userId, path)) {
 				if (docMid.deleteUserDataInElement(appId, userId, path))
@@ -255,6 +260,7 @@ public class UserDataResource {
 		return response;
 	}
 
+	//TODO: LOCATION (documents)
 	@POST
 	@Path("/{pathId:.+}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -264,7 +270,7 @@ public class UserDataResource {
 			@Context HttpHeaders hh,
 			@HeaderParam(value = "location") String location) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			JSONObject data = null;
 			try {

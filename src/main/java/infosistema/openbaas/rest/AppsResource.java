@@ -32,17 +32,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-
 
 
 public class AppsResource {
 
 	private AppsMiddleLayer appsMid;
 	private static final int IDLENGTH = 3;
-	private static final Utils utils = new Utils();
 
 	public AppsResource() {
 		appsMid = MiddleLayerFactory.getAppsMiddleLayer();
@@ -51,7 +48,20 @@ public class AppsResource {
 	@Context
 	UriInfo uriInfo;
 
-	//TODO: PAGINATION
+	// *** CREATE *** ///
+
+	
+ 	// *** UPDATE *** ///
+	
+	
+	// *** DELETE *** ///
+	
+	
+	// *** GET *** ///
+	
+	
+	// *** OTHERS *** ///
+	
 	/**
 	 * Get all application Identifiers.
 	 * 
@@ -70,7 +80,7 @@ public class AppsResource {
 		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
 		// Parameters treatment
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if(code == 1){
 		System.out.println("***********************************");
 		System.out.println("********Finding all apps***********");
@@ -95,8 +105,6 @@ public class AppsResource {
 		return response;
 	}
 
-	
-
 	/**
 	 * Get Application Information using its Application Identifier.
 	 * 
@@ -109,7 +117,7 @@ public class AppsResource {
 	public Response findById(@PathParam("appId") String appId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("********Finding App info************");
@@ -138,7 +146,7 @@ public class AppsResource {
 	public Response deleteApp(@PathParam("appId") String appId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("*Deleting App (setting as inactive)*");
@@ -170,7 +178,7 @@ public class AppsResource {
 	public Response createApp(JSONObject inputJsonObj,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			long start = System.currentTimeMillis();
 			System.out.println("************************************");
@@ -190,7 +198,7 @@ public class AppsResource {
 				return Response.status(Status.BAD_REQUEST).entity(temp).build();
 			}
 			if (readSucess) {
-				appId = utils.getRandomString(IDLENGTH);
+				appId = Utils.getRandomString(IDLENGTH);
 				created = appsMid.createApp(appId, appName, confirmUsersEmail);
 			}
 			if (created) {
@@ -212,8 +220,7 @@ public class AppsResource {
 				// No time for details = put 302 in the parameter
 				response = Response.status(302).entity(temp).build();
 			}
-			System.out.println("TIME TO FULLFILL REQUEST: "
-					+ (System.currentTimeMillis() - start));
+			System.out.println("TIME TO FULLFILL REQUEST: " + (System.currentTimeMillis() - start));
 		} else if(code == -2){
 			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
 		 .build();
@@ -244,7 +251,7 @@ public class AppsResource {
 	public Response updateApp(@PathParam("appId") String appId,	JSONObject inputJsonObj,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String alive = null;
 			String newAppName = null;
@@ -273,6 +280,7 @@ public class AppsResource {
 			 .build();
 		return response;
 	}
+
 	/**
 	 * Launches the resource to handle /users requests.
 	 * 
@@ -392,4 +400,5 @@ public class AppsResource {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
+
 }

@@ -22,7 +22,6 @@ public class StorageMiddleLayer {
 
 	private Model model;
 	private static final String STORAGEFOLDER = "storage";
-	private static final Utils utils = new Utils();
 	
 	// *** INSTANCE *** ///
 
@@ -54,12 +53,12 @@ public class StorageMiddleLayer {
 	}
 
 	public String createLocalFile(InputStream uploadedInputStream,FormDataContentDisposition fileDetail, String appId, String extension, String dir) {
-		String id = utils.getRandomString(Const.IDLENGTH);
+		String id = Utils.getRandomString(Const.IDLENGTH);
 		File dirFolders = new File(dir);
 		dirFolders.mkdirs();
 		File f = new File(dir + id + "." + extension);
 		while (f.exists()) {
-			id = utils.getRandomString(Const.IDLENGTH);
+			id = Utils.getRandomString(Const.IDLENGTH);
 			f = new File(dir + id);
 		}
 		OutputStream out;
@@ -78,13 +77,13 @@ public class StorageMiddleLayer {
 	}
 
 	public String createLocalFile2(InputStream uploadedInputStream,FormDataContentDisposition fileDetail, String appId, String extension, String dir, String imageId) {
-		String id = utils.getRandomString(Const.IDLENGTH);
+		String id = Utils.getRandomString(Const.IDLENGTH);
 		id = imageId;
 		File dirFolders = new File(dir);
 		dirFolders.mkdirs();
 		File f = new File(dir + id + "." + extension);
 		while (f.exists()) {
-			id = utils.getRandomString(Const.IDLENGTH);
+			id = Utils.getRandomString(Const.IDLENGTH);
 			id = imageId;
 			f = new File(dir + id);
 		}

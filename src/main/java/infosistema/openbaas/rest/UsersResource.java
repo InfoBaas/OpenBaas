@@ -33,7 +33,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class UsersResource {
 
-	private static final Utils utils = new Utils();
 	private UsersMiddleLayer usersMid;
 	private String appId;
 
@@ -46,103 +45,11 @@ public class UsersResource {
 		this.uriInfo = uriInfo;
 	}
 
-	//TODO: PAGINATION
-	/**
-	 * Gets all the users in the application.
-	 * 
-	 * @return
-	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response findAll(@Context UriInfo ui, @Context HttpHeaders hh,
-			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
-			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
-		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
-		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
-		if (orderBy == null) 	orderBy = Const.ORDER_BY;
-		if (orderType == null) 	orderType = Const.ORDER_TYPE;
-		Response response = null;
-		int code = utils.treatParameters(ui, hh);
-		if (code == 1) {
-			System.out.println("***********************************");
-			System.out.println("********Finding all USERS**********");
-			if (!MiddleLayerFactory.getAppsMiddleLayer().appExists(appId))
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
-			else {
-				ArrayList<String> temp = usersMid.getAllUserIdsForApp(appId,pageNumber,pageSize,orderBy,orderType);
-				IdsResultSet res = new IdsResultSet(temp,pageNumber);
-				response = Response.status(Status.OK).entity(res).build();
-			}
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
-		return response;
-	}
+	// *** CREATE *** ///
 
-	/**
-	 * Gets the user fields.
-	 * 
-	 * @param userId
-	 * @return
-	 */
-	@Path("{userId}")
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response findById(@PathParam("userId") String userId,
-			@Context UriInfo ui, @Context HttpHeaders hh) {
-		Response response = null;
-		int code = utils.treatParameters(ui, hh);
-		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("********Finding User info************");
-			UserInterface temp = null;
-			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
-				if (usersMid.identifierInUseByUserInApp(appId, userId)) {
-					temp = usersMid.getUserInApp(appId, userId);
-					System.out.println("userId: " + temp.getUserId()+ "email: " + temp.getEmail());
-					response = Response.status(Status.OK).entity(temp).build();
-				} else {
-					response = Response.status(Status.NOT_FOUND).entity(temp).build();
-				}
-			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
-			}
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
-		return response;
-	}
-
-	/**
-	 * Deletes the user.
-	 * 
-	 * @param userId
-	 * @return
-	 */
-	@Path("{userId}")
-	@DELETE
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response deleteUser(@PathParam("userId") String userId,
-			@Context UriInfo ui, @Context HttpHeaders hh) {
-		Response response = null;
-		int code = utils.treatParameters(ui, hh);
-		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("*Deleting User(setting as inactive)*");
-			boolean sucess = usersMid.deleteUserInApp(appId, userId);
-			if (sucess)
-				response = Response.status(Status.OK).entity(userId).build();
-			else
-				response = Response.status(Status.NOT_FOUND).entity(userId).build();
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
-		return response;
-	}
-
+	
+	// *** UPDATE *** ///
+	
 	/**
 	 * Updates the user, optional fields: "email", "password", "alive".
 	 * 
@@ -157,7 +64,7 @@ public class UsersResource {
 			JSONObject inputJsonObj, @Context UriInfo ui,
 			@Context HttpHeaders hh) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String email = null;
 			String password = null;
@@ -208,6 +115,132 @@ public class UsersResource {
 		return response;
 	}
 
+	
+	// *** DELETE *** ///
+	
+	//TODO: LOCATION (remove sessions???)
+	/**
+	 * Deletes the user.
+	 * 
+	 * @param userId
+	 * @return
+	 */
+	@Path("{userId}")
+	@DELETE
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response deleteUser(@PathParam("userId") String userId,
+			@Context UriInfo ui, @Context HttpHeaders hh) {
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			System.out.println("************************************");
+			System.out.println("*Deleting User(setting as inactive)*");
+			boolean sucess = usersMid.deleteUserInApp(appId, userId);
+			if (sucess)
+				response = Response.status(Status.OK).entity(userId).build();
+			else
+				response = Response.status(Status.NOT_FOUND).entity(userId).build();
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+		return response;
+	}
+
+	
+	// *** GET LIST *** //
+	
+	/**
+	 * Gets all the users in the application.
+	 * 
+	 * @return
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response findAll(@Context UriInfo ui, @Context HttpHeaders hh,
+			@QueryParam("lat") String latitudeStr,	@QueryParam("long") String longitudeStr, @QueryParam("radius") String radiusStr, 
+			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
+		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
+		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
+		if (orderBy == null) 	orderBy = Const.ORDER_BY;
+		if (orderType == null) 	orderType = Const.ORDER_TYPE;
+		Double latitude = null;
+		Double longitude = null;
+		Double radius = null;
+		if (latitudeStr != null) {
+			try {
+				latitude = Double.parseDouble(latitudeStr);
+			} catch (Exception e) { }
+		}
+		if (longitudeStr != null) {
+			try {
+				longitude = Double.parseDouble(longitudeStr);
+			} catch (Exception e) { }
+		}
+		if (radiusStr != null) {
+			try {
+				radius = Double.parseDouble(radiusStr);
+			} catch (Exception e) { }
+		}
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			if (!MiddleLayerFactory.getAppsMiddleLayer().appExists(appId))
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+			else {
+				ArrayList<String> temp = usersMid.getAllUserIdsForApp(appId, latitude, longitude, radius, pageNumber, pageSize, orderBy, orderType);
+				IdsResultSet res = new IdsResultSet(temp, pageNumber);
+				response = Response.status(Status.OK).entity(res).build();
+			}
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+		return response;
+	}
+
+	
+	// *** GET *** ///
+
+	/**
+	 * Gets the user fields.
+	 * 
+	 * @param userId
+	 * @return
+	 */
+	@Path("{userId}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response findById(@PathParam("userId") String userId,
+			@Context UriInfo ui, @Context HttpHeaders hh) {
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			System.out.println("************************************");
+			System.out.println("********Finding User info************");
+			UserInterface temp = null;
+			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
+				if (usersMid.identifierInUseByUserInApp(appId, userId)) {
+					temp = usersMid.getUserInApp(appId, userId);
+					System.out.println("userId: " + temp.getUserId()+ "email: " + temp.getEmail());
+					response = Response.status(Status.OK).entity(temp).build();
+				} else {
+					response = Response.status(Status.NOT_FOUND).entity(temp).build();
+				}
+			} else {
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+			}
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+		return response;
+	}
+
+	
+	// *** OTHERS *** ///
+	
 	/**
 	 * Launches the sessions resource.
 	 * 
@@ -256,4 +289,5 @@ public class UsersResource {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
+
 }

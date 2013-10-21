@@ -13,9 +13,7 @@ import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
-import java.util.UUID;
 import java.util.Map.Entry;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -32,29 +30,27 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 
-
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 
 public class AccountResource {
-
 	
-	private static final int IDGENERATOR = 3;
-	private static final Utils utils = new Utils();
 	private UsersMiddleLayer usersMid;
 	private SessionMiddleLayer sessionMid;
 	private String appId;
-	
 
 	@Context
 	UriInfo uriInfo;
-		
+
+	
 	public AccountResource(String appId) {
 		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
 		this.appId = appId;
 	}
 	
+	// *** CREATE *** ///
+
 	/**
 	 * Creates a user in the application, necessary fields: "password";
 	 * and "email". signin the user creating a session
@@ -66,42 +62,21 @@ public class AccountResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createUserAndLogin(JSONObject inputJsonObj, @Context UriInfo ui,@Context HttpHeaders hh) {
+	public Response createUserAndLogin(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
-			long start = System.currentTimeMillis();
-			System.out.println("************************************");
-			System.out.println("***********Creating User************");
 			String email = null;
-			String password = null;
 			String userName = null;
+			String password = null;
 			String userFile = null;
-			// User temp = null;
 			String userId = null;
-			byte[] salt = null;
-			byte[] hash = null;
-			UserInterface outUser = new User();
-			List<String> userAgent = null;
-			List<String> location = null;
 			Boolean readOk = false;
-			Boolean refreshCode = false;
 			try {
 				userName = (String) inputJsonObj.opt("userName");
 				userFile = (String) inputJsonObj.opt("userFile");
 				email = (String) inputJsonObj.get("email");
 				password = (String) inputJsonObj.get("password");
 				readOk = true;
-				PasswordEncryptionService service = new PasswordEncryptionService();
-				try {
-					salt = service.generateSalt();
-					hash = service.getEncryptedPassword(password, salt);
-				} catch (NoSuchAlgorithmException e) {
-					System.out.println("Hashing Algorithm failed, please review the PasswordEncryptionService.");
-					e.printStackTrace();
-				} catch (InvalidKeySpecException e) {
-					System.out.println("Invalid Key.");
-					e.printStackTrace();
-				}
 			} catch (JSONException e) {
 				System.out.println("Error parsing the JSON file.");
 				e.printStackTrace();
@@ -110,57 +85,19 @@ public class AccountResource {
 				userName = email;
 			}
 			if (readOk && MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
-				userId = utils.getRandomString(Const.IDLENGTH);
-				while (usersMid.identifierInUseByUserInApp(appId, userId))
-					userId = utils.getRandomString(Const.IDLENGTH);
-
 				if (!usersMid.userExistsInApp(appId, userId, email)) {
-				//if(true){
-					System.out.println("*****************Creating user***************");
-					System.out.println("userId: " + userId + " email: " + email);
-					System.out.println("********************************************");
-					if (!usersMid.confirmUsersEmailOption(this.appId)) {
-						usersMid.createUser(this.appId, userId,	userName, email, salt, hash, userFile);
-						String sessionToken = getRandomString(IDGENERATOR);
-						boolean validation = sessionMid.createSession(sessionToken, appId, userId, password);
-						for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-							if (entry.getKey().equalsIgnoreCase("location"))
-								location = entry.getValue();
-							else if (entry.getKey().equalsIgnoreCase("user-agent")){
-								userAgent = entry.getValue();
-							}	
-						}
-						if (location != null) {
-							sessionMid.refreshSession(sessionToken, location.get(0), userAgent.get(0));
-							refreshCode = true;
-						} else{
-							sessionMid.refreshSession(sessionToken);
-							refreshCode = true;
-						}
-						if (validation && refreshCode) {
-							outUser.setUserID2(userId);
-							outUser.setReturnToken(sessionToken);
-							response = Response.status(Status.CREATED).entity(outUser).build();
-						}
-					} else if (usersMid.confirmUsersEmailOption(this.appId)) {
-						boolean emailConfirmed = false;
-						if(uriInfo==null) 
-							uriInfo=ui;
-						usersMid.createUserWithEmailConfirmation(this.appId, userId, 
-								userName, email, salt,hash, userFile, emailConfirmed, uriInfo);
-						outUser.setUserID2(userId);
-						response = Response.status(Status.CREATED).entity(outUser).build();
-					}
+					if (uriInfo == null) uriInfo=ui;
+					UserInterface outUser = usersMid.createUserAndLogin(headerParams, ui, userId, userName, email, password, userFile);
+					
+					response = Response.status(Status.CREATED).entity(outUser).build();
 				} else {
 					String foundUserId = usersMid.getUserIdUsingUserName(appId,userName);
 					// 302 = found
-					response = Response.status(302).entity(foundUserId)
-							/*.header("content-location",uriInfo.getAbsolutePath() + "/"+ foundUserId)*/.build();
+					response = Response.status(302).entity(foundUserId).build();
 				}
 			} else {
 				response = Response.status(Status.BAD_REQUEST).entity(userName).build();
 			}
-			System.out.println("TIME TO FULLFILL REQUEST: "	+ (System.currentTimeMillis() - start));
 		return response;
 	}
 
@@ -176,15 +113,16 @@ public class AccountResource {
 	@POST
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createSession(@Context HttpServletRequest req,
-			JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
+	public Response createSession(@Context HttpServletRequest req, JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		String email = null; // user inserted fields
 		String attemptedPassword = null; // user inserted fields
 		Response response = null;
 		UserInterface outUser = new User();
-		List<String> userAgent = null;
-		List<String> location = null;
+		List<String> locationList = null;
+		List<String> userAgentList = null;
+		String userAgent = null;
+		String location = null;
 		Boolean refreshCode = false;
 		try {
 			email = (String) inputJsonObj.get("email");
@@ -195,11 +133,15 @@ public class AccountResource {
 		}
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase("location"))
-				location = entry.getValue();
+				locationList = entry.getValue();
 			else if (entry.getKey().equalsIgnoreCase("user-agent")){
-				userAgent = entry.getValue();
+				userAgentList = entry.getValue();
 			}	
 		}
+		if (locationList != null)
+			location = locationList.get(0);
+		if (userAgentList != null)
+			userAgent = userAgentList.get(0);
 		//// String email = usersMid.getEmailUsingUserName(appId, userName);
 		if(email == null && attemptedPassword == null)
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
@@ -209,16 +151,10 @@ public class AccountResource {
 			// Remember the order of evaluation in java
 			if (usersConfirmedOption) {
 				if (usersMid.userEmailIsConfirmed(appId, userId)) {
-					System.out.println("userId of email: " + email + " is: " + userId);
-					String sessionToken = getRandomString(IDGENERATOR);
+					String sessionToken = Utils.getRandomString(Const.IDLENGTH);
 					boolean validation = sessionMid.createSession(sessionToken, appId, userId, attemptedPassword);
-					if (location != null) {
-						sessionMid.refreshSession(sessionToken, location.get(0), userAgent.get(0));
-						refreshCode = true;
-					} else{
-						sessionMid.refreshSession(sessionToken);
-						refreshCode = true;
-					}
+					sessionMid.refreshSession(sessionToken, location, userAgent);
+					refreshCode = true;
 					if (validation && refreshCode) {
 						outUser.setUserID2(userId);
 						outUser.setReturnToken(sessionToken);
@@ -229,16 +165,11 @@ public class AccountResource {
 				}
 			} else{
 				System.out.println("userId of email: " + email + " is: " + userId);
-				String sessionToken = getRandomString(IDGENERATOR);
+				String sessionToken = Utils.getRandomString(Const.IDLENGTH);
 				boolean validation = sessionMid.createSession(sessionToken, appId, userId, attemptedPassword);
 				if(validation){
-					if (location != null) {
-						sessionMid.refreshSession(sessionToken, location.get(0), userAgent.get(0));
-						refreshCode = true;
-					} else{
-						sessionMid.refreshSession(sessionToken);
-						refreshCode = true;
-					}
+					sessionMid.refreshSession(sessionToken, location, userAgent);
+					refreshCode = true;
 					if (validation && refreshCode) {
 						outUser.setUserID2(userId);
 						outUser.setReturnToken(sessionToken);
@@ -252,6 +183,18 @@ public class AccountResource {
 		return response;
 
 	}
+
+	
+ 	// *** UPDATE *** ///
+	
+	
+	// *** DELETE *** ///
+	
+	
+	// *** GET *** ///
+	
+	
+	// *** OTHERS *** ///
 
 	/**
 	 * Deletes a session (signout).
@@ -292,7 +235,6 @@ public class AccountResource {
 		return response;
 	}
 	
-	
 	@POST
 	@Path("/recovery")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -301,7 +243,7 @@ public class AccountResource {
 			@HeaderParam(value = "location") String location){
 		Response response = null;
 		String email = null;
-		String newPass = this.getRandomString(5);
+		String newPass = Utils.getRandomString(Const.PASSWORD_LENGTH);
 		byte[] salt = null;
 		byte[] hash = null;
 			try {
@@ -352,10 +294,6 @@ public class AccountResource {
 		return response;
 	}
 
-	private String getRandomString(int length) {
-		return (String) UUID.randomUUID().toString().subSequence(0, length);
-	}
-	
 	@PATCH
 	@Path("/sessions/{sessionToken}")
 	@Consumes({ MediaType.APPLICATION_JSON })
@@ -379,4 +317,5 @@ public class AccountResource {
 			response = Response.status(Status.FORBIDDEN).entity("You do not have permission to access.").build();
 		return response;
 	}
+
 }

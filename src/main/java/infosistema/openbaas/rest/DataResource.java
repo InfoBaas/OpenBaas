@@ -32,7 +32,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class DataResource {
 
-	private static final Utils utils = new Utils();
 	private DocumentMiddleLayer docMid;
 	private String appId;
 	@Context
@@ -44,15 +43,31 @@ public class DataResource {
 		this.uriInfo = uriInfo;
 	}
 	
+	// *** CREATE *** ///
+
+	
+ 	// *** UPDATE *** ///
+	
+	
+	// *** DELETE *** ///
+	
+	
+	// *** GET *** ///
+	
+	
+	// *** OTHERS *** ///
+	
+	//TODO: LOCATION
 	@POST
 	@Path("/{pathId:.+}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createNonPublishableDocument(JSONObject inputJsonObj,
 			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
-			@Context HttpHeaders hh, @HeaderParam(value = "location") String location) {
+			@Context HttpHeaders hh,
+			@HeaderParam(value = "location") String location) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			JSONObject data = null;
 			try {
@@ -76,7 +91,7 @@ public class DataResource {
 		return response;
 	}
 
-	//TODO: PAGINATION
+	//TODO: LOCATION
 	/*DEV NOTES:
 	 * Geolocation between points was done in a rude manner, we iterate all the points and calculate
 	 * the distance between the two using haversine.
@@ -109,7 +124,7 @@ public class DataResource {
 		if (orderBy == null) 	orderBy = Const.ORDER_BY;
 		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			//query parameters are present, only return the elements 
 			if (latitude != null && longitude != null && radius != null) {
@@ -130,6 +145,7 @@ public class DataResource {
 		return response;
 	}
 
+	//TODO: LOCATION
 	/**
 	 * Creates the document root, this is treated differently than PUT to
 	 * 
@@ -144,7 +160,7 @@ public class DataResource {
 	public Response createDocumentRoot(JSONObject inputJsonObj,@Context UriInfo ui, @Context HttpHeaders hh,
 			@HeaderParam(value = "location") String location) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			JSONObject data = null;
 			try {
@@ -169,6 +185,7 @@ public class DataResource {
 		return response;
 	}
 
+	//TODO: LOCATION
 	/**
 	 * Create or replace existing elements.
 	 * 
@@ -181,9 +198,10 @@ public class DataResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createOrReplaceDocument(JSONObject inputJsonObj,@PathParam("pathId") List<PathSegment> path, 
-			@Context UriInfo ui,@Context HttpHeaders hh,@HeaderParam(value = "location")String location) {
+			@Context UriInfo ui,@Context HttpHeaders hh,
+			@HeaderParam(value = "location")String location) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
 				String url = docMid.createAppDocPathFromListWithSlashes(appId,
@@ -202,6 +220,7 @@ public class DataResource {
 		return response;
 	}
 
+	//TODO: LOCATION
 	/**
 	 * Retrieves the data contained in a key.
 	 * 
@@ -218,7 +237,7 @@ public class DataResource {
 			@QueryParam("long") String longitude,
 			@QueryParam("radius") String radius) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			if (latitude != null && longitude != null && radius != null) {
 				/*Set<String> all = docMid.getElementInAppInRadius(appId, path,Double.parseDouble(latitude), 
@@ -243,6 +262,7 @@ public class DataResource {
 		return response;
 	}
 
+	//TODO: LOCATION
 	/**
 	 * Removes an element and the childs of that element if they exist.
 	 * 
@@ -255,7 +275,7 @@ public class DataResource {
 			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
 			@Context HttpHeaders hh) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			if (docMid.dataExistsForElement(appId, path)) {
 				if (docMid.deleteDataInElement(appId, path))
@@ -272,6 +292,7 @@ public class DataResource {
 		return response;
 	}
 
+	//TODO: LOCATION
 	/**
 	 * Partial updates, adds non existing fields and edits existing ones.
 	 * 
@@ -288,7 +309,7 @@ public class DataResource {
 			@Context UriInfo ui, @Context HttpHeaders hh,
 			@HeaderParam(value = "location") String location) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			if (docMid.dataExistsForElement(appId, path)) {
 				String data = docMid.patchDataInElement(appId, path, inputJson, location);

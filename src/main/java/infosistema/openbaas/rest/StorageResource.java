@@ -1,6 +1,5 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.StorageMiddleLayer;
 import infosistema.openbaas.model.IdsResultSet;
@@ -18,6 +17,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -33,14 +33,12 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.io.FilenameUtils;
 
-
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
 //@Path("/apps/{appId}/storage")
 public class StorageResource {
 	
-	private static final Utils utils = new Utils();
 	private String appId;
 	private StorageMiddleLayer storageMid;
 
@@ -52,7 +50,16 @@ public class StorageResource {
 		this.storageMid = MiddleLayerFactory.getStorageMiddleLayer();
 	}
 
-	//TODO: PAGINATION
+	// *** CREATE *** ///
+	
+	// *** UPDATE *** ///
+	
+	// *** DELETE *** ///
+	
+	// *** GET *** ///
+	
+	// *** OTHERS *** ///
+	
 	/**
 	 * Gets all the storage Identifiers in the application.
 	 * 
@@ -69,7 +76,7 @@ public class StorageResource {
 		if (orderBy == null) 	orderBy = Const.ORDER_BY;
 		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			System.out.println("***********************************");
 			System.out.println("********Finding all Storage********");
@@ -82,6 +89,7 @@ public class StorageResource {
 			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
+	
 	/*Attention! A file octet-stream has no explicit file type, this has to be changed to inform the client of 
 	*file type so that he creates it automaticallyor assume that the client finds it out using 
 	*the url (this is what I do atm).
@@ -134,6 +142,8 @@ public class StorageResource {
 		builder.header("fileType", extension);
 		return builder.build();
 	}
+	
+	//TODO: LOCATION
 	/**
 	 * Uploads a storage file, storage files are stored in a different folder
 	 * than media files due to the simplicity of these files. Media has advanced
@@ -150,9 +160,9 @@ public class StorageResource {
 			@FormDataParam("file") InputStream uploadedInputStream,
 			@FormDataParam("file") FormDataContentDisposition fileDetail,
 			@PathParam("appId") String appId,
-			@FormDataParam("location") String location) {
+			@HeaderParam(value = "location") String location) {
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		String fileNameWithType = null;
 		String fileType = new String();
 		String fileName = new String();
@@ -203,6 +213,7 @@ public class StorageResource {
 			 .build();
 		return response;
 	}
+	
 	/**
 	 * Deletes the Storage file(from filesystem and database).
 	 * 

@@ -21,20 +21,29 @@ import javax.ws.rs.core.Response.Status;
 //@Path("/apps/{appId}/media")
 public class MediaResource {
 
-//	private Map<String, Media> media = new HashMap<String, Media>();
+	//	private Map<String, Media> media = new HashMap<String, Media>();
 	private String appId;
 	private AppsMiddleLayer appsMid;
-	
+
 	static final int idGenerator = 3;
-	private static final Utils utils = new Utils();
-	
+
 	public MediaResource(AppsMiddleLayer appsMid, String appId) {
 		this.appId = appId;
 		this.appsMid = appsMid;
 	}
-	
 
-	//TODO: PAGINATION
+	// *** CREATE *** //
+
+	
+	// *** UPDATE *** //
+
+	
+	// *** DELETE *** //
+
+	
+	// *** GET LIST *** //
+
+	//TODO: LOCATION
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response findAll(@Context UriInfo ui, @Context HttpHeaders hh,
@@ -45,7 +54,7 @@ public class MediaResource {
 		if (orderBy == null) 	orderBy = Const.ORDER_BY;
 		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
-		int code = utils.treatParameters(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			if(appsMid.appExists(appId)){
 				ArrayList<String> mediaIds = appsMid.getAllMediaIds(appId,pageNumber,pageSize,orderBy,orderType);
@@ -54,12 +63,22 @@ public class MediaResource {
 			}else{
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
-			
+
 		}else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
-		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		}else if(code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
+			.build();
 		return response;
 	}
+
+	
+	// *** GET *** //
+
+	
+	// *** DOWNLOAD *** //
+
+
+	// *** OTHERS *** //
+
 }
