@@ -1,11 +1,7 @@
 package infosistema.openbaas.middleLayer;
 
 import infosistema.openbaas.dataaccess.models.Model;
-import infosistema.openbaas.model.media.image.Image;
-import infosistema.openbaas.model.media.image.ImageInterface;
 
-import java.util.ArrayList;
-import java.util.Map;
 
 public abstract class MediaMiddleLayer {
 

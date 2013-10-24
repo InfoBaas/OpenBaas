@@ -4,7 +4,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import javax.servlet.*;
 
-import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
@@ -27,7 +26,7 @@ public class Startup implements ServletContextListener {
 
 	public void contextInitialized(ServletContextEvent event) {
 		this.context = event.getServletContext();
-		AppsMiddleLayer appsMid = MiddleLayerFactory.getAppsMiddleLayer();
+		//AppsMiddleLayer appsMid = MiddleLayerFactory.getAppsMiddleLayer();
 		UsersMiddleLayer usersMid = MiddleLayerFactory.getUsersMiddleLayer();
 		SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
 		PasswordEncryptionService service = new PasswordEncryptionService();

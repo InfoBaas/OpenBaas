@@ -11,7 +11,6 @@ import infosistema.openbaas.utils.Utils;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;

@@ -47,6 +47,7 @@ public class AccountResource {
 	public AccountResource(String appId) {
 		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
 		this.appId = appId;
+		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
 	}
 	
 	// *** CREATE *** ///

@@ -2,22 +2,17 @@ package infosistema.openbaas.dataaccess.geolocation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.UUID;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import infosistema.openbaas.model.ModelEnum;
 import infosistema.openbaas.utils.Const;
-import infosistema.openbaas.utils.Utils;
 import infosistema.openbaas.utils.ValueComparator;
-import infosistema.openbaas.dataaccess.models.database.MongoDBDataModel;
 
 public class Geolocation {
 

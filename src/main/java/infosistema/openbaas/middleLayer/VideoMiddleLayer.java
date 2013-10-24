@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 

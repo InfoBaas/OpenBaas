@@ -12,8 +12,6 @@ import javax.ws.rs.core.UriInfo;
 
 import infosistema.openbaas.dataaccess.sessions.RedisSessions;
 import infosistema.openbaas.dataaccess.sessions.SessionInterface;
-import infosistema.openbaas.middleLayer.SessionMiddleLayer;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 
 public class Utils {
 	
@@ -28,8 +26,8 @@ public class Utils {
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
-		List<String> userAgentList = null;
-		List<String> locationList = null;
+		/*List<String> userAgentList = null;
+		List<String> locationList = null;*/
 		String userAgent = null;
 		String location = null;
 		Cookie sessionToken = null;
@@ -42,10 +40,10 @@ public class Utils {
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase("sessionToken"))
 				sessionToken = new Cookie("sessionToken", entry.getValue().get(0));
-			else if (entry.getKey().equalsIgnoreCase("location"))
+			/*else if (entry.getKey().equalsIgnoreCase("location"))
 				locationList = entry.getValue();
 			else if (entry.getKey().equalsIgnoreCase("user-agent"))
-				userAgentList = entry.getValue();
+				userAgentList = entry.getValue();*/
 		}
 		if (sessionToken != null) {
 			SessionInterface sessions = new RedisSessions();
