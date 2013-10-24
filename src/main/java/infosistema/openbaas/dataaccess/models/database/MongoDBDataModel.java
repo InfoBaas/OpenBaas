@@ -9,6 +9,7 @@ import com.mongodb.DBObject;
 import com.mongodb.DBCursor;
 
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
+import infosistema.openbaas.model.ModelEnum;
 
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
@@ -25,11 +26,6 @@ import java.util.Map;
  * 
  * I didn't have enough time to do it.
  * 
- * 
- * 
- * 
- * 
- * 
  */
 public class MongoDBDataModel implements DatabaseInterface {
 
@@ -43,13 +39,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	private static final String AudioColl = "audio";
 	private static final String ImageColl = "images";
 	private static final String StorageColl = "storage";
-//	private static final String SessionColl = "sessions";
-//	private static final String adminColl = "admin";
-//	private static final String UsersInactive = "users:inactive";
-//	private static final String EmailsInAppColl = "emailsInApp";
-//	private static final String EmailsApp = "app:emails";
 	public static final String CONFIRMUSERSEMAIL = "confirmUsersEmail";
-//	private static final int EXPIRETIME = 86400; // 24hours in seconds
 	
 	
 	Geolocation geo;
@@ -335,9 +325,8 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public Boolean createAudioInApp(String appId, String audioId,
-			String directory, String type, String size, String bitRate,
-			String creationDate, String fileName, String location) {
+	public Boolean createAudioInApp(String appId, String audioId, String directory, String type, 
+			String size, String bitRate, String creationDate, String fileName, String location) {
 		DBCollection coll = db.getCollection(AudioColl);
 		BasicDBObject audio = null;
 		if (location != null) {
@@ -348,7 +337,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 					.append("creationDate", creationDate)
 					.append("fileName", fileName).append("location", location);
 			String[] array = location.split(":");
-			geo.insertObjectInGrid(Double.parseDouble(array[0]), Double.parseDouble(array[1]), type, appId, audioId);
+			geo.insertObjectInGrid(Double.parseDouble(array[0]), Double.parseDouble(array[1]), ModelEnum.audio, appId, audioId);
 		} else {
 			audio = new BasicDBObject().append("_id", audioId)
 					.append("appId", appId).append("dir", directory)
@@ -413,7 +402,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 					.append("creationDate", creationDate)
 					.append("fileName", fileName).append("location", location);
 			String[] array = location.split(":");
-			geo.insertObjectInGrid(Double.parseDouble(array[0]),Double.parseDouble(array[1]), type, appId, imageId);
+			geo.insertObjectInGrid(Double.parseDouble(array[0]),Double.parseDouble(array[1]), ModelEnum.image, appId, imageId);
 		} else
 			image = new BasicDBObject().append("_id", imageId)
 					.append("appId", appId).append("dir", directory)
@@ -439,7 +428,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 					.append("creationDate", creationDate)
 					.append("fileName", fileName).append("location", location);
 			String[] array = location.split(":");
-			geo.insertObjectInGrid(Double.parseDouble(array[0]), Double.parseDouble(array[1]), type, appId, videoId);
+			geo.insertObjectInGrid(Double.parseDouble(array[0]), Double.parseDouble(array[1]), ModelEnum.video, appId, videoId);
 		} else
 			video = new BasicDBObject().append("_id", videoId)
 					.append("appId", appId).append("dir", directory)
@@ -488,7 +477,8 @@ public class MongoDBDataModel implements DatabaseInterface {
 					.append("creationDate", creationDate)
 					.append("fileName", fileName).append("location", location);
 			String[] array = location.split(":");
-			geo.insertObjectInGrid(Double.parseDouble(array[0]), Double.parseDouble(array[1]), type, appId, storageId);
+			//TODO: Isto deve ser colocado 
+			geo.insertObjectInGrid(Double.parseDouble(array[0]), Double.parseDouble(array[1]), ModelEnum.data, appId, storageId);
 		}
 		else
 			storage = new BasicDBObject().append("_id", storageId)

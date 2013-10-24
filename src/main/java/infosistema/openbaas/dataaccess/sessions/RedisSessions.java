@@ -2,6 +2,7 @@ package infosistema.openbaas.dataaccess.sessions;
 
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.dataaccess.models.Model;
+import infosistema.openbaas.model.ModelEnum;
 
 import java.io.UnsupportedEncodingException;
 
@@ -92,7 +93,7 @@ public class RedisSessions implements SessionInterface {
 			
 			double latitude = Double.parseDouble(locationArray[0]);
 			double longitude = Double.parseDouble(locationArray[1]);
-			geo.insertObjectInGrid(latitude, longitude, "user", appId, userId);
+			geo.insertObjectInGrid(latitude, longitude, ModelEnum.users, appId, userId);
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -105,8 +106,8 @@ public class RedisSessions implements SessionInterface {
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.hset("sessions:" + sessionToken, "location", location);
-			geo.updateObjectInGrid(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue,
-					"user", appId, userId);
+			geo.updateObjectInGrid(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue,
+					currentLongitudeValue, ModelEnum.users, appId, userId);
 		} finally {
 			pool.returnResource(jedis);
 		}

@@ -6,6 +6,7 @@ import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.dataaccess.models.Model;
 import infosistema.openbaas.dataaccess.sessions.RedisSessions;
 import infosistema.openbaas.dataaccess.sessions.SessionInterface;
+import infosistema.openbaas.model.ModelEnum;
 import infosistema.openbaas.model.user.User;
 import infosistema.openbaas.model.user.UserInterface;
 import infosistema.openbaas.utils.Const;
@@ -189,7 +190,7 @@ public class UsersMiddleLayer {
 	public ArrayList <String> getAllUserIdsForApp(String appId, Double latitude, Double longitude, Double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		if (latitude != null && longitude != null && radius != null) {
 			Geolocation geo = Geolocation.getInstance();
-			return geo.getObjectsInDistance(latitude, longitude, radius, appId, "user");
+			return geo.getObjectsInDistance(latitude, longitude, radius, appId, ModelEnum.users);
 		} else {
 			return model.getAllUserIdsForApp(appId, pageNumber, pageSize, orderBy, orderType);
 		}

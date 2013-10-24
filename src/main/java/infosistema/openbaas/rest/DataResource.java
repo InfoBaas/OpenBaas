@@ -92,22 +92,8 @@ public class DataResource {
 	}
 
 	//TODO: LOCATION
-	/*DEV NOTES:
-	 * Geolocation between points was done in a rude manner, we iterate all the points and calculate
-	 * the distance between the two using haversine.
-	 * 
-	 * THIS IS NOT the right way to do it, if you have the time look into k-d trees ,
-	 * http://en.wikipedia.org/wiki/K-d_tree
-	 * 
-	 * http://zaemis.blogspot.pt/2011/01/geolocation-search.html
-	 * 
-	 * or 
-	 * http://wiki.apache.org/solr/SpatialSearch
-	 *
-	 */
 	/**
 	 * Retrieves all the data contained in this application.
-	 * 
 	 * 
 	 * @return
 	 */

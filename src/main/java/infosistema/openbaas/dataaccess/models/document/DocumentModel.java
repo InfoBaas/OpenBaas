@@ -1,6 +1,7 @@
 package infosistema.openbaas.dataaccess.models.document;
 
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
+import infosistema.openbaas.model.ModelEnum;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -41,8 +42,6 @@ public class DocumentModel implements DocumentInterface {
 	public static final String UserDataColl = "users:data";
 	public static final int PORT = 27017;
 	private static final String specialCharacter = "~";
-	private static final String AUDIO = "audio";
-	private static final String IMAGE = "jpg";
 	Geolocation geo;
 	public DocumentModel() {
 		mongoClient = null;
@@ -50,7 +49,6 @@ public class DocumentModel implements DocumentInterface {
 		try {
 			mongoClient = new MongoClient(SERVER, PORT);
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		db = mongoClient.getDB("openbaas");
@@ -117,8 +115,7 @@ public class DocumentModel implements DocumentInterface {
 	}
 
 	@Override
-	public boolean insertIntoDocument(String appId, String url,
-			JSONObject data, String location) throws JSONException {
+	public boolean insertIntoDocument(String appId, String url, JSONObject data, String location) throws JSONException {
 		DBCollection coll = db.getCollection(DataColl);
 		String[] array = url.split("/");
 		String tempURL = appId;
@@ -150,7 +147,7 @@ public class DocumentModel implements DocumentInterface {
 				if (location != null){
 					temp.append("location", location);
 					String[] splitted = location.split(":");
-					geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), key, appId, tempURL);
+					geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, tempURL);
 				}
 				coll.insert(temp);
 				keys.remove();
@@ -216,8 +213,7 @@ public class DocumentModel implements DocumentInterface {
 		String tempURL = array[0]; // appId
 		while (keys.hasNext()) {
 			String element = (String) keys.next();
-			if (element.equalsIgnoreCase("data")) {// update the content of the
-													// url
+			if (element.equalsIgnoreCase("data")) {// update the content of the url
 				BasicDBObject newDocument = new BasicDBObject().append("$set",	new BasicDBObject().append("data",inputJson.toString()));
 				coll.update(searchQuery, newDocument);
 				break;
@@ -247,14 +243,12 @@ public class DocumentModel implements DocumentInterface {
 			try {
 				inputJson.get(element);
 			} catch (JSONException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		} catch (ClassCastException e1) {
 			try {
 				inputJson.get(element);
 			} catch (JSONException e2) {
-				// TODO Auto-generated catch block
 				e2.printStackTrace();
 			}
 		}
@@ -266,7 +260,7 @@ public class DocumentModel implements DocumentInterface {
 			if (location != null){
 				newDocument = new BasicDBObject().append("$set",new BasicDBObject().append("data", inputJson.toString()).append("location", location));
 			String[] splitted = location.split(":");
-			geo.insertObjectInGrid(Double.parseDouble(splitted[0]), Double.parseDouble(splitted[1]), child, appId, tempURL);
+			geo.insertObjectInGrid(Double.parseDouble(splitted[0]), Double.parseDouble(splitted[1]), ModelEnum.data, appId, tempURL);
 		}
 			else
 				newDocument = new BasicDBObject()
@@ -297,7 +291,7 @@ public class DocumentModel implements DocumentInterface {
 			if (location != null){
 				temp.append("location", location);
 				String[] splitted = location.split(":");
-				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), key, appId, tempURL);
+				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, tempURL);
 			}
 			tempURL += "," + key;
 			temp.append("path", tempURL);
@@ -398,14 +392,12 @@ public class DocumentModel implements DocumentInterface {
 			try {
 				data.get(element);
 			} catch (JSONException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		} catch (ClassCastException e1) {
 			try {
 				data.get(element);
 			} catch (JSONException e2) {
-				// TODO Auto-generated catch block
 				e2.printStackTrace();
 			}
 		}
@@ -525,11 +517,9 @@ public class DocumentModel implements DocumentInterface {
 	}
 
 	@Override
-	public ArrayList<String> getAllDocsInRadius(String appId, double latitude,
-			double longitude, double radius) {
+	public ArrayList<String> getAllDocsInRadius(String appId, double latitude, double longitude, double radius) {
 		DBCollection coll = db.getCollection(DataColl);
-		String type = appId+"docs";
-		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, type);
+		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, ModelEnum.data);
 		Iterator<String> allIt = all.iterator();
 		ArrayList<String> allElements = new ArrayList<String>();
 		while(allIt.hasNext()){
@@ -548,8 +538,7 @@ public class DocumentModel implements DocumentInterface {
 	public ArrayList<String> getDataInDocumentInRadius(String appId, String url, double latitude, double longitude,
 			double radius){
 		DBCollection coll = db.getCollection(DataColl);
-		String type = appId+"docs";
-		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, type);
+		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, ModelEnum.data);
 		Iterator<String> allIt = all.iterator();
 		ArrayList<String> allElements = new ArrayList<String>();
 		while(allIt.hasNext()){
@@ -568,8 +557,7 @@ public class DocumentModel implements DocumentInterface {
 			double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType){
 		//TODO JM Tem GeoLocalizacao. Ver como se faz a paginacao
 		DBCollection coll = db.getCollection(UserDataColl);
-		String type = appId+"docs";
-		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, type);
+		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, ModelEnum.data);
 		Iterator<String> allIt = all.iterator();
 		ArrayList<String> allElements = new ArrayList<String>();
 		while(allIt.hasNext()){
@@ -625,7 +613,7 @@ public class DocumentModel implements DocumentInterface {
 	@Override
 	public ArrayList<String> getAllAudioIdsInRadius(String appId, double latitude, double longitude, double radius) {
 		DBCollection coll = db.getCollection(UserDataColl);
-		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, AUDIO);
+		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, ModelEnum.audio);
 		Iterator<String> allIt = all.iterator();
 		ArrayList<String> allElements = new ArrayList<String>();
 		while(allIt.hasNext()){
@@ -644,7 +632,7 @@ public class DocumentModel implements DocumentInterface {
 	public ArrayList<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, 
 			double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		DBCollection coll = db.getCollection(UserDataColl);
-		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, IMAGE);
+		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, ModelEnum.image);
 		Iterator<String> allIt = all.iterator();
 		Set<String> allElements = new HashSet<String>();
 		while(allIt.hasNext()){

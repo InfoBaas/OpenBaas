@@ -13,6 +13,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import infosistema.openbaas.model.ModelEnum;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 import infosistema.openbaas.utils.ValueComparator;
@@ -63,16 +64,8 @@ public class Geolocation {
 		return String.format(OBJECTID_FORMAT, latitude, longitude, objectId);
 	}
 	
-	private String getGridSquareId(double latitude, double longitude, String appId, String objectType) {
-		return String.format(GRID_FORMAT, latitude, longitude, appId, objectType);
-	}
-
-	private String transformType(String type) {
-		if (type.equals("jpg") || type.equals("image")) return "image";
-		else if (type.equals("wmv") || type.equals("video")) return "video";
-		else if (type.equals("mp3") || type.equals("audio")) return "audio";
-		else if (type.equals("user")) return "user";
-		else return "data";
+	private String getGridSquareId(double latitude, double longitude, String appId, ModelEnum objectType) {
+		return String.format(GRID_FORMAT, latitude, longitude, appId, objectType.toString());
 	}
 
 	//Distances 
@@ -112,14 +105,13 @@ public class Geolocation {
 
 	// *** CREATE *** ///
 	
-	public boolean insertObjectInGrid(double latitude, double longitude, String type, String appId, String objectId) {
+	public boolean insertObjectInGrid(double latitude, double longitude, ModelEnum type, String appId, String objectId) {
 		String gridObjectId = getObjectId(latitude, longitude, objectId);
 
 		latitude = correctLatitude(latitude);
 		longitude = correctLongitude(longitude);
 		double gridLatitude = getGridLatitude(latitude);
 		double gridLongitude = getGridLongitude(longitude);
-		type = transformType(type);
 
 		String gridSquareId = getGridSquareId(gridLatitude, gridLongitude, appId, type);
 
@@ -146,7 +138,7 @@ public class Geolocation {
 
 	// *** UPDATE *** ///
 	
-	public boolean updateObjectInGrid(double srcLatitude, double srcLongitude, double destLatitude, double destLongitude, String type, String appId, String objectId) {
+	public boolean updateObjectInGrid(double srcLatitude, double srcLongitude, double destLatitude, double destLongitude, ModelEnum type, String appId, String objectId) {
 		String srcGridObjectId = getObjectId(srcLatitude, srcLongitude, objectId);
 		String destGridObjectId = getObjectId(destLatitude, destLongitude, objectId);
 
@@ -158,7 +150,6 @@ public class Geolocation {
 		double srcGridLongitude = getGridLongitude(srcLongitude);
 		double destGridLatitude = getGridLatitude(destLatitude);
 		double destGridLongitude = getGridLongitude(destLongitude);
-		type = transformType(type);
 
 		String srcGridSquareId = getGridSquareId(srcGridLatitude, srcGridLongitude, appId, type);
 		String destGridSquareId = getGridSquareId(destGridLatitude, destGridLongitude, appId, type);
@@ -172,14 +163,13 @@ public class Geolocation {
 
 	// *** DELETE *** ///
 	
-	public boolean deleteObjectFromGrid(double latitude, double longitude, String type, String appId, String objectId) {
+	public boolean deleteObjectFromGrid(double latitude, double longitude, ModelEnum type, String appId, String objectId) {
 		String gridObjectId = getObjectId(latitude, longitude, objectId);
 
 		latitude = correctLatitude(latitude);
 		longitude = correctLongitude(longitude);
 		double gridLatitude = getGridLatitude(latitude);
 		double gridLongitude = getGridLongitude(longitude);
-		type = transformType(type);
 
 		String gridSquareId = getGridSquareId(gridLatitude, gridLongitude, appId, type);
 
@@ -206,7 +196,7 @@ public class Geolocation {
 	
 	// *** GET LIST *** ///
 
-	public ArrayList<String> getObjectsInGrid(double latitudeIni, double longitudeIni, double latitudeEnd, double longitudeEnd, String appId, String type) {
+	public ArrayList<String> getObjectsInGrid(double latitudeIni, double longitudeIni, double latitudeEnd, double longitudeEnd, String appId, ModelEnum type) {
 		ArrayList<String> retObj = new ArrayList<String>();
 		latitudeIni = correctLatitude(latitudeIni);
 		longitudeIni = correctLongitude(longitudeIni);
@@ -228,7 +218,7 @@ public class Geolocation {
 		return retObj;
 	}
 
-	public ArrayList<String> getObjectsInDistance(double latitude, double longitude, double radius, String appId, String type) {
+	public ArrayList<String> getObjectsInDistance(double latitude, double longitude, double radius, String appId, ModelEnum type) {
 		ArrayList<String> retObj = new ArrayList<String>(); 
 
 		double latitudeIni = latitude-transformMetersInDegreesLat(radius); 

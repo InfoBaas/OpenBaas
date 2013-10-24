@@ -155,8 +155,7 @@ public class StorageResource {
 	@POST
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response uploadStorageFile(@Context UriInfo ui,
-			@Context HttpHeaders hh,
+	public Response uploadStorageFile(@Context UriInfo ui, @Context HttpHeaders hh,
 			@FormDataParam("file") InputStream uploadedInputStream,
 			@FormDataParam("file") FormDataContentDisposition fileDetail,
 			@PathParam("appId") String appId,
@@ -167,8 +166,6 @@ public class StorageResource {
 		String fileType = new String();
 		String fileName = new String();
 		if (code == 1) {
-			System.out.println("***********************************");
-			System.out.println("*******Uploading to Storage********");
 			fileNameWithType = fileDetail.getFileName();
 			char[] charArray = fileNameWithType.toCharArray();
 			boolean pop = false;
@@ -186,8 +183,7 @@ public class StorageResource {
 				}
 			}
 			String dir = "apps/" + appId + "/storage/";
-			String storageId = storageMid.createLocalFile(uploadedInputStream,
-					fileDetail, appId, fileType, dir);
+			String storageId = storageMid.createLocalFile(uploadedInputStream, fileDetail, appId, fileType, dir);
 			/* save it
 			 *
 			 * :::::::::::::::::MAJOR WARNING::::::::::::::::::::::Handling the
