@@ -79,7 +79,7 @@ public class IntegrationResource {
 			userAgent = userAgentList.get(0);
 		try {
 			email = (String) inputJsonObj.get("email");
-			socialNetwork = (String) inputJsonObj.get("socialNetwork");
+			socialNetwork = "Facebook";
 			socialId = (String) inputJsonObj.get("socialId");
 			userName = (String) inputJsonObj.opt("userName");
 			
