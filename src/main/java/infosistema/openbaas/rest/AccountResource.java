@@ -22,6 +22,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -319,4 +320,18 @@ public class AccountResource {
 		return response;
 	}
 
+	/**
+	 * Launches the resource integration requests.
+	 * 
+	 * @param appId
+	 * @return
+	 */
+	@Path("integration")
+	public IntegrationResource integration() {
+		try {
+			return new IntegrationResource(appId);
+		} catch (IllegalArgumentException e) {
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
+		}
+	}
 }

@@ -80,7 +80,7 @@ public class UsersMiddleLayer {
 
 		if (!confirmUsersEmailOption(appId)) {
 			SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
-			createUser(appId, userId,	userName, email, salt, hash, userFile);
+			createUser(appId, userId,	userName, "NOK", "NOK", email, salt, hash, userFile);
 			String sessionToken = Utils.getRandomString(Const.IDLENGTH);
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, password);
 			for (Entry<String, List<String>> entry : headerParams.entrySet()) {
@@ -103,9 +103,63 @@ public class UsersMiddleLayer {
 			}
 		} else if (confirmUsersEmailOption(appId)) {
 			boolean emailConfirmed = false;
-			createUserWithEmailConfirmation(appId, userId, userName, email, salt,hash, userFile, emailConfirmed, uriInfo);
+			createUserWithEmailConfirmation(appId, userId, userName, "NOK", "NOK", email, salt,hash, userFile, emailConfirmed, uriInfo);
 			outUser.setUserID2(userId);
 		}
+		return outUser;
+		
+	}
+	
+	
+	public UserInterface createSocialUserAndLogin(MultivaluedMap<String, String> headerParams, String appId, 
+			String userName, String email, String socialId, String socialNetwork) {
+		UserInterface outUser = new User();
+		String userId = null;
+		List<String> userAgentList = null;
+		List<String> locationList = null;
+		String userAgent = null;
+		String location = null;
+		
+		userId = Utils.getRandomString(Const.IDLENGTH);
+		while (identifierInUseByUserInApp(appId, userId))
+			userId = Utils.getRandomString(Const.IDLENGTH);
+		byte[] salt = null;
+		byte[] hash = null;
+		PasswordEncryptionService service = new PasswordEncryptionService();
+		try {
+			salt = service.generateSalt();
+			hash = service.getEncryptedPassword(socialId, salt);
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Hashing Algorithm failed, please review the PasswordEncryptionService.");
+			e.printStackTrace();
+		} catch (InvalidKeySpecException e) {
+			System.out.println("Invalid Key.");
+			e.printStackTrace();
+		}
+
+		SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+		createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash, null);
+		String sessionToken = Utils.getRandomString(Const.IDLENGTH);
+		boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase("location"))
+				locationList = entry.getValue();
+			else if (entry.getKey().equalsIgnoreCase("user-agent")){
+				userAgentList = entry.getValue();
+			}	
+		}
+		if (locationList != null)
+			location = locationList.get(0);
+		if (userAgentList != null)
+			userAgent = userAgentList.get(0);
+		
+		sessionMid.refreshSession(sessionToken, location, userAgent);
+
+		if (validation) {
+			outUser.setUserID2(userId);
+			outUser.setReturnToken(sessionToken);
+		}
+		
 		return outUser;
 		
 	}
@@ -121,21 +175,22 @@ public class UsersMiddleLayer {
 	 * @param password
 	 * @return
 	 */
-	public boolean createUser(String appId, String userId, String userName, String email, byte[] salt, byte[] hash, String userFile) {
+	public boolean createUser(String appId, String userId, String userName, String socialId, String socialNetwork, 
+			String email, byte[] salt, byte[] hash, String userFile) {
 		boolean sucess = false;
 		try {
-			sucess = this.model.createUser(appId, userId, userName, email, salt, hash, userFile);
+			sucess = this.model.createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash, userFile);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 		return sucess;
 	}
 
-	public boolean createUserWithEmailConfirmation(String appId, String userId,String userName, 
+	public boolean createUserWithEmailConfirmation(String appId, String userId, String userName, String socialId, String socialNetwork,
 			String email, byte[] salt, byte[] hash,	String flag, boolean emailConfirmed, UriInfo uriInfo) {
 		boolean sucessModel = false;
 		try {
-			sucessModel = this.model.createUserWithEmailConfirmation(appId, userId, userName, email, salt, hash, flag, emailConfirmed);
+			sucessModel = this.model.createUserWithEmailConfirmation(appId, userId, userName, socialId, socialNetwork, email, salt, hash, flag, emailConfirmed);
 			String ref = Utils.getRandomString(Const.IDLENGTH);
 			emailOp.sendRegistrationEmailWithRegistrationCode(appId, userId, userName, email, ref, uriInfo.getAbsolutePath().toASCIIString());
 			this.emailOp.addUrlToUserId(appId, userId, ref);
@@ -235,6 +290,10 @@ public class UsersMiddleLayer {
 	public boolean userExistsInApp(String appId, String userId) {
 		return this.model.userExistsInApp(appId, userId);
 	}
+	
+	public String socialUserExistsInApp(String appId, String socialId, String socialNetwork) {
+		return this.model.socialUserExistsInApp(appId, socialId, socialNetwork);
+	}
 
 	public boolean identifierInUseByUserInApp(String appId, String userId) {
 		return this.model.identifierInUseByUserInApp(appId, userId);
@@ -299,5 +358,7 @@ public class UsersMiddleLayer {
 	public String getRecoveryCode(String appId, String userId) {
 		return this.emailOp.getRecoveryCodeOfUser(appId, userId);
 	}
+
+
 
 }

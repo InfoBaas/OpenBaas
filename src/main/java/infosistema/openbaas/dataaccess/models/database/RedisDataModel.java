@@ -182,6 +182,21 @@ public class RedisDataModel implements CacheInterface {
 		}
 		return userExists;
 	}
+	
+	@Override
+	public Boolean socialUserExistsInApp(String appId, String socialId,	String socialNetwork) {
+		Jedis jedis = pool.getResource();
+		Boolean userExists = false;
+		try {
+			//Set<String> usersInApp = jedis.smembers("app:" + appId + ":users");
+			//Iterator<String> it = usersInApp.iterator();
+			if (jedis.sismember("app:" + appId + ":users:"+socialNetwork+"_id", socialId))
+				userExists = true;
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return userExists;
+	}
 
 	public Boolean createUserWithFlag(String appId, String userId, String userName,
 			String email, byte[] salt, byte[] hash, String creationDate, String userFile)
@@ -781,6 +796,25 @@ public class RedisDataModel implements CacheInterface {
 		}
 		return email;
 	}
+	
+	@Override
+	public String getUserIdUsingSocialInfo(String appId, String socialId, String socialNetwork) {
+		Jedis jedis = pool.getResource();
+		String userId = null;
+		try {
+			Set<String> usersInApp = this.jedis.smembers("app:" + appId	+ ":users");
+			Iterator<String> it = usersInApp.iterator();
+			while (it.hasNext()){
+				String userAux = it.next();
+				String socialTemp = jedis.hget("users:" + userAux, socialNetwork+"_id");
+				if (socialTemp.equals(socialId))
+					userId = userAux;
+			}
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return userId;
+	}	
 
 	@Override
 	public Map<String, String> getOldestElement() {
@@ -1120,7 +1154,7 @@ public class RedisDataModel implements CacheInterface {
 
 	@Override
 	public Boolean createUserWithFlagWithEmailConfirmation(String appId,
-			String userId, String userName, String email, byte[] salt,
+			String userId, String userName, String socialId, String socialNetwork, String email, byte[] salt,
 			byte[] hash, String creationDate, String flag,
 			Boolean emailConfirmed) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
@@ -1131,6 +1165,7 @@ public class RedisDataModel implements CacheInterface {
 				jedis.zadd("users:time", unixTime, appId + ":" + userId);
 				jedis.hset("users:" + userId, "userId", userId);
 				jedis.hset("users:" + userId, "userName", userName);
+				jedis.hset("users:" + userId, socialNetwork+"_id", socialId);
 				jedis.hset("users:" + userId, "email", email);
 				jedis.hset("users:"+userId, "emailConfirmed", emailConfirmed+"");
 				jedis.hset("users:" + userId, "salt",
@@ -1154,7 +1189,7 @@ public class RedisDataModel implements CacheInterface {
 
 	@Override
 	public Boolean createUserWithoutFlagWithEmailConfirmation(String appId,
-			String userId, String userName, String email, byte[] salt,
+			String userId, String userName,String socialId, String socialNetwork, String email, byte[] salt,
 			byte[] hash, String creationDate, Boolean emailConfirmed) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
 		Boolean sucess = false;
@@ -1164,14 +1199,12 @@ public class RedisDataModel implements CacheInterface {
 				jedis.zadd("users:time", unixTime, appId + ":" + userId);
 				jedis.hset("users:" + userId, "userId", userId);
 				jedis.hset("users:" + userId, "userName", userName);
+				jedis.hset("users:" + userId, socialNetwork+"_id", socialId);
 				jedis.hset("users:" + userId, "email", email);
 				jedis.hset("users:"+userId, "emailConfirmed", emailConfirmed+"");
-				jedis.hset("users:" + userId, "salt",
-						new String(salt,
-								"ISO-8859-1"));
+				jedis.hset("users:" + userId, "salt",new String(salt,"ISO-8859-1"));
 				jedis.hset(("users:" + userId), "lastActive", new Date().toString());
-				jedis.hset(("users:" + userId), "hash",
-						new String(hash, "ISO-8859-1"));
+				jedis.hset(("users:" + userId), "hash",	new String(hash, "ISO-8859-1"));
 				jedis.hset("users:" + userId, "alive", new String("true"));
 				jedis.hset("users:" + userId, "creationDate", creationDate);
 				jedis.sadd("app:" + appId + ":users", userId);
@@ -1304,6 +1337,24 @@ public class RedisDataModel implements CacheInterface {
 
 	@Override
 	public Integer countAllImagesInApp(String appId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Boolean createUserWithFlag(String appId, String userId,
+			String userName, String socialId, String socialNetwork,
+			String email, byte[] salt, byte[] hash, String creationDate,
+			String flag) throws UnsupportedEncodingException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Boolean createUserWithoutFlag(String appId, String userId,
+			String userName, String socialId, String socialNetwork,
+			String email, byte[] salt, byte[] hash, String creationDate)
+			throws UnsupportedEncodingException {
 		// TODO Auto-generated method stub
 		return null;
 	}

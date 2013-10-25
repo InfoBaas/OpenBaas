@@ -23,4 +23,5 @@ public interface CacheInterface extends DatabaseInterface{
 	 */
 	public Set<String> allCachedElements();
 	void destroyPool();
+	
 }

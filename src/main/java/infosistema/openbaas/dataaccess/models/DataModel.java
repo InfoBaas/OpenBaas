@@ -133,46 +133,46 @@ public class DataModel {
 		return map;
 	}
 
-	public boolean createUserWithFlag(String appId, String userId, String userName,
+	public boolean createUserWithFlag(String appId, String userId, String userName, String socialId, String socialNetwork,
 			String email, byte[] salt, byte[] hash, String userFile)
 			throws UnsupportedEncodingException {
 		boolean operationOk = false;
 		boolean cacheOk = false;
 		boolean auxOk = false;
 		if (redisModel.getCacheSize() <= MAXCACHESIZE) {
-			cacheOk = redisModel.createUserWithFlag(appId, userId, userName, email,
+			cacheOk = redisModel.createUserWithFlag(appId, userId, userName, socialId, socialNetwork, email,
 					salt, hash, new Date().toString(), userFile);
 			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				auxOk = mongoModel.createUserWithFlag(appId, userId, userName, email,
+				auxOk = mongoModel.createUserWithFlag(appId, userId, userName, socialId, socialNetwork, email,
 						salt, hash, new Date().toString(), userFile);
 			if (auxOk && cacheOk)
 				operationOk = true;
 		} else {
 			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				auxOk = mongoModel.createUserWithFlag(appId, userId, userName, email,
+				auxOk = mongoModel.createUserWithFlag(appId, userId, userName, socialId, socialNetwork, email,
 						salt, hash, new Date().toString(), userFile);
 			if (auxOk)
 				operationOk = true;
 		}
 		return operationOk;
 	}
-	public boolean createUserWithoutFlag(String appId, String userId, String userName,
+	public boolean createUserWithoutFlag(String appId, String userId, String userName, String socialId, String socialNetwork,
 			String email, byte[] salt, byte[] hash)
 			throws UnsupportedEncodingException {
 		boolean operationOk = false;
 		boolean cacheOk = false;
 		boolean auxOk = false;
 		if (redisModel.getCacheSize() <= MAXCACHESIZE) {
-			cacheOk = redisModel.createUserWithoutFlag(appId, userId, userName, email,
+			cacheOk = redisModel.createUserWithoutFlag(appId, userId, userName, socialId, socialNetwork,email,
 					salt, hash, new Date().toString());
 			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				auxOk = mongoModel.createUserWithoutFlag(appId, userId, userName, email,
+				auxOk = mongoModel.createUserWithoutFlag(appId, userId, userName, socialId, socialNetwork, email,
 						salt, hash, new Date().toString());
 			if (auxOk && cacheOk)
 				operationOk = true;
 		} else {
 			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				auxOk = mongoModel.createUserWithoutFlag(appId, userId, userName, email,
+				auxOk = mongoModel.createUserWithoutFlag(appId, userId, userName, socialId, socialNetwork, email,
 						salt, hash, new Date().toString());
 			if (auxOk)
 				operationOk = true;
@@ -196,6 +196,16 @@ public class DataModel {
 			System.out.println("Database not implemented.");
 		return false;
 	}
+	
+	public String socialUserExistsInApp(String appId, String socialId, String socialNetwork) {
+		if (redisModel.socialUserExistsInApp(appId, socialId, socialNetwork))
+			return redisModel.getUserIdUsingSocialInfo(appId, socialId,socialNetwork);
+		else if (auxDatabase.equalsIgnoreCase(MONGODB))
+			return mongoModel.getUserIdUsingSocialInfo(appId, socialId, socialNetwork);
+		else if (!auxDatabase.equalsIgnoreCase(MONGODB))
+			System.out.println("Database not implemented.");
+		return null;
+	}
 
 	public boolean identifierInUseByUserInApp(String appId, String userId) {
 		if (auxDatabase.equalsIgnoreCase(MONGODB))
@@ -211,6 +221,8 @@ public class DataModel {
 		String email = null;
 		String creationDate = null;
 		String userName = null;
+		String socialId = null;
+		String socialNetwork = null;
 		
 		byte[] hash = null;
 		byte[] salt = null;
@@ -236,11 +248,15 @@ public class DataModel {
 									.serialize(entry.getValue()).getBytes();
 						else if(entry.getKey().equalsIgnoreCase("flag"))
 							flag = entry.getValue();
+						else if(entry.getKey().equalsIgnoreCase("socialId"))
+							socialId = entry.getValue();
+						else if(entry.getKey().equalsIgnoreCase("socialNetwork"))
+							socialNetwork = entry.getValue();
 					}
 					if(flag != null)
-						redisModel.createUserWithFlag(appId, userId,userName, email, salt, hash, creationDate, flag);
+						redisModel.createUserWithFlag(appId, userId,userName, socialId, socialNetwork, email, salt, hash, creationDate, flag);
 					else{
-						redisModel.createUserWithoutFlag(appId, userId, userName, email, salt, hash, creationDate);
+						redisModel.createUserWithoutFlag(appId, userId, userName, socialId, socialNetwork, email, salt, hash, creationDate);
 					}
 				} else {
 					System.out.println("Warning: Cache is full.");
@@ -1050,22 +1066,22 @@ public class DataModel {
 	}
 
 	public boolean createUserWithFlagWithEmailConfirmation(String appId,
-			String userId, String userName, String email, byte[] salt,
+			String userId, String userName, String socialId, String socialNetwork, String email, byte[] salt,
 			byte[] hash, String flag, boolean emailConfirmed) throws UnsupportedEncodingException {
 		boolean operationOk = false;
 		boolean cacheOk = false;
 		boolean auxOk = false;
 		if (redisModel.getCacheSize() <= MAXCACHESIZE) {
-			cacheOk = redisModel.createUserWithFlagWithEmailConfirmation(appId, userId, userName, email,
+			cacheOk = redisModel.createUserWithFlagWithEmailConfirmation(appId, userId, userName, socialId, socialNetwork, email,
 					salt, hash, new Date().toString(), flag, emailConfirmed);
 			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				auxOk = mongoModel.createUserWithFlagWithEmailConfirmation(appId, userId, userName, email,
+				auxOk = mongoModel.createUserWithFlagWithEmailConfirmation(appId, userId, userName, socialId, socialNetwork, email,
 						salt, hash, new Date().toString(), flag, emailConfirmed);
 			if (auxOk && cacheOk)
 				operationOk = true;
 		} else {
 			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				auxOk = mongoModel.createUserWithFlagWithEmailConfirmation(appId, userId, userName, email,
+				auxOk = mongoModel.createUserWithFlagWithEmailConfirmation(appId, userId, userName, socialId, socialNetwork, email,
 						salt, hash, new Date().toString(), flag, emailConfirmed);
 			if (auxOk)
 				operationOk = true;
@@ -1074,22 +1090,22 @@ public class DataModel {
 	}
 
 	public boolean createUserWithoutFlagWithEmailConfirmation(String appId,
-			String userId, String userName, String email, byte[] salt,
+			String userId, String userName, String socialId, String socialNetwork, String email, byte[] salt,
 			byte[] hash, boolean emailConfirmed) throws UnsupportedEncodingException {
 		boolean operationOk = false;
 		boolean cacheOk = false;
 		boolean auxOk = false;
 		if (redisModel.getCacheSize() <= MAXCACHESIZE) {
-			cacheOk = redisModel.createUserWithoutFlagWithEmailConfirmation(appId, userId, userName, email,
+			cacheOk = redisModel.createUserWithoutFlagWithEmailConfirmation(appId, userId, userName,socialId, socialNetwork,  email,
 					salt, hash, new Date().toString(), emailConfirmed);
 			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				auxOk = mongoModel.createUserWithoutFlagWithEmailConfirmation(appId, userId, userName, email,
+				auxOk = mongoModel.createUserWithoutFlagWithEmailConfirmation(appId, userId, userName,socialId, socialNetwork,  email,
 						salt, hash, new Date().toString(), emailConfirmed);
 			if (auxOk && cacheOk)
 				operationOk = true;
 		} else {
 			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				auxOk = mongoModel.createUserWithoutFlag(appId, userId, userName, email,
+				auxOk = mongoModel.createUserWithoutFlag(appId, userId, userName,"NOK", "NOK", email,
 						salt, hash, new Date().toString());
 			if (auxOk)
 				operationOk = true;
@@ -1168,6 +1184,8 @@ public class DataModel {
 			System.out.println("Database not implemented.");
 		return false;
 	}
+
+	
 
 	
 

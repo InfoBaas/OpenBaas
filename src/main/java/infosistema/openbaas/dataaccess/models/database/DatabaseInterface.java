@@ -133,12 +133,12 @@ public interface DatabaseInterface {
 	 * @throws UnsupportedEncodingException
 	 */
 	public Boolean createUserWithFlag(String appId, String userId,
-			String userName, String email, byte[] salt, byte[] hash,
+			String userName, String socialId, String socialNetwork, String email, byte[] salt, byte[] hash,
 			String creationDate, String flag)
 			throws UnsupportedEncodingException;
 
 	public Boolean createUserWithoutFlag(String appId, String userId,
-			String userName, String email, byte[] salt, byte[] hash,
+			String userName, String socialId, String socialNetwork, String email, byte[] salt, byte[] hash,
 			String creationDate) throws UnsupportedEncodingException;
 
 	/**
@@ -466,13 +466,8 @@ public interface DatabaseInterface {
 
 	public Boolean deleteImageInApp(String appId, String imageId);
 
-	public Boolean createUserWithFlagWithEmailConfirmation(String appId,
-			String userId, String userName, String email, byte[] salt,
-			byte[] hash, String creationDate, String flag,
-			Boolean emailConfirmed) throws UnsupportedEncodingException;
-
 	public Boolean createUserWithoutFlagWithEmailConfirmation(String appId,
-			String userId, String userName, String email, byte[] salt,
+			String userId, String userName, String socialId, String socialNetwork, String email, byte[] salt,
 			byte[] hash, String creationDate, Boolean emailConfirmed)
 			throws UnsupportedEncodingException;
 
@@ -490,5 +485,14 @@ public interface DatabaseInterface {
 
 	public Integer countAllImagesInApp(String appId);
 
+	public Boolean createUserWithFlagWithEmailConfirmation(String appId,
+			String userId, String userName, String socialId,
+			String socialNetwork, String email, byte[] salt, byte[] hash,
+			String creationDate, String flag, Boolean emailConfirmed)
+			throws UnsupportedEncodingException;
+
+	public Boolean socialUserExistsInApp(String appId, String socialId,	String socialNetwork);
+	public String getUserIdUsingSocialInfo(String appId, String socialId,
+			String socialNetwork);
 
 }

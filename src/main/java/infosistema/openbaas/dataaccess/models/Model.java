@@ -66,6 +66,10 @@ public class Model {
 	public boolean userExistsInApp(String appId, String userId, String email) {
 		return dataModel.userExistsInApp(appId, userId, email);
 	}
+	
+	public String socialUserExistsInApp(String appId, String socialId, String socialNetwork) {
+		return dataModel.socialUserExistsInApp(appId, socialId, socialNetwork);
+	}
 
 	public boolean identifierInUseByUserInApp(String appId, String userId) {
 		return dataModel.identifierInUseByUserInApp(appId, userId);
@@ -79,14 +83,14 @@ public class Model {
 		return dataModel.deleteApp(appId);
 	}
 
-	public boolean createUser(String appId, String userId, String userName,	String email, byte[] salt,
+	public boolean createUser(String appId, String userId, String userName,	String socialId, String socialNetwork, String email, byte[] salt,
 			byte[] hash, String userFile) throws UnsupportedEncodingException {
 		boolean databaseOK = false;
 		if(userFile != null) 
-			databaseOK = dataModel.createUserWithFlag(appId, userId, userName,
+			databaseOK = dataModel.createUserWithFlag(appId, userId, userName, socialId, socialNetwork,
 				email, salt, hash, userFile);
 		else 
-			databaseOK = dataModel.createUserWithoutFlag(appId, userId, userName,
+			databaseOK = dataModel.createUserWithoutFlag(appId, userId, userName, socialId, socialNetwork,
 					email, salt, hash);
 		//boolean awsOK = fileModel.createUser(appId, userId, userName);
 		if (databaseOK /*&& awsOK*/)
@@ -457,14 +461,14 @@ public class Model {
 	}
 
 	public boolean createUserWithEmailConfirmation(String appId, String userId,
-			String userName, String email, byte[] salt, byte[] hash,
+			String userName, String socialId, String socialNetwork, String email, byte[] salt, byte[] hash,
 			String flag, boolean emailConfirmed) throws UnsupportedEncodingException {
 		boolean databaseOK = false;
 		if(flag != null) 
-			databaseOK = dataModel.createUserWithFlagWithEmailConfirmation(appId, userId, userName,
+			databaseOK = dataModel.createUserWithFlagWithEmailConfirmation(appId, userId, userName, socialId, socialNetwork,
 				email, salt, hash, flag, emailConfirmed);
 		else 
-			databaseOK = dataModel.createUserWithoutFlagWithEmailConfirmation(appId, userId, userName,
+			databaseOK = dataModel.createUserWithoutFlagWithEmailConfirmation(appId, userId, userName, socialId, socialNetwork,
 					email, salt, hash, emailConfirmed);
 		//boolean awsOK = fileModel.createUser(appId, userId, userName);
 		if (databaseOK /*&& awsOK*/)
@@ -493,6 +497,8 @@ public class Model {
 	public boolean userExistsInApp(String appId, String userId) {
 		return dataModel.userExistsInApp(appId, userId);
 	}
+
+	
 
 	
 

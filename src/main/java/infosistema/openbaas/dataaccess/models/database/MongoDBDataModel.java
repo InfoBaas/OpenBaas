@@ -183,9 +183,23 @@ public class MongoDBDataModel implements DatabaseInterface {
 		// }
 		// }
 	}
+	@Override
+	public Boolean socialUserExistsInApp(String appId, String socialId, String socialNetwork) {
+		DBCollection table = db.getCollection(UsersColl);
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put(socialNetwork + "_id", socialId);
+		DBCursor cursor = table.find(searchQuery);
+		if (cursor.hasNext()) {
+			System.out.println(cursor.next());
+			return true;
+		}
+		return false;
+	}
+
+	
 
 	@Override
-	public Boolean createUserWithFlag(String appId, String userId, String userName,
+	public Boolean createUserWithFlag(String appId, String userId, String userName, String socialId, String socialNetwork,
 			String email, byte[] salt, byte[] hash, String creationDate, String userFile)
 			throws UnsupportedEncodingException {
 		DBCollection coll = db.getCollection(UsersColl);
@@ -195,12 +209,13 @@ public class MongoDBDataModel implements DatabaseInterface {
 				.append("hash", new String(hash, "ISO-8859-1"))
 				.append("salt", new String(salt, "ISO-8859-1"))
 				.append("userFile", userFile)
+				.append(socialNetwork + "_id", socialId)
 				.append("creationDate", creationDate);
 		coll.insert(user);
 		return true;
 	}
 	@Override
-	public Boolean createUserWithoutFlag(String appId, String userId, String userName,
+	public Boolean createUserWithoutFlag(String appId, String userId, String userName, String socialId, String socialNetwork,
 			String email, byte[] salt, byte[] hash, String creationDate)
 			throws UnsupportedEncodingException {
 		DBCollection coll = db.getCollection(UsersColl);
@@ -209,6 +224,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 				.append("userName", userName).append("email", email)
 				.append("hash", new String(hash, "ISO-8859-1"))
 				.append("salt", new String(salt, "ISO-8859-1"))
+				.append(socialNetwork + "_id", socialId)
 				.append("creationDate", creationDate);
 		coll.insert(user);
 		return true;
@@ -702,6 +718,20 @@ public class MongoDBDataModel implements DatabaseInterface {
 		}
 		return userId;
 	}
+	
+	@Override
+	public String getUserIdUsingSocialInfo(String appId, String socialId, String socialNetwork) {
+		DBCollection users = db.getCollection(UsersColl);
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.append(socialNetwork + "_id", socialId);
+		DBCursor cursor = users.find(searchQuery);
+		String userId = null;
+		if (cursor.hasNext()) {
+			DBObject temp = cursor.next();
+			userId = (String) temp.get("_id");
+		}
+		return userId;
+	}
 
 	@Override
 	public ArrayList<String> getAllStorageIdsInApp(String appId,Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
@@ -881,7 +911,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 
 	@Override
 	public Boolean createUserWithFlagWithEmailConfirmation(String appId,
-			String userId, String userName, String email, byte[] salt,
+			String userId, String userName, String socialId, String socialNetwork, String email, byte[] salt,
 			byte[] hash, String creationDate, String userFile, Boolean emailConfirmed) throws UnsupportedEncodingException {
 		DBCollection coll = db.getCollection(UsersColl);
 		BasicDBObject user = new BasicDBObject("_id", userId)
@@ -890,6 +920,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 				.append("hash", new String(hash, "ISO-8859-1"))
 				.append("salt", new String(salt, "ISO-8859-1"))
 				.append("userFile", userFile)
+				.append(socialNetwork + "_id", socialId)
 				.append("emailConfirmed", emailConfirmed)
 				.append("creationDate", creationDate);
 		coll.insert(user);
@@ -898,7 +929,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 
 	@Override
 	public Boolean createUserWithoutFlagWithEmailConfirmation(String appId,
-			String userId, String userName, String email, byte[] salt,
+			String userId, String userName,String socialId, String socialNetwork, String email, byte[] salt,
 			byte[] hash, String creationDate, Boolean emailConfirmed)
 			throws UnsupportedEncodingException {
 		DBCollection coll = db.getCollection(UsersColl);
@@ -908,6 +939,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 				.append("hash", new String(hash, "ISO-8859-1"))
 				.append("salt", new String(salt, "ISO-8859-1"))
 				.append("emailConfirmed", emailConfirmed)
+				.append(socialNetwork + "_id", socialId)
 				.append("creationDate", creationDate);
 		coll.insert(user);
 		return true;
@@ -972,6 +1004,8 @@ public class MongoDBDataModel implements DatabaseInterface {
 		long number = images.count(searchQuery);
 		return (int) number;
 	}
+
+	
 
 	
 
