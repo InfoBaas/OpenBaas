@@ -1005,10 +1005,4 @@ public class MongoDBDataModel implements DatabaseInterface {
 		return (int) number;
 	}
 
-	
-
-	
-
-	
-	
 }

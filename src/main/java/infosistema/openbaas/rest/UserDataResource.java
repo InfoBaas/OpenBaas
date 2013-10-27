@@ -52,135 +52,8 @@ public class UserDataResource {
 		this.userId = userId;
 	}
 
-	// *** CREATE *** ///
+	// *** CREATE *** //
 	
-	// *** UPDATE *** ///
-	
-	// *** DELETE *** ///
-	
-	// *** GET *** ///
-	
-	// *** OTHERS *** ///
-	
-	//TODO: LOCATION (location de defeito???)
-	/**
-	 * Create or replace existing elements.
-	 * 
-	 * @param inputJsonObj
-	 * @param path
-	 * @return
-	 */
-	@PUT
-	@Path("/{pathId:.+}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response createOrReplaceDocument(JSONObject inputJsonObj,
-			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
-			@Context HttpHeaders hh,
-			@HeaderParam(value = "location") String location) {
-		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
-		if (code == 1) {
-			JSONObject data = null;
-			try {
-				data = (JSONObject) inputJsonObj.get("data");
-			} catch (JSONException e) {
-				System.out.println("Error parsing the JSON file.");
-				e.printStackTrace();
-			}
-			if (appsMid.appExists(appId)) {
-				String url = docMid.createUserDocPathFromListWithSlashes(
-						appId, userId, path);
-				if (docMid.insertIntoUserDocument(appId, userId, url, data,
-						location))
-					response = Response.status(Status.CREATED).entity(appId)
-							.build();
-				else
-					response = Response.status(Status.BAD_REQUEST).entity(data)
-							.build();
-			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
-			}
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
-		return response;
-	}
-
-	//TODO: LOCATION (documents)
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAllElementsInDocument(@Context UriInfo ui, @Context HttpHeaders hh, 
-			@QueryParam("latitude") String latitude, @QueryParam("longitude") String longitude, @QueryParam("radius") String radius,
-			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
-			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
-		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
-		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
-		if (orderBy == null) 	orderBy = Const.ORDER_BY;
-		if (orderType == null) 	orderType = Const.ORDER_TYPE;
-		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
-		if (code == 1) {
-			//query parameters are present, only return the elements 
-			if (latitude != null && longitude != null && radius != null) {
-				ArrayList<String> all = docMid.getAllUserDocsInRadius(appId, userId, Double.parseDouble(latitude), 
-						Double.parseDouble(longitude), Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
-				IdsResultSet res = new IdsResultSet(all,pageNumber);
-				response = Response.status(Status.OK).entity(res).build();
-			//no query parameters return all docs
-			} else {
-				String all = docMid.getAllUserDocs(appId, userId);
-				response = Response.status(Status.OK).entity(all).build();
-			}
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
-		return response;
-	}
-
-	/**
-	 * Retrieves the data contained in a key.
-	 * 
-	 * @param path
-	 * @return
-	 */
-	@GET
-	@Path("/{pathId:.+}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getElementInDocument(
-			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
-			@Context HttpHeaders hh) {
-		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
-		if (code == 1) {
-			if (docMid.dataExistsForElement(appId, path)) {
-				String data = docMid.getElementInUserDocument(appId, userId,
-						path);
-				if (data == null)
-					response = Response.status(Status.BAD_REQUEST)
-							.entity(appId).build();
-				else
-					response = Response.status(Status.OK).entity(data).build();
-			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
-			}
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
-		return response;
-	}
-
 	//TODO: LOCATION (documents)
 	/**
 	 * Creates the document root, this is treated differently than PUT to
@@ -193,9 +66,7 @@ public class UserDataResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createDocumentRoot(JSONObject inputJsonObj,
-			@Context UriInfo ui, @Context HttpHeaders hh,
-			@HeaderParam(value = "location") String location) {
+	public Response createDocumentRoot(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = "location") String location) {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -214,39 +85,6 @@ public class UserDataResource {
 					response = Response.status(Status.BAD_REQUEST).entity(data)
 							.build();
 				}
-			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
-			}
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
-		return response;
-	}
-
-	/**
-	 * Removes an element and the childs of that element if they exist.
-	 * 
-	 * @param path
-	 * @return
-	 */
-	@DELETE
-	@Path("/{pathId:.+}")
-	public Response deleteDataInElement(
-			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
-			@Context HttpHeaders hh) {
-		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
-		if (code == 1) {
-			if (docMid.dataExistsForUserElement(appId, userId, path)) {
-				if (docMid.deleteUserDataInElement(appId, userId, path))
-					response = Response.status(Status.OK).entity("").build();
-				else
-					response = Response.status(Status.BAD_REQUEST).entity(path)
-							.build();
 			} else {
 				response = Response.status(Status.NOT_FOUND).entity(appId)
 						.build();
@@ -300,4 +138,170 @@ public class UserDataResource {
 					.entity("Error handling the request.").build();
 		return response;
 	}
+
+	// *** UPDATE *** //
+	
+	//TODO: LOCATION (location de defeito???)
+	/**
+	 * Create or replace existing elements.
+	 * 
+	 * @param inputJsonObj
+	 * @param path
+	 * @return
+	 */
+	@PUT
+	@Path("/{pathId:.+}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response createOrReplaceDocument(JSONObject inputJsonObj,
+			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
+			@Context HttpHeaders hh,
+			@HeaderParam(value = "location") String location) {
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			JSONObject data = null;
+			try {
+				data = (JSONObject) inputJsonObj.get("data");
+			} catch (JSONException e) {
+				System.out.println("Error parsing the JSON file.");
+				e.printStackTrace();
+			}
+			if (appsMid.appExists(appId)) {
+				String url = docMid.createUserDocPathFromListWithSlashes(
+						appId, userId, path);
+				if (docMid.insertIntoUserDocument(appId, userId, url, data,
+						location))
+					response = Response.status(Status.CREATED).entity(appId)
+							.build();
+				else
+					response = Response.status(Status.BAD_REQUEST).entity(data)
+							.build();
+			} else {
+				response = Response.status(Status.NOT_FOUND).entity(appId)
+						.build();
+			}
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN)
+					.entity("Invalid Session Token.").build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST)
+					.entity("Error handling the request.").build();
+		return response;
+	}
+
+	// *** DELETE *** //
+	
+	/**
+	 * Removes an element and the childs of that element if they exist.
+	 * 
+	 * @param path
+	 * @return
+	 */
+	@DELETE
+	@Path("/{pathId:.+}")
+	public Response deleteDataInElement(
+			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
+			@Context HttpHeaders hh) {
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			if (docMid.dataExistsForUserElement(appId, userId, path)) {
+				if (docMid.deleteUserDataInElement(appId, userId, path))
+					response = Response.status(Status.OK).entity("").build();
+				else
+					response = Response.status(Status.BAD_REQUEST).entity(path)
+							.build();
+			} else {
+				response = Response.status(Status.NOT_FOUND).entity(appId)
+						.build();
+			}
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN)
+					.entity("Invalid Session Token.").build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST)
+					.entity("Error handling the request.").build();
+		return response;
+	}
+
+
+	// *** GET LIST *** //
+	
+	// *** GET *** //
+	
+	//TODO: LOCATION (documents)
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getAllElementsInDocument(@Context UriInfo ui, @Context HttpHeaders hh, 
+			@QueryParam("latitude") String latitude, @QueryParam("longitude") String longitude, @QueryParam("radius") String radius,
+			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
+		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
+		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
+		if (orderBy == null) 	orderBy = Const.ORDER_BY;
+		if (orderType == null) 	orderType = Const.ORDER_TYPE;
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			//query parameters are present, only return the elements 
+			if (latitude != null && longitude != null && radius != null) {
+				ArrayList<String> all = docMid.getAllUserDocsInRadius(appId, userId, Double.parseDouble(latitude), 
+						Double.parseDouble(longitude), Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
+				IdsResultSet res = new IdsResultSet(all,pageNumber);
+				response = Response.status(Status.OK).entity(res).build();
+			//no query parameters return all docs
+			} else {
+				String all = docMid.getAllUserDocs(appId, userId);
+				response = Response.status(Status.OK).entity(all).build();
+			}
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN)
+					.entity("Invalid Session Token.").build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST)
+					.entity("Error handling the request.").build();
+		return response;
+	}
+
+	/**
+	 * Retrieves the data contained in a key.
+	 * 
+	 * @param path
+	 * @return
+	 */
+	@GET
+	@Path("/{pathId:.+}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getElementInDocument(@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui, @Context HttpHeaders hh) {
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			if (docMid.dataExistsForElement(appId, path)) {
+				String data = docMid.getElementInUserDocument(appId, userId,
+						path);
+				if (data == null)
+					response = Response.status(Status.BAD_REQUEST)
+							.entity(appId).build();
+				else
+					response = Response.status(Status.OK).entity(data).build();
+			} else {
+				response = Response.status(Status.NOT_FOUND).entity(appId)
+						.build();
+			}
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN)
+					.entity("Invalid Session Token.").build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST)
+					.entity("Error handling the request.").build();
+		return response;
+	}
+
+
+	// *** RESOURCES *** //
+
+	
+	// *** OTHERS *** //
+	
 }

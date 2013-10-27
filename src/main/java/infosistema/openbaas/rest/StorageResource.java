@@ -50,98 +50,9 @@ public class StorageResource {
 		this.storageMid = MiddleLayerFactory.getStorageMiddleLayer();
 	}
 
-	// *** CREATE *** ///
+	// *** CREATE *** //
 	
-	// *** UPDATE *** ///
-	
-	// *** DELETE *** ///
-	
-	// *** GET *** ///
-	
-	// *** OTHERS *** ///
-	
-	/**
-	 * Gets all the storage Identifiers in the application.
-	 * 
-	 * @return
-	 */
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response findAllStorageIds(@Context UriInfo ui,
-			@Context HttpHeaders hh,
-			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
-			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
-		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
-		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
-		if (orderBy == null) 	orderBy = Const.ORDER_BY;
-		if (orderType == null) 	orderType = Const.ORDER_TYPE;
-		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
-		if (code == 1) {
-			System.out.println("***********************************");
-			System.out.println("********Finding all Storage********");
-			ArrayList<String> storageIds = storageMid.getAllStorageIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
-			IdsResultSet res = new IdsResultSet(storageIds,pageNumber);
-			response = Response.status(Status.OK).entity(res).build();
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
-		return response;
-	}
-	
-	/*Attention! A file octet-stream has no explicit file type, this has to be changed to inform the client of 
-	*file type so that he creates it automaticallyor assume that the client finds it out using 
-	*the url (this is what I do atm).
-	*/
-	@GET
-	@Path("{storageId}")
-	@Produces("application/octet-stream")
-	public Response downloadStorageUsingId(@PathParam("storageId") final String storageId,
-			@Context UriInfo ui, @Context HttpHeaders hh) {
-		ResponseBuilder builder = Response.status(Status.OK);
-		byte[] found = null;
-		String extension = "";
-		try {
-			/*
-			 * pseudo codigo if(!existe em local storage) buscar a aws else
-			 * retornar directo
-			 */
-			
-			File dir =new File("apps/" + appId + "/storage/");
-			String[] myFiles = dir.list(new FilenameFilter() {
-                public boolean accept(File directory, String fileName) {
-                    if(fileName.lastIndexOf(".")==-1) return false;
-                    if((fileName.substring(0, fileName.lastIndexOf("."))).equals(storageId))
-                        return true;
-                    return false;
-                }
-            });
-			String url = "apps/" + appId + "/storage/" + myFiles[0];
-			File file = new File(url);
-			extension = FilenameUtils.getExtension(url);
-			if (!file.exists()) {
-				found = storageMid.downloadStorageInApp(appId, storageId,null);
-			} else if(file.exists()){
-				FileInputStream fis = new FileInputStream(file);
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				byte[] buf = new byte[1024];
-				for (int readNum; (readNum = fis.read(buf)) != -1;) {
-					bos.write(buf, 0, readNum);
-				}
-				found = bos.toByteArray();
-				fis.close();
-			}
-			else{
-				builder.status(Status.NOT_FOUND);
-			}
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
-		builder.entity(found);
-		builder.header("fileType", extension);
-		return builder.build();
-	}
+	// *** UPDATE *** //
 	
 	//TODO: LOCATION
 	/**
@@ -210,6 +121,9 @@ public class StorageResource {
 		return response;
 	}
 	
+
+	// *** DELETE *** //
+	
 	/**
 	 * Deletes the Storage file(from filesystem and database).
 	 * 
@@ -237,4 +151,101 @@ public class StorageResource {
 		return response;
 	}
 
+
+	// *** GET LIST *** //
+	
+	/**
+	 * Gets all the storage Identifiers in the application.
+	 * 
+	 * @return
+	 */
+	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response findAllStorageIds(@Context UriInfo ui,
+			@Context HttpHeaders hh,
+			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
+		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
+		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
+		if (orderBy == null) 	orderBy = Const.ORDER_BY;
+		if (orderType == null) 	orderType = Const.ORDER_TYPE;
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			System.out.println("***********************************");
+			System.out.println("********Finding all Storage********");
+			ArrayList<String> storageIds = storageMid.getAllStorageIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
+			IdsResultSet res = new IdsResultSet(storageIds,pageNumber);
+			response = Response.status(Status.OK).entity(res).build();
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+		return response;
+	}
+	
+
+	// *** GET *** //
+
+	// *** UPLOAD *** //
+
+	// *** DOWNLOAD *** //
+
+	/*Attention! A file octet-stream has no explicit file type, this has to be changed to inform the client of 
+	*file type so that he creates it automaticallyor assume that the client finds it out using 
+	*the url (this is what I do atm).
+	*/
+	@GET
+	@Path("{storageId}")
+	@Produces("application/octet-stream")
+	public Response downloadStorageUsingId(@PathParam("storageId") final String storageId,
+			@Context UriInfo ui, @Context HttpHeaders hh) {
+		ResponseBuilder builder = Response.status(Status.OK);
+		byte[] found = null;
+		String extension = "";
+		try {
+			/*
+			 * pseudo codigo if(!existe em local storage) buscar a aws else
+			 * retornar directo
+			 */
+			
+			File dir =new File("apps/" + appId + "/storage/");
+			String[] myFiles = dir.list(new FilenameFilter() {
+                public boolean accept(File directory, String fileName) {
+                    if(fileName.lastIndexOf(".")==-1) return false;
+                    if((fileName.substring(0, fileName.lastIndexOf("."))).equals(storageId))
+                        return true;
+                    return false;
+                }
+            });
+			String url = "apps/" + appId + "/storage/" + myFiles[0];
+			File file = new File(url);
+			extension = FilenameUtils.getExtension(url);
+			if (!file.exists()) {
+				found = storageMid.downloadStorageInApp(appId, storageId,null);
+			} else if(file.exists()){
+				FileInputStream fis = new FileInputStream(file);
+				ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				byte[] buf = new byte[1024];
+				for (int readNum; (readNum = fis.read(buf)) != -1;) {
+					bos.write(buf, 0, readNum);
+				}
+				found = bos.toByteArray();
+				fis.close();
+			}
+			else{
+				builder.status(Status.NOT_FOUND);
+			}
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+		builder.entity(found);
+		builder.header("fileType", extension);
+		return builder.build();
+	}
+
+	// *** RESOURCES *** //
+	
+	// *** OTHERS *** //
+	
 }

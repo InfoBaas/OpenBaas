@@ -1,8 +1,10 @@
 package infosistema.openbaas.dataaccess.sessions;
 
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
-import infosistema.openbaas.dataaccess.models.Model;
+import infosistema.openbaas.dataaccess.models.database.DatabaseInterface;
+import infosistema.openbaas.dataaccess.models.database.MongoDBDataModel;
 import infosistema.openbaas.model.ModelEnum;
+import infosistema.openbaas.utils.Const;
 
 import java.io.UnsupportedEncodingException;
 
@@ -10,8 +12,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-
-
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -27,7 +27,7 @@ import redis.clients.jedis.JedisPoolConfig;
  */
 public class RedisSessions implements SessionInterface {
 
-	// *** MEMBERS *** ///
+	// *** MEMBERS *** //
 
 	private static final int EXPIRETIME = 86400; // 24hours in seconds
 	public static final long MAXCACHESIZE = 5242880; // bytes
@@ -45,7 +45,7 @@ public class RedisSessions implements SessionInterface {
 	}
 	
 	
-	// *** CREATE *** ///
+	// *** CREATE *** //
 	
 	public void createAdmin(String OPENBAASADMIN, byte[] adminSalt,
 			byte[] adminHash) throws UnsupportedEncodingException {
@@ -81,7 +81,7 @@ public class RedisSessions implements SessionInterface {
 		pool.destroy();
 	}
 
-	// *** AUX *** ///
+	// *** AUX *** //
 
 	private void addLocationToSession(String location, String sessionToken, String userAgent, String appId, String userId) {
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
@@ -115,7 +115,7 @@ public class RedisSessions implements SessionInterface {
 	}
 
 
-	// *** UPDATE *** ///
+	// *** UPDATE *** //
 	
 	/**
 	 * Updates the session time, if it had 10 hours left until being deleted
@@ -158,8 +158,8 @@ public class RedisSessions implements SessionInterface {
 					double dist = geo.distance(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue);
 					if (dist >= 1) {
 						jedis.hset("sessions:" + sessionToken, "location", location);
-						Model model = Model.getModel();
-						model.updateUserLocationAndDate(userId, appId, sessionToken, location, date);
+						DatabaseInterface mongoModel = new MongoDBDataModel(Const.SERVER, Const.MONGO_PORT);
+						mongoModel.updateUserLocationAndDate(userId, appId, sessionToken, location, date);
 
 						updateLocationToSession(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue, 
 								location, sessionToken, userAgent, appId, userId);
@@ -175,12 +175,12 @@ public class RedisSessions implements SessionInterface {
 	}
 	
 	
-	// *** DELETE *** ///
+	// *** DELETE *** //
 	
 	
-	// *** GET LIST *** ///
+	// *** GET LIST *** //
 	
-	// *** GET *** ///
+	// *** GET *** //
 	
 	public Map<String, String> getAdminFields(String OPENBAASADMIN) {
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",	RedisSessionsAndEmailPORT);
@@ -196,7 +196,7 @@ public class RedisSessions implements SessionInterface {
 	}
 
 	
-	// *** OTHERS *** ///
+	// *** OTHERS *** //
 
 	public boolean adminExists(String admin) {
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);

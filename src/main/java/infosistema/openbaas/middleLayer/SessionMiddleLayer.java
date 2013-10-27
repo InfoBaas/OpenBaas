@@ -2,7 +2,6 @@ package infosistema.openbaas.middleLayer;
 
 import infosistema.openbaas.dataaccess.email.EmailInterface;
 import infosistema.openbaas.dataaccess.email.Email;
-import infosistema.openbaas.dataaccess.models.Model;
 import infosistema.openbaas.dataaccess.sessions.RedisSessions;
 import infosistema.openbaas.dataaccess.sessions.SessionInterface;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
@@ -12,17 +11,16 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.Map;
 
-public class SessionMiddleLayer {
+public class SessionMiddleLayer extends MiddleLayerAbstract {
 
-	// *** MEMBERS *** ///
+	// *** MEMBERS *** //
 
-	Model model;
 	SessionInterface sessions;
 	EmailInterface emailOp;
 	private static PasswordEncryptionService service;
 	private static String OPENBAASADMIN = "openbaasAdmin";
 	
-	// *** INSTANCE *** ///
+	// *** INSTANCE *** //
 	
 	private static SessionMiddleLayer instance = null;
 
@@ -32,20 +30,17 @@ public class SessionMiddleLayer {
 	}
 	
 	private SessionMiddleLayer() {
-		model = Model.getModel(); // SINGLETON
-		// simulate();
 		service = new PasswordEncryptionService();
 		sessions = new RedisSessions();
 		emailOp = new Email();
 	}
 
-	// *** CREATE *** ///
+	// *** CREATE *** //
 	
-	public boolean createSession(String sessionId, String appId, String userId,
-			String attemptedPassword) {
+	public boolean createSession(String sessionId, String appId, String userId, String attemptedPassword) {
 		boolean sucess = false;
 		boolean ok = false;
-		ok = model.authenticateUser(appId, userId, attemptedPassword);
+		ok = authenticateUser(appId, userId, attemptedPassword);
 		System.out.println("AUTHENTICATED: " + ok);
 		if (ok) {
 			sessions.createSession(sessionId, appId, userId);
@@ -93,10 +88,51 @@ public class SessionMiddleLayer {
 		}
 		return sucess;
 	}
+
+	//private
 	
-	// *** UPDATE *** ///
+	private boolean authenticateUser(String appId, String userId, String attemptedPassword) {
+		try {
+			Map<String, String> userFields = redisModel.getUser(appId, userId);
+			PasswordEncryptionService service = new PasswordEncryptionService();
+			byte[] salt = null;
+			byte[] hash = null;
+			boolean authenticated = false;
+			if (userFields == null) {
+				userFields = mongoModel.getUser(appId, userId);
+				for (Map.Entry<String, String> entry : userFields.entrySet()) {
+					if (entry.getKey().equalsIgnoreCase("salt")) {
+						salt = entry.getValue().getBytes("ISO-8859-1");
+					} else if (entry.getKey().equalsIgnoreCase("hash")) {
+						hash = entry.getValue().getBytes("ISO-8859-1");
+					}
+				}
+				authenticated = service.authenticate(attemptedPassword, hash, salt);
+			} else {
+				for (Map.Entry<String, String> entry : userFields.entrySet()) {
+					if (entry.getKey().equalsIgnoreCase("salt")) {
+						salt = entry.getValue().getBytes("ISO-8859-1");
+					} else if (entry.getKey().equalsIgnoreCase("hash")) {
+						hash = entry.getValue().getBytes("ISO-8859-1");
+					}
+				}
+				authenticated = service.authenticate(attemptedPassword, hash, salt);
+			}
+			return authenticated;
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (InvalidKeySpecException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+
+	// *** UPDATE *** //
 	
-	// *** DELETE *** ///
+	// *** DELETE *** //
 	
 	public void deleteSessionForUser(String sessionToken, String userId) {
 		sessions.deleteUserSession(sessionToken, userId);
@@ -110,7 +146,10 @@ public class SessionMiddleLayer {
 		return sessions.deleteAllUserSessions(userId);
 	}
 
-	// *** GET *** ///
+	// *** GET LIST *** //
+
+	
+	// *** GET *** //
 	
 	public Map<String, String> getAdminFields(String OPENBAASADMIN)
 			throws UnsupportedEncodingException {
@@ -122,7 +161,10 @@ public class SessionMiddleLayer {
 		return sessions.getUserUsingSessionToken(sessionToken);
 	}
 
-	// *** OTHERS *** ///
+	// *** EXISTS *** //
+
+	
+	// *** OTHERS *** //
 	
 	public boolean sessionTokenExistsForUser(String sessionToken, String userId) {
 		return sessions.sessionTokenExistsForUser(sessionToken, userId);

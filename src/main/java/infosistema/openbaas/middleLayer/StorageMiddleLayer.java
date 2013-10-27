@@ -1,6 +1,10 @@
 package infosistema.openbaas.middleLayer;
 
-import infosistema.openbaas.dataaccess.models.Model;
+import infosistema.openbaas.dataaccess.models.database.CacheInterface;
+import infosistema.openbaas.dataaccess.models.database.DatabaseInterface;
+import infosistema.openbaas.dataaccess.models.database.RedisDataModel;
+import infosistema.openbaas.dataaccess.models.document.DocumentInterface;
+import infosistema.openbaas.dataaccess.models.fileSystem.AWSModel;
 import infosistema.openbaas.model.media.Media;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
@@ -12,18 +16,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.io.IOUtils;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 
-public class StorageMiddleLayer {
+public class StorageMiddleLayer extends MiddleLayerAbstract {
 
-	// *** MEMBERS *** ///
+	// *** MEMBERS *** //
 
-	private Model model;
 	private static final String STORAGEFOLDER = "storage";
 	
-	// *** INSTANCE *** ///
+	// *** INSTANCE *** //
 
 	private static StorageMiddleLayer instance = null;
 
@@ -33,25 +38,10 @@ public class StorageMiddleLayer {
 	}
 	
 	private StorageMiddleLayer() {
-		model = Model.getModel(); // SINGLETON
 	}
 
-	// *** CREATE *** ///
+	// *** CREATE *** //
 	
-	public String uploadStorageFileToServer(String appId, String fileIdentfier, String fileType, String fileName) {
-		if (this.model.uploadFileToServer(appId, fileIdentfier, STORAGEFOLDER, null, "apps/"+appId+"/storage", null, fileType, fileName))
-			return fileIdentfier;
-		else
-			return null;
-	}
-
-	public String uploadStorageFileToServer(String appId, String fileIdentfier, String fileType, String fileName, String location) {
-		if (this.model.uploadFileToServer(appId, fileIdentfier, STORAGEFOLDER, null, "apps/"+appId+"/storage", location, fileType, fileName))
-			return fileIdentfier;
-		else
-			return null;
-	}
-
 	public String createLocalFile(InputStream uploadedInputStream,FormDataContentDisposition fileDetail, String appId, String extension, String dir) {
 		String id = Utils.getRandomString(Const.IDLENGTH);
 		File dirFolders = new File(dir);
@@ -66,10 +56,8 @@ public class StorageMiddleLayer {
 			out = new FileOutputStream(f);
 			IOUtils.copy(uploadedInputStream, out);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -92,32 +80,87 @@ public class StorageMiddleLayer {
 			out = new FileOutputStream(f);
 			IOUtils.copy(uploadedInputStream, out);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		return id;
 	}
 
-	// *** UPDATE *** ///
+	// *** UPDATE *** //
 	
-	// *** DELETE *** ///
+	// *** DELETE *** //
 	
 	public void deleteStorageInApp(String appId, String storageId) {
-		this.model.deleteStorageFile(appId, storageId);
+		String fileDirectory = getFileDirectory(appId, storageId, STORAGEFOLDER, null);
+		deleteFile(fileDirectory);
+		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
+			mongoModel.deleteStorageInApp(appId, storageId);
+			if (redisModel.storageExistsInApp(appId, storageId)) {
+				redisModel.deleteStorageInApp(appId, storageId);
+			}
+		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
+			System.out.println("Database not implemented.");
 	}
 
-	// *** GET *** ///
+	// *** GET LIST *** //
+
+	
+	// *** GET *** //
 	
 	public ArrayList<String> getAllStorageIdsInApp(String appId,Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
-		return this.model.getAllStorageIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
+		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
+			return mongoModel.getAllStorageIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
+		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
+			System.out.println("Database not implemented.");
+		return null;
 	}
 
 	public Media getStorageInApp(String appId, String storageId) {
-		Map<String, String> storageFields = this.model.getStorageInApp(appId, storageId);
+		Map<String, String> storageFields = redisModel.getStorageInApp(appId, storageId);
+
+		if (storageFields == null || storageFields.size() == 0) {
+			String dir = null;
+			String type = null;
+			String size = null;
+			String bitRate = null;
+			String fileName = null;
+			String creationDate = null;
+			String location = null;
+			if (auxDatabase.equalsIgnoreCase(MONGODB)) {
+				storageFields = mongoModel.getAudioInApp(appId, storageId);
+				if (redisModel.getCacheSize() <= MAXCACHESIZE) {
+					for (Entry<String, String> entry : storageFields.entrySet()) {
+						if (entry.getKey().equalsIgnoreCase("dir"))
+							dir = entry.getValue();
+						else if (entry.getKey().equalsIgnoreCase("type"))
+							type = entry.getValue();
+						else if (entry.getKey().equalsIgnoreCase("size"))
+							size = entry.getValue();
+						else if (entry.getKey().equalsIgnoreCase("bitRate"))
+							bitRate = entry.getValue();
+						else if (entry.getKey().equalsIgnoreCase("fileName"))
+							fileName = entry.getValue();
+						else if (entry.getKey().equalsIgnoreCase("location"))
+							location = entry.getValue();
+						else if (entry.getKey()
+								.equalsIgnoreCase("creationDate"))
+							creationDate = entry.getValue();
+					}
+					redisModel.createAudioInApp(appId, storageId, dir, type,
+							size, bitRate, creationDate, fileName, location);
+				} else {
+					System.out.println("Warning: Cache is full.");
+				}
+			} else {
+				System.out.println("Database not implemented.");
+			}
+		} else {
+			storageFields.put("id", storageId);
+			storageFields.put("appId", appId);
+		}
+
 		Media temp = new Media();
 		for (Map.Entry<String, String> entry : storageFields.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase("id"))
@@ -134,14 +177,42 @@ public class StorageMiddleLayer {
 		return temp;
 	}
 
-	// *** OTHERS *** ///
-	
-	public byte[] downloadStorageInApp(String appId, String storageId,String ext) {
-		return this.model.downloadStorageInApp(appId, storageId,ext);
+	// *** UPLOAD *** //
+
+	public String uploadStorageFileToServer(String appId, String fileIdentfier, String fileType, String fileName) {
+		if (uploadFileToServer(appId, fileIdentfier, STORAGEFOLDER, null, "apps/"+appId+"/storage", null, fileType, fileName))
+			return fileIdentfier;
+		else
+			return null;
 	}
+
+	public String uploadStorageFileToServer(String appId, String fileIdentfier, String fileType, String fileName, String location) {
+		if (uploadFileToServer(appId, fileIdentfier, STORAGEFOLDER, null, "apps/"+appId+"/storage", location, fileType, fileName))
+			return fileIdentfier;
+		else
+			return null;
+	}
+
+
+	// *** DOWNLOAD *** //
+
+	public byte[] downloadStorageInApp(String appId, String storageId,String ext) {
+		return download(appId, STORAGEFOLDER, null, storageId,ext);
+	}
+
+	// *** EXISTS *** //
 
 	public boolean storageExistsInApp(String appId, String storageId) {
-		return this.model.storageExistsInApp(appId, storageId);
+		if (redisModel.storageExistsInApp(appId, storageId))
+			return true;
+		else if (auxDatabase.equalsIgnoreCase(MONGODB))
+			return mongoModel.storageExistsInApp(appId, storageId);
+		else if (!auxDatabase.equalsIgnoreCase(MONGODB))
+			System.out.println("Database not implemented.");
+		return false;
 	}
 
+	
+	// *** OTHERS *** //
+	
 }

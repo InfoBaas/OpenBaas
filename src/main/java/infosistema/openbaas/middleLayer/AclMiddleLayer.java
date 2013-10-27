@@ -30,11 +30,11 @@ import org.codehaus.jettison.json.JSONArray;
  */
 public class AclMiddleLayer {
 
-	// *** MEMBERS *** ///
+	// *** MEMBERS *** //
 	
 	private AclInterface acl;
 	
-	// *** INSTANCE *** ///
+	// *** INSTANCE *** //
 	
 	private static AclMiddleLayer instance = null;
 
@@ -47,15 +47,21 @@ public class AclMiddleLayer {
 		acl = new AclDatabase();
 	}
 
-	// *** CREATE *** ///
+	// *** CREATE *** //
 	
-	// *** UPDATE *** ///
+	// *** UPDATE *** //
 	
-	// *** DELETE *** ///
+	// *** DELETE *** //
 	
-	// *** GET *** ///
+	// *** GET LIST *** //
+
 	
-	// *** OTHERS *** ///
+	// *** GET *** //
+	
+	// *** EXISTS *** //
+
+	
+	// *** OTHERS *** //
 	
 	public boolean writePermissions(List<PathSegment> path, String permissions, String userId) {
 		String pathAncestors = "acl:";

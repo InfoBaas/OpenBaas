@@ -1,28 +1,26 @@
 package infosistema.openbaas.middleLayer;
 
-import infosistema.openbaas.dataaccess.models.Model;
+public abstract class MediaMiddleLayer extends MiddleLayerAbstract {
 
+	// *** MEMBERS *** //
 
-public abstract class MediaMiddleLayer {
+	// *** CREATE *** //
+	
+	// *** UPDATE *** //
+	
+	// *** DELETE *** //
+	
+	// *** GET LIST *** //
+	
+	// *** GET *** //
+	
+	// *** UPLOAD *** //
 
-	// *** MEMBERS *** ///
+	// *** DOWNLOAD *** //
 
-	protected Model model;
-	
-	// *** CREATE *** ///
-	
-	public int uploadImage() {
-		return 0;
-	}
+	// *** EXISTS *** //
 
-	// *** UPDATE *** ///
 	
-	// *** DELETE *** ///
-	
-	// *** GET LIST *** ///
-	
-	// *** GET *** ///
-	
-	// *** OTHERS *** ///
+	// *** OTHERS *** //
 	
 }

@@ -37,7 +37,7 @@ public class Geolocation {
 		return instance;
 	}
 
-	// *** AUX *** ///
+	// *** AUX *** //
 	
 	private double correctLatitude(double latitude) {
 		return latitude + 90;
@@ -98,7 +98,7 @@ public class Geolocation {
 	}
 
 
-	// *** CREATE *** ///
+	// *** CREATE *** //
 	
 	public boolean insertObjectInGrid(double latitude, double longitude, ModelEnum type, String appId, String objectId) {
 		String gridObjectId = getObjectId(latitude, longitude, objectId);
@@ -131,7 +131,7 @@ public class Geolocation {
 	}
 	
 
-	// *** UPDATE *** ///
+	// *** UPDATE *** //
 	
 	public boolean updateObjectInGrid(double srcLatitude, double srcLongitude, double destLatitude, double destLongitude, ModelEnum type, String appId, String objectId) {
 		String srcGridObjectId = getObjectId(srcLatitude, srcLongitude, objectId);
@@ -156,7 +156,7 @@ public class Geolocation {
 	}
 	
 
-	// *** DELETE *** ///
+	// *** DELETE *** //
 	
 	public boolean deleteObjectFromGrid(double latitude, double longitude, ModelEnum type, String appId, String objectId) {
 		String gridObjectId = getObjectId(latitude, longitude, objectId);
@@ -189,7 +189,7 @@ public class Geolocation {
 	}
 
 	
-	// *** GET LIST *** ///
+	// *** GET LIST *** //
 
 	public ArrayList<String> getObjectsInGrid(double latitudeIni, double longitudeIni, double latitudeEnd, double longitudeEnd, String appId, ModelEnum type) {
 		ArrayList<String> retObj = new ArrayList<String>();
@@ -265,9 +265,9 @@ public class Geolocation {
 	    }
     } 
 
-	// *** GET *** ///
+	// *** GET *** //
 	
-	// *** OTHERS *** ///
+	// *** OTHERS *** //
 	
 	// http://www.geodatasource.com/developers/java
 	// return kilometers

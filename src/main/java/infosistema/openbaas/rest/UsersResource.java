@@ -4,7 +4,7 @@ import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.model.IdsResultSet;
 import infosistema.openbaas.model.user.UserInterface;
-import infosistema.openbaas.rest.AppsResource.PATCH;
+import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
@@ -45,10 +45,10 @@ public class UsersResource {
 		this.uriInfo = uriInfo;
 	}
 
-	// *** CREATE *** ///
+	// *** CREATE *** //
 
 	
-	// *** UPDATE *** ///
+	// *** UPDATE *** //
 	
 	/**
 	 * Updates the user, optional fields: "email", "password", "alive".
@@ -116,7 +116,7 @@ public class UsersResource {
 	}
 
 	
-	// *** DELETE *** ///
+	// *** DELETE *** //
 	
 	//TODO: LOCATION (remove sessions???)
 	/**
@@ -201,7 +201,7 @@ public class UsersResource {
 	}
 
 	
-	// *** GET *** ///
+	// *** GET *** //
 
 	/**
 	 * Gets the user fields.
@@ -239,8 +239,10 @@ public class UsersResource {
 	}
 
 	
-	// *** OTHERS *** ///
-	
+	// *** OTHERS *** //
+
+	// *** RESOURCES *** //
+
 	/**
 	 * Launches the sessions resource.
 	 * 

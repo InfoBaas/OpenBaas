@@ -2,7 +2,7 @@ package infosistema.openbaas.rest;
 
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
-import infosistema.openbaas.rest.AppsResource.PATCH;
+import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
 
 import javax.ws.rs.Consumes;
@@ -35,15 +35,20 @@ public class UserRecoveryResource {
 		this.userId = userId;
 	}
 
-	// *** CREATE *** ///
+	// *** CREATE *** //
 	
-	// *** UPDATE *** ///
+	// *** UPDATE *** //
 	
-	// *** DELETE *** ///
+	// *** DELETE *** //
 	
-	// *** GET *** ///
+	// *** GET LIST *** //
 	
-	// *** OTHERS *** ///
+	// *** GET *** //
+	
+	// *** RESOURCES *** //
+
+	
+	// *** OTHERS *** //
 
 	//TODO: LOCATION (location de defeito???)
 	/*

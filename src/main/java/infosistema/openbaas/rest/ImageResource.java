@@ -108,6 +108,7 @@ public class ImageResource {
 		return response;
 	}
 	
+	
 	// *** GET LIST *** //
 
 	//TODO: LOCATION
@@ -227,5 +228,9 @@ public class ImageResource {
 			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
+
+	// *** RESOURCES *** //
+
+	// *** OTHERS *** //
 
 }

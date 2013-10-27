@@ -5,7 +5,7 @@ import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.model.user.User;
 import infosistema.openbaas.model.user.UserInterface;
-import infosistema.openbaas.rest.AppsResource.PATCH;
+import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
@@ -51,7 +51,7 @@ public class AccountResource {
 		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
 	}
 	
-	// *** CREATE *** ///
+	// *** CREATE *** //
 
 	/**
 	 * Creates a user in the application, necessary fields: "password";
@@ -187,17 +187,33 @@ public class AccountResource {
 	}
 
 	
- 	// *** UPDATE *** ///
+ 	// *** UPDATE *** //
 	
-	
-	// *** DELETE *** ///
-	
-	
-	// *** GET *** ///
-	
-	
-	// *** OTHERS *** ///
+	@PATCH
+	@Path("/sessions/{sessionToken}")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	public Response patchSession( @HeaderParam("user-agent") String userAgent, @HeaderParam("location") String location,
+			@PathParam("sessionToken") String sessionToken) {
+		Response response = null;
+		if (sessionMid.sessionTokenExists(sessionToken)) {
+			String userId = sessionMid.getUserUsingSessionToken(sessionToken);
+			if (sessionMid.sessionExistsForUser(userId)) {
+				if (location != null) {
+					sessionMid.refreshSession(sessionToken, location, userAgent);
+					response = Response.status(Status.OK).entity("").build();
+				} // if the device does not have the gps turned on we should not
+					// refresh the session.
+					// only refresh it when an action is performed.
+			}
+			Response.status(Status.NOT_FOUND).entity(sessionToken).build();
+		} else
+			response = Response.status(Status.FORBIDDEN).entity("You do not have permission to access.").build();
+		return response;
+	}
 
+	
+	// *** DELETE *** //
+	
 	/**
 	 * Deletes a session (signout).
 	 * 
@@ -237,6 +253,34 @@ public class AccountResource {
 		return response;
 	}
 	
+	
+	// *** GET LIST *** //
+	
+	
+	// *** GET *** //
+	
+	/**
+	 * Gets the session fields associated with the token.
+	 * 
+	 * @param sessionToken
+	 * @return
+	 */
+	@GET
+	@Path("/sessions/{sessionToken}")
+	public Response getSessionFields(
+			@PathParam("sessionToken") String sessionToken) {
+		Response response = null;
+		if (sessionMid.sessionTokenExists(sessionToken)) {
+			String userId = sessionMid.getUserUsingSessionToken(sessionToken);
+			response = Response.status(Status.OK).entity(userId).build();
+		} else
+			response = Response.status(Status.NOT_FOUND).entity(sessionToken).build();
+		return response;
+	}
+
+	
+	// *** OTHERS *** //
+
 	@POST
 	@Path("/recovery")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -277,48 +321,8 @@ public class AccountResource {
 		
 	}
 
-	/**
-	 * Gets the session fields associated with the token.
-	 * 
-	 * @param sessionToken
-	 * @return
-	 */
-	@GET
-	@Path("/sessions/{sessionToken}")
-	public Response getSessionFields(
-			@PathParam("sessionToken") String sessionToken) {
-		Response response = null;
-		if (sessionMid.sessionTokenExists(sessionToken)) {
-			String userId = sessionMid.getUserUsingSessionToken(sessionToken);
-			response = Response.status(Status.OK).entity(userId).build();
-		} else
-			response = Response.status(Status.NOT_FOUND).entity(sessionToken).build();
-		return response;
-	}
-
-	@PATCH
-	@Path("/sessions/{sessionToken}")
-	@Consumes({ MediaType.APPLICATION_JSON })
-	public Response patchSession(
-			@HeaderParam("user-agent") String userAgent,
-			@HeaderParam("location") String location,
-			@PathParam("sessionToken") String sessionToken) {
-		Response response = null;
-		if (sessionMid.sessionTokenExists(sessionToken)) {
-			String userId = sessionMid.getUserUsingSessionToken(sessionToken);
-			if (sessionMid.sessionExistsForUser(userId)) {
-				if (location != null) {
-					sessionMid.refreshSession(sessionToken, location, userAgent);
-					response = Response.status(Status.OK).entity("").build();
-				} // if the device does not have the gps turned on we should not
-					// refresh the session.
-					// only refresh it when an action is performed.
-			}
-			Response.status(Status.NOT_FOUND).entity(sessionToken).build();
-		} else
-			response = Response.status(Status.FORBIDDEN).entity("You do not have permission to access.").build();
-		return response;
-	}
+	
+	// *** RESOURCES *** //
 
 	/**
 	 * Launches the resource integration requests.

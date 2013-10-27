@@ -27,15 +27,9 @@ public class UserConfirmationResource {
 		this.userId = userId;
 	}
 
-	// *** CREATE *** ///
+	// *** CREATE *** //
 	
-	// *** UPDATE *** ///
-	
-	// *** DELETE *** ///
-	
-	// *** GET *** ///
-	
-	// *** OTHERS *** ///
+	// *** UPDATE *** //
 	
 	@GET
 	public Response confirmEmail(@QueryParam("registrationCode") String registrationCode) {
@@ -54,4 +48,15 @@ public class UserConfirmationResource {
 		}
 		return response;
 	}
+
+	// *** DELETE *** //
+	
+	// *** GET LIST *** //
+	
+	// *** GET *** //
+	
+	// *** RESOURCES *** //
+
+	// *** OTHERS *** //
+	
 }

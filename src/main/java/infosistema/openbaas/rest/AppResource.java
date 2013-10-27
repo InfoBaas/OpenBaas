@@ -36,131 +36,19 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 
-public class AppsResource {
+public class AppResource {
 
 	private AppsMiddleLayer appsMid;
 	private static final int IDLENGTH = 3;
 
-	public AppsResource() {
+	public AppResource() {
 		appsMid = MiddleLayerFactory.getAppsMiddleLayer();
 	}
 
 	@Context
 	UriInfo uriInfo;
 
-	// *** CREATE *** ///
-
-	
- 	// *** UPDATE *** ///
-	
-	
-	// *** DELETE *** ///
-	
-	
-	// *** GET *** ///
-	
-	
-	// *** OTHERS *** ///
-	
-	/**
-	 * Get all application Identifiers.
-	 * 
-	 * @param req
-	 * @return
-	 */
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response findAllApplicationIds(@Context HttpServletRequest req,
-			@Context UriInfo ui, @Context HttpHeaders hh,
-			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
-			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
-		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
-		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
-		if (orderBy == null) 	orderBy = Const.ORDER_BY;
-		if (orderType == null) 	orderType = Const.ORDER_TYPE;
-		Response response = null;
-		// Parameters treatment
-		int code = Utils.treatParameters(ui, hh);
-		if(code == 1){
-		System.out.println("***********************************");
-		System.out.println("********Finding all apps***********");
-		JSONObject temp = new JSONObject();
-		ArrayList<String> ids = new ArrayList<String>();
-		try {
-			ids = appsMid.getAllAppIds(pageNumber, pageSize, orderBy, orderType);
-			Iterator<String> it = ids.iterator();
-			while (it.hasNext()) {
-				temp.accumulate("appId", it.next());
-			}
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		IdsResultSet res = new IdsResultSet(ids,pageNumber);
-		response = Response.status(Status.OK).entity(res).build();
-		 } else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
-		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
-		return response;
-	}
-
-	/**
-	 * Get Application Information using its Application Identifier.
-	 * 
-	 * @param appId
-	 * @return
-	 */
-	@Path("{appId}")
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response findById(@PathParam("appId") String appId,
-			@Context UriInfo ui, @Context HttpHeaders hh) {
-		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
-		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("********Finding App info************");
-			ApplicationInterface temp = appsMid.getApp(appId);
-			if (temp == null)
-				return Response.status(Status.NOT_FOUND).entity(temp).build();
-			response = Response.status(Status.OK).entity(temp).build();
-		} else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
-		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
-		return response;
-	}
-
-	/**
-	 * Delete application using its application Identifier.
-	 * 
-	 * @param appId
-	 * @return
-	 */
-	@Path("{appId}")
-	@DELETE
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response deleteApp(@PathParam("appId") String appId,
-			@Context UriInfo ui, @Context HttpHeaders hh) {
-		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
-		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("*Deleting App (setting as inactive)*");
-			if (this.appsMid.removeApp(appId)) {
-				System.out.println("******Deletion OK*******");
-				response = Response.status(Status.OK).entity(appId).build();
-			} else
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
-		} else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
-		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
-		return response;
-	}
+	// *** CREATE *** //
 
 	/**
 	 * Create application, fields necessary are: "appName". An unique identifier
@@ -230,13 +118,9 @@ public class AppsResource {
 		return response;
 	}
 
-	// This is needed to use patch methods, don't delete it!
-	@Target({ ElementType.METHOD })
-	@Retention(RetentionPolicy.RUNTIME)
-	@HttpMethod("PATCH")
-	public @interface PATCH {
-	}
-
+	
+ 	// *** UPDATE *** //
+	
 	/**
 	 * Updates the application, optional fields: "newAppName" (new application
 	 * name to set), "alive" (true to reactivate a dead app).
@@ -281,6 +165,126 @@ public class AppsResource {
 		return response;
 	}
 
+	
+	// *** DELETE *** //
+	
+	/**
+	 * Delete application using its application Identifier.
+	 * 
+	 * @param appId
+	 * @return
+	 */
+	@Path("{appId}")
+	@DELETE
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response deleteApp(@PathParam("appId") String appId,
+			@Context UriInfo ui, @Context HttpHeaders hh) {
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			System.out.println("************************************");
+			System.out.println("*Deleting App (setting as inactive)*");
+			if (this.appsMid.removeApp(appId)) {
+				System.out.println("******Deletion OK*******");
+				response = Response.status(Status.OK).entity(appId).build();
+			} else
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+		} else if(code == -2){
+			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		 }else if(code == -1)
+			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+		return response;
+	}
+
+	
+	// *** GET LIST *** //
+	
+	/**
+	 * Get all application Identifiers.
+	 * 
+	 * @param req
+	 * @return
+	 */
+	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response findAllApplicationIds(@Context HttpServletRequest req,
+			@Context UriInfo ui, @Context HttpHeaders hh,
+			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
+			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
+		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
+		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
+		if (orderBy == null) 	orderBy = Const.ORDER_BY;
+		if (orderType == null) 	orderType = Const.ORDER_TYPE;
+		Response response = null;
+		// Parameters treatment
+		int code = Utils.treatParameters(ui, hh);
+		if(code == 1){
+		System.out.println("***********************************");
+		System.out.println("********Finding all apps***********");
+		JSONObject temp = new JSONObject();
+		ArrayList<String> ids = new ArrayList<String>();
+		try {
+			ids = appsMid.getAllAppIds(pageNumber, pageSize, orderBy, orderType);
+			Iterator<String> it = ids.iterator();
+			while (it.hasNext()) {
+				temp.accumulate("appId", it.next());
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		IdsResultSet res = new IdsResultSet(ids,pageNumber);
+		response = Response.status(Status.OK).entity(res).build();
+		 } else if(code == -2){
+			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		 }else if(code == -1)
+			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+		return response;
+	}
+
+	
+	// *** GET *** //
+	
+	/**
+	 * Get Application Information using its Application Identifier.
+	 * 
+	 * @param appId
+	 * @return
+	 */
+	@Path("{appId}")
+	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
+	public Response findById(@PathParam("appId") String appId,
+			@Context UriInfo ui, @Context HttpHeaders hh) {
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			System.out.println("************************************");
+			System.out.println("********Finding App info************");
+			ApplicationInterface temp = appsMid.getApp(appId);
+			if (temp == null)
+				return Response.status(Status.NOT_FOUND).entity(temp).build();
+			response = Response.status(Status.OK).entity(temp).build();
+		} else if(code == -2){
+			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
+		 .build();
+		 }else if(code == -1)
+			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
+			 .build();
+		return response;
+	}
+
+	
+	// *** OTHERS *** //
+	
+	// *** RESOURCES *** //
+
+	// This is needed to use patch methods, don't delete it!
+	@Target({ ElementType.METHOD })
+	@Retention(RetentionPolicy.RUNTIME)
+	@HttpMethod("PATCH")
+	public @interface PATCH {
+	}
+
 	/**
 	 * Launches the resource to handle /users requests.
 	 * 
@@ -318,9 +322,9 @@ public class AppsResource {
 	 * @return
 	 */
 	@Path("{appId}/data")
-	public DataResource data(@PathParam("appId") String appId) {
+	public AppDataResource data(@PathParam("appId") String appId) {
 		try {
-			return new DataResource(uriInfo, appId);
+			return new AppDataResource(uriInfo, appId);
 		} catch (IllegalArgumentException e) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}

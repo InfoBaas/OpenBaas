@@ -14,9 +14,9 @@ import javax.ws.rs.core.Response.Status;
 public class RootResource {
 
 	@Path("/apps")
-	public AppsResource appsResource() {
+	public AppResource appsResource() {
 		try {
-			return new AppsResource();
+			return new AppResource();
 		} catch (IllegalArgumentException e) {
 			throw new WebApplicationException(Response
 					.status(Status.BAD_REQUEST).entity("Parse error").build());

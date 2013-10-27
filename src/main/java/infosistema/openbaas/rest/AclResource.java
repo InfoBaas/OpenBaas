@@ -39,19 +39,15 @@ public class AclResource {
 		appsMid = MiddleLayerFactory.getAppsMiddleLayer();
 	}
 
-	// *** CREATE *** ///
+	// *** CREATE *** //
 
+ 	// *** UPDATE *** //
 	
- 	// *** UPDATE *** ///
+	// *** DELETE *** //
 	
+	// *** GET LIST *** //
 	
-	// *** DELETE *** ///
-	
-	
-	// *** GET *** ///
-	
-	
-	// *** OTHERS *** ///
+	// *** GET *** //
 	
 	public String getUserIdFromSessionToken(HttpHeaders hh) {
 		Cookie sessionToken = null;
@@ -140,4 +136,10 @@ public class AclResource {
 		}
 		return response;
 	}
+	
+	
+	// *** OTHERS *** //
+
+	// *** RESOURCES *** //
+
 }
