@@ -32,7 +32,6 @@ import javax.ws.rs.core.UriInfo;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-
 public class UserDataResource {
 
 	private AppsMiddleLayer appsMid;
@@ -79,22 +78,17 @@ public class UserDataResource {
 			}
 			if (appsMid.appExists(appId) && usersMid.userExistsInApp(appId, userId)) {
 				if (docMid.insertUserDocumentRoot(appId, userId, data, location)) {
-					response = Response.status(Status.CREATED).entity(appId)
-							.build();
+					response = Response.status(Status.CREATED).entity(appId).build();
 				} else {
-					response = Response.status(Status.BAD_REQUEST).entity(data)
-							.build();
+					response = Response.status(Status.BAD_REQUEST).entity(data).build();
 				}
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 
@@ -103,10 +97,8 @@ public class UserDataResource {
 	@Path("/{pathId:.+}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createNonPublishableUserDocument(JSONObject inputJsonObj,
-			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
-			@Context HttpHeaders hh,
-			@HeaderParam(value = "location") String location) {
+	public Response createNonPublishableUserDocument(JSONObject inputJsonObj, @PathParam("pathId") List<PathSegment> path,
+			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = "location") String location) {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {

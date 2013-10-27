@@ -47,38 +47,6 @@ public class AppDataResource {
 	// *** CREATE *** //
 
 	//TODO: LOCATION
-	@POST
-	@Path("/{pathId:.+}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response createNonPublishableDocument(JSONObject inputJsonObj, @PathParam("pathId") List<PathSegment> path,
-			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = "location") String location) {
-		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
-		if (code == 1) {
-			JSONObject data = null;
-			try {
-				data = (JSONObject) inputJsonObj.get("data");
-			} catch (JSONException e) {
-				System.out.println("Error parsing the JSON file.");
-				e.printStackTrace();
-			}
-			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
-				if (docMid.createNonPublishableAppDocument(appId, data, path, location))
-					response = Response.status(Status.OK).entity(appId).build();
-				else
-					response = Response.status(Status.BAD_REQUEST).entity(appId).build();
-			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
-			}
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
-		return response;
-	}
-
-	//TODO: LOCATION
 	/**
 	 * Creates the document root, this is treated differently than PUT to
 	 * 
@@ -117,9 +85,40 @@ public class AppDataResource {
 			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
-
 	
- 	// *** UPDATE *** //
+	//TODO: LOCATION
+	@POST
+	@Path("/{pathId:.+}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response createNonPublishableDocument(JSONObject inputJsonObj, @PathParam("pathId") List<PathSegment> path,
+			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = "location") String location) {
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			JSONObject data = null;
+			try {
+				data = (JSONObject) inputJsonObj.get("data");
+			} catch (JSONException e) {
+				System.out.println("Error parsing the JSON file.");
+				e.printStackTrace();
+			}
+			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
+				if (docMid.createNonPublishableAppDocument(appId, data, path, location))
+					response = Response.status(Status.OK).entity(appId).build();
+				else
+					response = Response.status(Status.BAD_REQUEST).entity(appId).build();
+			} else {
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+			}
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+		return response;
+	}
+
+	// *** UPDATE *** //
 	
 	//TODO: LOCATION
 	/**
