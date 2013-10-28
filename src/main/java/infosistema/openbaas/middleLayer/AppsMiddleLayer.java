@@ -26,6 +26,7 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	}
 	
 	private AppsMiddleLayer() {
+		super();
 	}
 
 	// *** CREATE *** //

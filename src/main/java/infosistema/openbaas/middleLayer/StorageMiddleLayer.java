@@ -38,6 +38,7 @@ public class StorageMiddleLayer extends MiddleLayerAbstract {
 	}
 	
 	private StorageMiddleLayer() {
+		super();
 	}
 
 	// *** CREATE *** //

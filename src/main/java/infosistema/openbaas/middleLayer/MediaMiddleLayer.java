@@ -2,6 +2,9 @@ package infosistema.openbaas.middleLayer;
 
 public abstract class MediaMiddleLayer extends MiddleLayerAbstract {
 
+	protected MediaMiddleLayer() {
+		super();
+	}
 	// *** MEMBERS *** //
 
 	// *** CREATE *** //

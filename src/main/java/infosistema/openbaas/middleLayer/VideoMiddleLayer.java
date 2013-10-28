@@ -30,6 +30,7 @@ public class VideoMiddleLayer extends MiddleLayerAbstract {
 	}
 
 	private VideoMiddleLayer() {
+		super();
 	}
 
 

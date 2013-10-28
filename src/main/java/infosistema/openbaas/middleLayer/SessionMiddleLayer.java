@@ -30,6 +30,7 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 	}
 	
 	private SessionMiddleLayer() {
+		super();
 		service = new PasswordEncryptionService();
 		sessions = new RedisSessions();
 		emailOp = new Email();

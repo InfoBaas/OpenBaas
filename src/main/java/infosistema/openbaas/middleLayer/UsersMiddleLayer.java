@@ -43,6 +43,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	}
 	
 	private UsersMiddleLayer() {
+		super();
 		sessions = new RedisSessions();
 		emailOp = new Email();
 	}

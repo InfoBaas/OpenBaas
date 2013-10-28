@@ -22,6 +22,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	}
 	
 	private DocumentMiddleLayer() {
+		super();
 	}
 
 	

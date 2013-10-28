@@ -13,9 +13,12 @@ import com.amazonaws.services.identitymanagement.model.NoSuchEntityException;
 
 import infosistema.openbaas.dataaccess.models.database.CacheInterface;
 import infosistema.openbaas.dataaccess.models.database.DatabaseInterface;
+import infosistema.openbaas.dataaccess.models.database.MongoDBDataModel;
 import infosistema.openbaas.dataaccess.models.database.RedisDataModel;
 import infosistema.openbaas.dataaccess.models.document.DocumentInterface;
+import infosistema.openbaas.dataaccess.models.document.DocumentModel;
 import infosistema.openbaas.dataaccess.models.fileSystem.AWSModel;
+import infosistema.openbaas.utils.Const;
 
 public abstract class MiddleLayerAbstract {
 
@@ -53,6 +56,15 @@ public abstract class MiddleLayerAbstract {
 
 	// AUDIO BITRATES
 	protected static final String MINIMUMBITRATE = "32";
+	
+	// *** INIT *** //
+	protected MiddleLayerAbstract() {
+		redisModel = new RedisDataModel();
+		if (auxDatabase.equalsIgnoreCase("mongodb"))
+			mongoModel = new MongoDBDataModel(Const.SERVER, Const.MONGO_PORT);
+		docModel = new DocumentModel();
+	}
+
 
 	// *** FILESYSTEM *** //
 
