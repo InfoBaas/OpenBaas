@@ -24,7 +24,7 @@ public abstract class MiddleLayerAbstract {
 
 	// *** MEMBERS *** //
 
-	protected AWSModel aws;
+	protected AWSModel aws = new AWSModel();
 	protected static String FILESYSTEM = "aws";
 
 	protected static String auxDatabase = "mongodb";
@@ -61,7 +61,7 @@ public abstract class MiddleLayerAbstract {
 	protected MiddleLayerAbstract() {
 		redisModel = new RedisDataModel();
 		if (auxDatabase.equalsIgnoreCase("mongodb"))
-			mongoModel = new MongoDBDataModel(Const.SERVER, Const.MONGO_PORT);
+			mongoModel = new MongoDBDataModel(Const.MONGO_SERVER, Const.MONGO_PORT);
 		docModel = new DocumentModel();
 	}
 
@@ -86,11 +86,12 @@ public abstract class MiddleLayerAbstract {
 			File fileToUpload) {
 		if(FILESYSTEM.equalsIgnoreCase("aws"))
 			try{
-				return this.aws.upload(appId, destinationDirectory, id, fileToUpload);
+				AWSModel aws = new AWSModel();  
+				return aws.upload(appId, destinationDirectory, id, fileToUpload);
 			}catch(AmazonServiceException e){
-				System.out.println("Amazon Service Exception.");
+				System.out.println("Amazon Service Exception."+ e.toString());
 			}catch(AmazonClientException e){
-				System.out.println("Amazon Client Exception.");
+				System.out.println("Amazon Client Exception." + e.toString());
 			}
 		else{
 			System.out.println("FileSystem not yet implemented.");

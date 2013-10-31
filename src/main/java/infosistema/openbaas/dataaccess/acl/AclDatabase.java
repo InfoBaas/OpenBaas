@@ -33,7 +33,7 @@ public class AclDatabase implements AclInterface{
 	*/
 	public AclDatabase(){
 		try {
-			mongoClient = new MongoClient(Const.SERVER, Const.MONGO_PORT);
+			mongoClient = new MongoClient(Const.MONGO_SERVER, Const.MONGO_PORT);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}

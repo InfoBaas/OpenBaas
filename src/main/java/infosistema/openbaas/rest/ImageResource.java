@@ -137,10 +137,10 @@ public class ImageResource {
 			System.out.println("********Finding all Images - GEO**********");
 			ArrayList<String> imagesIds = new ArrayList<String>();
 			if (latitude != null && longitude != null && radius != null) {
-				imagesIds = imageMid.getAllImagesIdsInRadius(appId, Double.parseDouble(latitude),Double.parseDouble(longitude), 
-						Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
 				if(iniIndex>imagesIds.size())
 					return Response.status(Status.BAD_REQUEST).entity("Invalid pagination indexes.").build();
+				imagesIds = imageMid.getAllImagesIdsInRadius(appId, Double.parseDouble(latitude),Double.parseDouble(longitude), 
+						Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
 				if(finIndex>imagesIds.size())
 					listRes = imagesIds.subList(iniIndex, imagesIds.size());
 				else

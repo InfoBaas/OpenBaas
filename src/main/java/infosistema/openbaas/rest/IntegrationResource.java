@@ -39,6 +39,7 @@ public class IntegrationResource {
 	public IntegrationResource(String appId) {
 		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
 		this.appId = appId;
+		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
 	}
 	
 
@@ -59,6 +60,7 @@ public class IntegrationResource {
 		String email = null;
 		String socialNetwork = null;
 		String socialId = null;
+		String userSocialId = null;
 		String userName = null;
 		List<String> locationList = null;
 		List<String> userAgentList = null;
@@ -80,7 +82,7 @@ public class IntegrationResource {
 		try {
 			email = (String) inputJsonObj.get("email");
 			socialNetwork = "Facebook";
-			socialId = (String) inputJsonObj.get("socialId");
+			socialId = ((Integer) inputJsonObj.get("socialId")).toString(); 
 			userName = (String) inputJsonObj.opt("userName");
 			
 		} catch (JSONException e) {
@@ -90,8 +92,12 @@ public class IntegrationResource {
 		if (userName == null) {
 			userName = email;
 		}
+		userId = usersMid.getUserIdUsingEmail(appId, email);
+		userSocialId = usersMid.socialUserExistsInApp(appId, socialId, socialNetwork);
 		
-		userId = usersMid.socialUserExistsInApp(appId, socialId, socialNetwork);
+		if(userId!=null && userSocialId==null)
+			response =  Response.status(302).entity("User "+userId+" with email: "+email+" already exists in app.").build();
+		
 		
 		if (userId==null) {
 			if (uriInfo == null) uriInfo=ui;
@@ -122,8 +128,64 @@ public class IntegrationResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createOrLoginLinkedInUser(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
-		return null;
-
+		Response response = null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		String email = null;
+		String socialNetwork = null;
+		String socialId = null;
+		String userSocialId = null;
+		String userName = null;
+		List<String> locationList = null;
+		List<String> userAgentList = null;
+		String userAgent = null;
+		String location = null;
+		UserInterface outUser = new User();
+		String userId =null;
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase("location"))
+				locationList = entry.getValue();
+			else if (entry.getKey().equalsIgnoreCase("user-agent")){
+				userAgentList = entry.getValue();
+			}	
+		}
+		if (locationList != null)
+			location = locationList.get(0);
+		if (userAgentList != null)
+			userAgent = userAgentList.get(0);
+		try {
+			email = (String) inputJsonObj.get("email");
+			socialNetwork = "LinkedIn";
+			socialId = ((Integer) inputJsonObj.get("socialId")).toString(); 
+			userName = (String) inputJsonObj.opt("userName");
+			
+		} catch (JSONException e) {
+			System.out.println("Error Reading the jsonFile");
+			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
+		}
+		if (userName == null) {
+			userName = email;
+		}
+		userId = usersMid.getUserIdUsingEmail(appId, email);
+		userSocialId = usersMid.socialUserExistsInApp(appId, socialId, socialNetwork);
+		
+		if(userId!=null && userSocialId==null)
+			response =  Response.status(302).entity("User "+userId+" with email: "+email+" already exists in app.").build();
+		
+		
+		if (userId==null) {
+			if (uriInfo == null) uriInfo=ui;
+			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
+			response = Response.status(Status.CREATED).entity(outUser).build();
+		} else {
+			String sessionToken = Utils.getRandomString(Const.IDLENGTH);
+			boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
+			if(validation){
+				sessionMid.refreshSession(sessionToken, location, userAgent);
+				outUser.setUserID2(userId);
+				outUser.setReturnToken(sessionToken);
+				response = Response.status(Status.OK).entity(outUser).build();
+			}
+		}
+		return response;
 	}
-	
 }

@@ -16,8 +16,8 @@ import infosistema.openbaas.utils.ValueComparator;
 
 public class Geolocation {
 
-	private static final String OBJECTID_FORMAT = "{0};{1};{2}"; // latitude;longitude;objectid
-	private static final String GRID_FORMAT = "{0};{1};{2};{3}"; // latitude;longitude;appid;objecttype
+	private static final String OBJECTID_FORMAT = "%s:%s:%s"; // latitude;longitude;objectid
+	private static final String GRID_FORMAT = "%s:%s:%s:%s"; // latitude;longitude;appid;objecttype
 	
 	//TODO: fazer por app
 	private double latp = Const.LATITUDE_PRECISION;
@@ -60,7 +60,10 @@ public class Geolocation {
 	}
 	
 	private String getGridSquareId(double latitude, double longitude, String appId, ModelEnum objectType) {
-		return String.format(GRID_FORMAT, latitude, longitude, appId, objectType.toString());
+		String aux = String.format(GRID_FORMAT, latitude, longitude, appId, objectType.toString());
+		//String twoPoints = ":";
+		//String aux = latitude+twoPoints+longitude+twoPoints+appId+twoPoints+objectType;	
+		return aux;
 	}
 
 	//Distances 
@@ -116,7 +119,7 @@ public class Geolocation {
 	//private
 	private boolean insert(String gridSquareId, String gridObjectId) {
 		Boolean success = false;
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.SERVER, Const.REDIS_GEO_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_GEO_SERVER, Const.REDIS_GEO_PORT);
 		Jedis jedis = pool.getResource();
 		try{
 			jedis.sadd(gridSquareId, gridObjectId);
@@ -174,7 +177,7 @@ public class Geolocation {
 	//private
 	private boolean delete(String gridSquareId, String gridObjectId) {
 		Boolean success = false;
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.SERVER, Const.REDIS_GEO_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_GEO_SERVER, Const.REDIS_GEO_PORT);
 		Jedis jedis = pool.getResource();
 		try{
 			jedis.srem(gridSquareId, gridObjectId);
@@ -239,7 +242,7 @@ public class Geolocation {
 
 	//private
 	private Set<String> getObjectsIn(String gridSquareId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.SERVER, Const.REDIS_GEO_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_GEO_SERVER, Const.REDIS_GEO_PORT);
 		Jedis jedis = pool.getResource();
 		Set<String> retObj = new TreeSet<String>();
 		try {

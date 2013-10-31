@@ -10,6 +10,7 @@ import infosistema.openbaas.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.mail.Header;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -63,18 +64,11 @@ public class AppDataResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			JSONObject data = null;
-			try {
-				data = (JSONObject) inputJsonObj.get("data");
-			} catch (JSONException e) {
-				System.out.println("Error parsing the JSON file.");
-				e.printStackTrace();
-			}
 			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
-				if (docMid.insertAppDocumentRoot(appId, data, location)) {
-					response = Response.status(Status.CREATED).entity(appId).build();
+				if (docMid.insertAppDocumentRoot(appId, inputJsonObj, location)) {
+					response = Response.status(Status.OK).entity(inputJsonObj).build();
 				} else {
-					response = Response.status(Status.BAD_REQUEST).entity(data).build();
+					response = Response.status(Status.BAD_REQUEST).entity(inputJsonObj).build();
 				}
 			} else {
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();

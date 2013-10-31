@@ -95,7 +95,7 @@ public class AccountResource {
 				} else {
 					String foundUserId = usersMid.getUserIdUsingUserName(appId,userName);
 					// 302 = found
-					response = Response.status(302).entity(foundUserId).build();
+					response = Response.status(302).entity("User "+foundUserId+" with email: "+email+" already exists in app.").build();
 				}
 			} else {
 				response = Response.status(Status.BAD_REQUEST).entity(userName).build();
@@ -200,7 +200,7 @@ public class AccountResource {
 			if (sessionMid.sessionExistsForUser(userId)) {
 				if (location != null) {
 					sessionMid.refreshSession(sessionToken, location, userAgent);
-					response = Response.status(Status.OK).entity("").build();
+					response = Response.status(Status.OK).entity("Refresh OK").build();
 				} // if the device does not have the gps turned on we should not
 					// refresh the session.
 					// only refresh it when an action is performed.

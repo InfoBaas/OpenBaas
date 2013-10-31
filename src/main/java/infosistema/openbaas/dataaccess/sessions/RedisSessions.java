@@ -31,7 +31,7 @@ public class RedisSessions implements SessionInterface {
 
 	private static final int EXPIRETIME = 86400; // 24hours in seconds
 	public static final long MAXCACHESIZE = 5242880; // bytes
-	private static final int RedisSessionsAndEmailPORT = 6380;
+	//private static final int RedisSessionsAndEmailPORT = 6380;
 	//private static final int MAXIMUMDISTANCE = 1; // 1 Km
 	private Jedis jedis;
 	private Geolocation geo = Geolocation.getInstance();
@@ -41,7 +41,7 @@ public class RedisSessions implements SessionInterface {
 	// *** CONSTRUCTOR *** //
 	
 	public RedisSessions() {
-		jedis = new Jedis(server, RedisSessionsAndEmailPORT);
+		jedis = new Jedis(server, Const.REDIS_SESSION_PORT);
 	}
 	
 	
@@ -49,7 +49,7 @@ public class RedisSessions implements SessionInterface {
 	
 	public void createAdmin(String OPENBAASADMIN, byte[] adminSalt,
 			byte[] adminHash) throws UnsupportedEncodingException {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",	RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.hset(OPENBAASADMIN, "adminSalt", new String(adminSalt,"ISO-8859-1"));
@@ -68,7 +68,7 @@ public class RedisSessions implements SessionInterface {
 	 * @param userId
 	 */
 	public void createSession(String sessionId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",	RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER,	Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.sadd("sessions:set", sessionId);
@@ -84,7 +84,7 @@ public class RedisSessions implements SessionInterface {
 	// *** AUX *** //
 
 	private void addLocationToSession(String location, String sessionToken, String userAgent, String appId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.hset("sessions:" + sessionToken, "location", location);
@@ -102,7 +102,7 @@ public class RedisSessions implements SessionInterface {
 
 	private void updateLocationToSession(double previousLatitudeValue, double previousLongitudeValue, double currentLatitudeValue, double currentLongitudeValue,
 			String location, String sessionToken, String userAgent, String appId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.hset("sessions:" + sessionToken, "location", location);
@@ -126,7 +126,7 @@ public class RedisSessions implements SessionInterface {
 	// dist = arccos(sin(lat1) · sin(lat2) + cos(lat1) · cos(lat2) · cos(lon1 - lon2)) · R
 	@Override
 	public boolean refreshSession(String sessionToken, String location, String date, String userAgent) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.expire("sessions:" + sessionToken, EXPIRETIME);
@@ -158,7 +158,7 @@ public class RedisSessions implements SessionInterface {
 					double dist = geo.distance(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue);
 					if (dist >= 1) {
 						jedis.hset("sessions:" + sessionToken, "location", location);
-						DatabaseInterface mongoModel = new MongoDBDataModel(Const.SERVER, Const.MONGO_PORT);
+						DatabaseInterface mongoModel = new MongoDBDataModel(Const.MONGO_SERVER, Const.MONGO_PORT);
 						mongoModel.updateUserLocationAndDate(userId, appId, sessionToken, location, date);
 
 						updateLocationToSession(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue, 
@@ -183,7 +183,7 @@ public class RedisSessions implements SessionInterface {
 	// *** GET *** //
 	
 	public Map<String, String> getAdminFields(String OPENBAASADMIN) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",	RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER,	Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		Map<String, String> adminFields = null;
 		try {
@@ -199,7 +199,7 @@ public class RedisSessions implements SessionInterface {
 	// *** OTHERS *** //
 
 	public boolean adminExists(String admin) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		boolean adminExists = false;
 		try {
@@ -214,7 +214,7 @@ public class RedisSessions implements SessionInterface {
 
 	@Override
 	public void createSession(String sessionId, String appId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.sadd("sessions:set", sessionId);
@@ -230,7 +230,7 @@ public class RedisSessions implements SessionInterface {
 
 	@Override
 	public Map<String, String> getSessionFields(String sessionId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		Map<String, String> sessionFields = null;
 		try {
@@ -244,7 +244,7 @@ public class RedisSessions implements SessionInterface {
 
 	@Override
 	public boolean sessionTokenExists(String sessionId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		boolean sucess = false;
 		try {
@@ -266,7 +266,7 @@ public class RedisSessions implements SessionInterface {
 
 	@Override
 	public boolean sessionTokenExistsForUser(String sessionToken, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		boolean sucess = false;
 		try {
@@ -288,7 +288,7 @@ public class RedisSessions implements SessionInterface {
 
 	@Override
 	public void deleteAdminSession(String adminId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		try {
 			Set<String> sessionIds = jedis.smembers("sessions");
@@ -315,7 +315,7 @@ public class RedisSessions implements SessionInterface {
 
 	@Override
 	public void createAdminSession(String sessionId, String adminId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.sadd("sessions", sessionId);
@@ -329,7 +329,7 @@ public class RedisSessions implements SessionInterface {
 
 	@Override
 	public boolean deleteUserSession(String sessionToken, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		boolean sucess = false;
 		try {
@@ -352,7 +352,7 @@ public class RedisSessions implements SessionInterface {
 	}
 
 	public String getUserSession(String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		String sessionId = null;
 		try {
@@ -376,7 +376,7 @@ public class RedisSessions implements SessionInterface {
 
 	@Override
 	public boolean deleteAllUserSessions(String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		boolean sucess = false;
 		try {
@@ -393,7 +393,7 @@ public class RedisSessions implements SessionInterface {
 
 	@Override
 	public Set<String> getAllUserSessions(String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		Set<String> userSessions = null;
 		try {
@@ -409,7 +409,7 @@ public class RedisSessions implements SessionInterface {
 
 	@Override
 	public boolean sessionExistsForUser(String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost",	RedisSessionsAndEmailPORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER,	Const.REDIS_SESSION_PORT);
 		Jedis jedis = pool.getResource();
 		boolean exists = false;
 		try {

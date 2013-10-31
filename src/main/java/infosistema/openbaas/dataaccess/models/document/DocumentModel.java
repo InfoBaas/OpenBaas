@@ -2,6 +2,7 @@ package infosistema.openbaas.dataaccess.models.document;
 
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.model.ModelEnum;
+import infosistema.openbaas.utils.Const;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.util.JSON;
 
 /*MongoDB java driver has quite a few important things that are not easilly found. 
  * Whenever you want to get the descendants or do the "like" shell option you need to turn it into a pattern
@@ -37,10 +39,8 @@ import com.mongodb.MongoClient;
 public class DocumentModel implements DocumentInterface {
 	private MongoClient mongoClient;
 	private DB db;
-	public static final String SERVER = "localhost";
 	public static final String DataColl = "data";
 	public static final String UserDataColl = "users:data";
-	public static final int PORT = 27017;
 	private static final String specialCharacter = "~";
 	Geolocation geo;
 	
@@ -48,7 +48,7 @@ public class DocumentModel implements DocumentInterface {
 		mongoClient = null;
 		geo = Geolocation.getInstance();
 		try {
-			mongoClient = new MongoClient(SERVER, PORT);
+			mongoClient = new MongoClient(Const.MONGO_SERVER, Const.MONGO_PORT);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
@@ -70,7 +70,17 @@ public class DocumentModel implements DocumentInterface {
 
 	@Override
 	public boolean insertDocumentRoot(String appId, JSONObject data, String location) throws JSONException {
-		DBCollection coll = db.getCollection(DataColl);
+		try{
+			DBCollection coll = db.getCollection("app"+appId+"Data");
+			DBObject dbObject = (DBObject)JSON.parse(data.toString());
+			coll.insert(dbObject);
+		}catch (Exception e){
+			return false;
+		}
+		return true;
+		
+		
+		/*DBCollection coll = db.getCollection("appTeste");
 		String tempURL = appId;
 		Iterator<?> it = data.keys();// iterate the new content and
 		// make it accessible
@@ -90,7 +100,7 @@ public class DocumentModel implements DocumentInterface {
 			tempURL = appId;
 		}
 
-		return true;
+		return true;*/
 	}
 
 	//have a look at the recursive function used in patchDataInElement

@@ -35,12 +35,12 @@ public class RedisDataModel implements CacheInterface {
 	private static final String IMAGES = "images";
 	private static final String VIDEO = "video";
 	private static final String STORAGE = "storage";
-	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.SERVER);
+	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_CACHE_SERVER);
 	Jedis jedis;
 	
 
 	public RedisDataModel() {
-		jedis = new Jedis(Const.SERVER, Const.REDIS_CACHE_PORT);
+		jedis = new Jedis(Const.REDIS_CACHE_SERVER, Const.REDIS_CACHE_PORT);
 	}
 
 	public long getCacheSize() {
