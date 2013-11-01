@@ -81,6 +81,8 @@ public class AppDataResource {
 	}
 	
 	//TODO: LOCATION
+	//XPTO: PARA QUE SERVE ISTO????
+	/*
 	@POST
 	@Path("/{pathId:.+}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -111,7 +113,8 @@ public class AppDataResource {
 			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
-
+	*/
+	
 	// *** UPDATE *** //
 	
 	//TODO: LOCATION

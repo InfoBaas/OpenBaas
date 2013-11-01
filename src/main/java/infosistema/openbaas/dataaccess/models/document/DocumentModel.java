@@ -2,7 +2,6 @@ package infosistema.openbaas.dataaccess.models.document;
 
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.model.ModelEnum;
-import infosistema.openbaas.utils.Const;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.util.JSON;
 
 /*MongoDB java driver has quite a few important things that are not easilly found. 
  * Whenever you want to get the descendants or do the "like" shell option you need to turn it into a pattern
@@ -37,10 +35,14 @@ import com.mongodb.util.JSON;
  * its unique properties.
  */
 public class DocumentModel implements DocumentInterface {
+
 	private MongoClient mongoClient;
 	private DB db;
-	public static final String DataColl = "data";
+	public static final String APP_COLL_FORMAT = "app_%s";
+
+	public static final String SERVER = "localhost";
 	public static final String UserDataColl = "users:data";
+	public static final int PORT = 27017;
 	private static final String specialCharacter = "~";
 	Geolocation geo;
 	
@@ -48,65 +50,63 @@ public class DocumentModel implements DocumentInterface {
 		mongoClient = null;
 		geo = Geolocation.getInstance();
 		try {
-			mongoClient = new MongoClient(Const.MONGO_SERVER, Const.MONGO_PORT);
+			mongoClient = new MongoClient(SERVER, PORT);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
 		db = mongoClient.getDB("openbaas");
 	}
 
+	// *** PRIVATE *** //
+	
+	private DBCollection getAppCollection(String appId) {
+		return db.getCollection(String.format(APP_COLL_FORMAT, appId));
+	}
+	
+	
 	// *** CREATE *** //
 	
-	@Override
-	public boolean createDocumentForApplication(String appId) {
-		if (this.docExistsForApp(appId))
-			return false;
-		DBCollection coll = db.getCollection(DataColl);
-		BasicDBObject data = new BasicDBObject(); //"_id", appId
-		data.put("path", null);
-		coll.insert(data);
-		return true;
-	}
-
-	@Override
-	public boolean insertDocumentRoot(String appId, JSONObject data, String location) throws JSONException {
-		try{
-			DBCollection coll = db.getCollection("app"+appId+"Data");
-			DBObject dbObject = (DBObject)JSON.parse(data.toString());
-			coll.insert(dbObject);
-		}catch (Exception e){
-			return false;
-		}
-		return true;
-		
-		
-		/*DBCollection coll = db.getCollection("appTeste");
-		String tempURL = appId;
+	//XPTO antes de inserir os elementos que vêm lá apagar todos os que estão. O insert apaga tudo
+	public boolean insertDocumentInPath(String appId, String userId, String inPath, JSONObject data, String location) throws JSONException {
+		DBCollection coll = getAppCollection(appId);
 		Iterator<?> it = data.keys();// iterate the new content and
 		// make it accessible
 		while (it.hasNext()) {
+			String path = "";
 			String key = (String) it.next();
+			BasicDBObject searchQuery = new BasicDBObject();
+			searchQuery.append("_id", userId + ": " + key);
+			DBCursor cursor = coll.find(searchQuery);
+
 			BasicDBObject temp = new BasicDBObject();
-			temp.append("data", data.get(key));
+			if (userId != null) 
+				temp.append("_id", userId + ":" + key);
+			temp.append("data", (String)data.get(key));
 			if (location != null){
-				temp.append("location", location);
 				String[] splitted = location.split(":");
-				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, tempURL);
+				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, path);
 			}
-			tempURL += "," + key;
-			temp.append("path", tempURL);
-			coll.insert(temp);
+			if (!cursor.hasNext())
+				coll.insert(temp);
+			else {
+				BasicDBObject newDoc = new BasicDBObject();
+				newDoc.append("_id", userId + ":" + key);
+				newDoc.append("data", (String) data.get(key));
+				//newDoc.put("path", tempURL);
+				if (location != null)
+					newDoc.append("location", location);
+				coll.update(searchQuery, newDoc);
+			}
 			it.remove();
-			tempURL = appId;
+			//tempURL = appId;
 		}
 
-		return true;*/
+		return true;
 	}
 
-	//have a look at the recursive function used in patchDataInElement
-	@Override
+	/*
 	public boolean insertUserDocumentRoot(String appId, String userId, JSONObject data, String location) throws JSONException {
-		DBCollection coll = db.getCollection(DataColl);
+		DBCollection coll = getAppCollection(appId);
 		String tempURL = appId + ",users," + userId;
 		Iterator<?> it = data.keys();// iterate the new content and
 		// make it accessible
@@ -140,13 +140,16 @@ public class DocumentModel implements DocumentInterface {
 		}
 		return true;
 	}
+	*/
 
+	//XPTO: PARA QUE SERVE ISTO????
+	/*
 	@Override
 	public boolean createNonPublishableUserDocument(String appId,
-			String userId, JSONObject data, String url, String location) {
+			String userId, JSONObject data, String path, String location) {
 		DBCollection coll = db.getCollection(UserDataColl);
 		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.append("path", url);
+		searchQuery.append("path", path);
 		DBCursor cursor = coll.find(searchQuery);
 		boolean sucess = false;
 		if (cursor.hasNext()) {// update the data inside the doc
@@ -165,7 +168,7 @@ public class DocumentModel implements DocumentInterface {
 			coll.update(searchQuery, newDocument);
 			sucess = true;
 		} else {// create the element and insert data
-			String[] arrayUrl = url.split(",");
+			String[] arrayUrl = path.split(",");
 			BasicDBObject temp = new BasicDBObject();
 			temp.put("_id", arrayUrl[arrayUrl.length - 1]);
 			temp.put("data", specialCharacter + data.toString());
@@ -176,12 +179,15 @@ public class DocumentModel implements DocumentInterface {
 		}
 		return sucess;
 	}
-
+	*/
+	
+	//XPTO: PARA QUE SERVE ISTO????
+	/*
 	@Override
-	public boolean createNonPublishableDocument(String appId, JSONObject data, String url, String location) {
-		DBCollection coll = db.getCollection(DataColl);
+	public boolean createNonPublishableDocument(String appId, JSONObject data, String path, String location) {
+		DBCollection coll = getAppCollection(appId);
 		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.append("path", url);
+		searchQuery.append("path", path);
 		DBCursor cursor = coll.find(searchQuery);
 		boolean sucess = false;
 		if (cursor.hasNext()) {// update the data inside the doc
@@ -195,7 +201,7 @@ public class DocumentModel implements DocumentInterface {
 			coll.update(searchQuery, newDocument);
 			sucess = true;
 		} else {// create the element and insert data
-			String[] arrayUrl = url.split(",");
+			String[] arrayUrl = path.split(",");
 			BasicDBObject temp = new BasicDBObject();
 			temp.append("_id", arrayUrl[arrayUrl.length - 1]);
 			temp.append("data", specialCharacter + data.toString());
@@ -206,39 +212,33 @@ public class DocumentModel implements DocumentInterface {
 		}
 		return sucess;
 	}
-
+	*/
+	
 
 	// *** UPDATE *** //
 
-	/**
-	 * DocumentModel method for PATCH HTTP Requests. It partially updates the
-	 * object, modifying existing fields and adds the fields not present in the
-	 * document.
-	 * 
-	 * @throws JSONException
-	 */
-	@Override
-	public String patchDataInElement(String url, JSONObject inputJson, String appId, String location) {
-		DBCollection coll = db.getCollection(DataColl);
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("path", url);
-		String[] array = url.split("/");
-		Iterator<?> keys = inputJson.keys();
-		String tempURL = array[0]; // appId
-		while (keys.hasNext()) {
-			String element = (String) keys.next();
-			if (element.equalsIgnoreCase("data")) {// update the content of the url
-				BasicDBObject newDocument = new BasicDBObject().append("$set",	new BasicDBObject().append("data",inputJson.toString()));
-				coll.update(searchQuery, newDocument);
-				break;
-			}
-			tempURL += "," + element;
-			patchDataInElementRec(coll, appId, tempURL, inputJson, location, element);
-		}
-		return inputJson.toString();
-	}
-
-	public void patchDataInElementRec(DBCollection coll, String appId, String tempURL,
+	//XPTO para cada elemento que vem no jason se existir substitui se não existir insere
+	public boolean updateDocumentInPath(String appId, String userId, String inPath, JSONObject data, String location) throws JSONException {
+        DBCollection coll = db.getCollection(UserDataColl);
+        BasicDBObject searchQuery = new BasicDBObject();
+        searchQuery.put("path", inPath);
+        Iterator<?> keys = data.keys();
+        String tempURL = appId + ",users," + userId; // appId
+        while (keys.hasNext()) {
+                String element = (String) keys.next();
+                if (element.equalsIgnoreCase("data")) {// update the content of the // url
+                        BasicDBObject newDocument = new BasicDBObject().append("$set", new BasicDBObject().append("data", data.toString()));
+                        coll.update(searchQuery, newDocument);
+                        break;
+                }
+                tempURL += "," + element;
+                insertIntoUserDocumentRec(coll, appId, userId, tempURL, data, location, element);
+        }
+        return true;
+    }
+	
+	//XPTO Isto é para apagar deixei para se ver como estava 
+	private void patchDataInElementRec(DBCollection coll, String appId, String tempURL,
 			JSONObject inputJson, String location, String element) {
 		JSONObject childs = null;
 		//String value = null;
@@ -291,87 +291,8 @@ public class DocumentModel implements DocumentInterface {
 
 	}
 
-	@Override
-	public boolean insertIntoDocument(String appId, String url, JSONObject data, String location) throws JSONException {
-		DBCollection coll = db.getCollection(DataColl);
-		String[] array = url.split("/");
-		String tempURL = appId;
-		for (int i = 1; i < array.length; i++) {
-			tempURL += "," + array[i];
-			if (elementExistsInDocument(tempURL)) { // key already exists delete
-													// it and its childs
-				BasicDBObject query = new BasicDBObject();
-				query.append("path", Pattern.compile(tempURL));
-				DBCursor cursor = coll.find(query);
-				while (cursor.hasNext()) { // delete childs
-					coll.remove(cursor.next());
-				}
-			}
-			// Create the element and its childs
-			BasicDBObject obj = new BasicDBObject();
-			obj.append("path", tempURL);
-			obj.append("data", data.toString());
-			if (location != null)
-				obj.put("location", location);
-			coll.insert(obj);
-			Iterator<?> keys = data.keys();
-			while (keys.hasNext()) {
-				String key = (String) keys.next();
-				BasicDBObject temp = new BasicDBObject();
-				temp.append("data", data.get(key));
-				tempURL += "," + key;
-				temp.append("path", tempURL);
-				if (location != null){
-					temp.append("location", location);
-					String[] splitted = location.split(":");
-					geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, tempURL);
-				}
-				coll.insert(temp);
-				keys.remove();
-			}
-		}
-		return true;
-	}
-
-	@Override
-	public boolean insertIntoUserDocument(String appId, String userId, JSONObject data, String url, String location) throws JSONException {
-		DBCollection coll = db.getCollection(UserDataColl);
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("path", url);
-		Iterator<?> keys = data.keys();
-		String tempURL = appId + ",users," + userId; // appId
-		while (keys.hasNext()) {
-			String element = (String) keys.next();
-			if (element.equalsIgnoreCase("data")) {// update the content of the // url
-				BasicDBObject newDocument = new BasicDBObject().append("$set",
-								new BasicDBObject().append("data", data.toString()));
-				coll.update(searchQuery, newDocument);
-				break;
-			}
-			tempURL += "," + element;
-			insertIntoUserDocumentRec(coll, appId, userId, tempURL, data, location, element);
-		}
-		return true;
-	}
-	
-	@Override
-	public boolean updateDataInDocument(String url, String data) {
-		DBCollection coll = db.getCollection(DataColl);
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.append("path", url);
-
-		BasicDBObject newDocument = new BasicDBObject();
-		newDocument.append("data", data);
-		BasicDBObject updateObj = new BasicDBObject();
-		updateObj.append("$set", newDocument);
-
-		coll.update(searchQuery, updateObj);
-		return true;
-	}
-
 	//private
-	
-	//Diferences from the patchRec -> this one uses insert instead of update but the process is the same
+	//XPTO Isto é para apagar deixei para se ver como estava 
 	private void insertIntoUserDocumentRec(DBCollection coll, String appId, String userId, String tempURL,
 			JSONObject data, String location, String element) {
 		JSONObject childs = null;
@@ -429,9 +350,10 @@ public class DocumentModel implements DocumentInterface {
 
 	// *** GET LIST *** //
 
+	//XPTO: Substituir isto tudo (as 4 funções) por um search. É para deixar para o fim.
 	@Override
 	public String getAllDocInApp(String appId) {
-		DBCollection coll = db.getCollection(DataColl);
+		DBCollection coll = getAppCollection(appId);
 		String allDoc = "";
 		BasicDBObject query = new BasicDBObject();
 		query.put("path", Pattern.compile(appId));
@@ -445,7 +367,7 @@ public class DocumentModel implements DocumentInterface {
 
 	@Override
 	public ArrayList<String> getAllDocsInRadius(String appId, double latitude, double longitude, double radius) {
-		DBCollection coll = db.getCollection(DataColl);
+		DBCollection coll = getAppCollection(appId);
 		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, ModelEnum.data);
 		Iterator<String> allIt = all.iterator();
 		ArrayList<String> allElements = new ArrayList<String>();
@@ -499,59 +421,28 @@ public class DocumentModel implements DocumentInterface {
 	
 	// *** GET *** //
 
+	//XPTO: eu acho que isto devia devolver um jason, mas é preciso ver o que fazem as funções que chamam isto
 	@Override
-	public String getDataInDocument(String url) {
-		DBCollection coll = db.getCollection(DataColl);
+	public String getDocumentInPath(String appId, String userId, String path) {
+		DBCollection coll = getAppCollection(appId);
 		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.append("path", url);
+		searchQuery.append("path", path);
 		DBCursor cursor = coll.find(searchQuery);
 		DBObject obj = null;
 		String data = null;
 		obj = cursor.next();
 		data = (String) obj.get("data");
 		return data;
-	}
-
-	@Override
-	public String getElementInUserDocument(String appId, String userId,
-			String url) {
-		DBCollection coll = db.getCollection(DataColl);
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.append("path", url);
-		DBCursor cursor = coll.find(searchQuery);
-		DBObject obj = null;
-		String data = null;
-		obj = cursor.next();
-		data = (String) obj.get("data");
-		return data;
-	}
-
-	public ArrayList<String> getDataInDocumentInRadius(String appId, String url, double latitude, double longitude,
-			double radius){
-		DBCollection coll = db.getCollection(DataColl);
-		ArrayList<String> all = geo.getObjectsInDistance(latitude, longitude, radius, appId, ModelEnum.data);
-		Iterator<String> allIt = all.iterator();
-		ArrayList<String> allElements = new ArrayList<String>();
-		while(allIt.hasNext()){
-			String next = allIt.next();
-			BasicDBObject query = new BasicDBObject();
-			query.append("path", Pattern.compile(next));
-			DBCursor cursor = coll.find(query);
-			while(cursor.hasNext()){
-				DBObject element = cursor.next();
-				allElements.add("path: " + element.get("path") + " data: " + element.get("data"));
-			}
-		}
-		return allElements;
 	}
 
 	
 	// *** DELETE *** //
 
+	//XPTO: eliminar o doc que está na path
 	@Override
-	public boolean deleteDataInDocument(String url) {
-		String[] array = url.split("/");
-		DBCollection coll = db.getCollection(DataColl);
+	public boolean deleteDocumentInPath(String appId, String userId, String path) {
+		String[] array = path.split("/");
+		DBCollection coll = getAppCollection(appId);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("path", Pattern.compile(array[array.length - 1]));
 		DBCursor cursor = coll.find(searchQuery);
@@ -564,11 +455,12 @@ public class DocumentModel implements DocumentInterface {
 	
 	// *** EXISTS *** //
 	
+	//XPTO: verificar se a path exist
 	@Override
-	public boolean elementExistsInDocument(String url) {
-		DBCollection coll = db.getCollection(DataColl);
+	public boolean existsDocumentInPath(String appId, String userId, String path) {
+		DBCollection coll = getAppCollection(appId);
 		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("path", url);
+		searchQuery.put("path", path);
 		DBCursor cursor = coll.find(searchQuery);
 		boolean exists = false;
 		if (cursor.hasNext())
@@ -576,44 +468,9 @@ public class DocumentModel implements DocumentInterface {
 		return exists;
 	}
 
-	public boolean idExistsInTree(String id) {
-		DBCollection coll = db.getCollection(DataColl);
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("_id", id);
-		DBCursor cursor = coll.find(searchQuery);
-		boolean exists = false;
-		if (cursor.hasNext())
-			exists = true;
-		return exists;
-	}
-
-	public boolean dataExistsForElement(String url) {
-		DBCollection coll = db.getCollection(DataColl);
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.append("path", url);
-		searchQuery.append("data", new BasicDBObject("$exists", true));
-		DBCursor cursor = coll.find(searchQuery);
-		//DBObject obj = null;
-		boolean sucess = false;
-		if (cursor.hasNext())
-			sucess = true;
-		return sucess;
-	}
-
-	@Override
-	public boolean docExistsForApp(String appId) {
-		DBCollection coll = db.getCollection(DataColl);
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.append("_id", appId);
-		DBCursor cursor = coll.find(searchQuery);
-		boolean sucess = false;
-		if (cursor.hasNext())
-			sucess = true;
-		return sucess;
-	}
-
-	// ** OTHERS *** //
+	// *** OTHERS *** //
 	
+	//XPTO: isto é para apagar daqui. isto terá que ir para o geolocation
 	@Override
 	public ArrayList<String> getAllAudioIdsInRadius(String appId, double latitude, double longitude, double radius) {
 		DBCollection coll = db.getCollection(UserDataColl);
@@ -633,6 +490,7 @@ public class DocumentModel implements DocumentInterface {
 		return allElements;
 	}
 
+	//XPTO: isto é para apagar daqui. isto terá que ir para o geolocation
 	@Override
 	public ArrayList<String> getAllImagesIdsInRadius(String appId, double latitude,double longitude, 
 			double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {

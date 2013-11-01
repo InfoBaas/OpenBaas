@@ -11,7 +11,6 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 
 	// *** MEMBERS *** //
 
-	
 	// *** INSTANCE *** //
 	
 	private static DocumentMiddleLayer instance = null;
@@ -28,13 +27,6 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	// *** CREATE *** //
 	
-	public void createDocumentForApplication(String appId) {
-		try {
-			docModel.createDocumentForApplication(appId);
-		} catch (Exception e) {
-		}
-	}
-
 	public String createAppDocPathFromListWithSlashes(String appId, List<PathSegment> path) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(appId + "/");
@@ -56,32 +48,40 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		return sb.toString();
 	}
 
+	//XPTO
 	public boolean insertUserDocumentRoot(String appId, String userId, JSONObject data, String location) {
 		try {
-			return docModel.insertUserDocumentRoot(appId, userId, data, location);
+			//return docModel.insertUserDocumentRoot(appId, userId, data, location);
+			return false;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
 	}
 
+	//XPTO: PARA QUE SERVE ISTO????
+	/*
 	public boolean createNonPublishableUserDocument(String appId, String userId, JSONObject data, String url, String location) {
 		try {
-			return docModel.createNonPublishableUserDocument(appId, userId,
-					data, url, location);
+			return docModel.createNonPublishableUserDocument(appId, userId, data, url, location);
 		} catch (Exception e) {
 			return false;
 		}
 	}
+	*/
 
+	//XPTO
 	public boolean insertIntoUserDocument(String appId, String userId, String url, JSONObject data, String location) {
 		try {
-			return docModel.insertIntoUserDocument(appId, userId, data, url, location);
+			return false;
+			//return docModel.insertIntoUserDocument(appId, userId, data, url, location);
 		} catch (Exception e) {
 			return false;
 		}
 	}
 
+	//XPTO
+	/*
 	public boolean createNonPublishableAppDocument(String appId, JSONObject data, List<PathSegment> path, String location) {
 		String url = getAppDocPathFromListWithComas(appId, path);
 		try {
@@ -90,12 +90,14 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 			return false;
 		}
 	}
+	*/
 
+	//XPTO
 	public boolean insertAppDocumentRoot(String appId, JSONObject data, String location) {
 		try {
-			return docModel.insertDocumentRoot(appId, data, location);
-		} catch (JSONException e) {
-			e.printStackTrace();
+			//return docModel.insertDocumentRoot(appId, data, location);
+		//} catch (JSONException e) {
+			//e.printStackTrace();
 		} catch (Exception e) {
 			return false;
 		}
@@ -105,33 +107,39 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 
 	// *** UPDATE *** //
 	
+	//XPTO
 	public boolean insertIntoAppDocument(String appId, String url, JSONObject data, String location) {
 		try {
-			docModel.insertIntoDocument(appId, url, data, location);
-		} catch (JSONException e) {
-			e.printStackTrace();
+			//docModel.insertIntoDocument(appId, url, data, location);
+		//} catch (JSONException e) {
+			//e.printStackTrace();
 		} catch (Exception e) {
 			return false;
 		}
 		return false;
 	}
 
+	//XPTO
 	public boolean updateDataInDocument(String appId, String url, String data) {
 		String path = convertDocPathWithSlashestoComas(appId, url);
 		try {
-			return docModel.updateDataInDocument(path, data);
+			//return docModel.updateDataInDocument(appId, path, data);
+			return false;
 		} catch (Exception e) {
 			return false;
 		}
 	}
 
+	//XPTO
 	public String patchDataInElement(String appId, List<PathSegment> path, JSONObject inputJson, String location) {
 		String url = getAppDocPathFromListWithComas(appId, path);
+		/*
 		try {
 			return docModel.patchDataInElement(url, inputJson, appId, location);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+		*/
 		return null;
 	}
 
@@ -147,9 +155,11 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		return deleteDataInElement(appId, url);
 	}
 	
+	//XPTO
 	private boolean deleteDataInElement(String appId, String url) {
 		try {
-			return docModel.deleteDataInDocument(url);
+			//return docModel.deleteDataInDocument(appId, url);
+			return false;
 		} catch (Exception e) {
 			return false;
 		}
@@ -183,11 +193,13 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		}
 	}
 
+	//XPTO
 	public ArrayList<String> getElementInAppInRadius(String appId, List<PathSegment> path, double latitude,
 			double longitude, double radius) {
 		String url = getAppDocPathFromListWithComas(appId, path);
 		try {
-			return docModel.getDataInDocumentInRadius(appId, url, latitude, longitude,radius);
+			//return docModel.getDataInDocumentInRadius(appId, url, latitude, longitude,radius);
+			return null;
 		} catch (Exception e) {
 			return null;
 		}
@@ -204,19 +216,23 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	// *** GET *** //
 	
+	//XPTO
 	public String getElementInAppDocument(String appId, List<PathSegment> path) {
 		String url = getAppDocPathFromListWithComas(appId, path);
 		try {
-			return docModel.getDataInDocument(url);
+			//return docModel.getDataInDocument(appId, url);
+			return null;
 		} catch (Exception e) {
 			return null;
 		}
 	}
 
+	//XPTO
 	public String getElementInUserDocument(String appId, String userId, List<PathSegment> path){
 		String url = createUserDocPathFromListWithComas(appId, userId, path);
 		try {
-			return docModel.getElementInUserDocument(appId, userId, url);
+			//return docModel.getElementInUserDocument(appId, userId, url);
+			return null;
 		} catch (Exception e) {
 			return null;
 		}
@@ -224,6 +240,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	// *** EXISTS *** //
 
+	//XPTO
 	public boolean elementExistsInDocument(String appId, String url) {
 		String [] path = url.split("/");
 		StringBuilder tempPath = new StringBuilder();
@@ -231,7 +248,8 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 			tempPath.append(path[i] + ",");
 		tempPath.deleteCharAt(tempPath.length()-1); //delete last comma
 		try {
-			return docModel.elementExistsInDocument(url);
+			//return docModel.elementExistsInDocument(appId, url);
+			return false;
 		} catch (Exception e) {
 			return false;
 		}
@@ -249,9 +267,11 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 
 	//private
 	
+	//XPTO
 	private boolean dataExistsForElement(String appId, String path) {
 		try {
-			return docModel.dataExistsForElement(path);
+			//return docModel.dataExistsForElement(appId, path);
+			return false;
 		} catch (Exception e) {
 			return false;
 		}

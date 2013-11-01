@@ -69,8 +69,6 @@ public class AppResource {
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			long start = System.currentTimeMillis();
-			System.out.println("************************************");
-			System.out.println("***********Creating App*************");
 			ApplicationInterface temp = null;
 			String appName = null;
 			boolean confirmUsersEmail;
@@ -93,11 +91,7 @@ public class AppResource {
 				temp = this.appsMid.getApp(appId);
 				boolean awsOkay = this.appsMid.createAppAWS(appId);
 				if (awsOkay) {
-					MiddleLayerFactory.getDocumentMiddleLayer().createDocumentForApplication(appId);
-					response = Response.status(Status.CREATED).entity(temp)
-							.build();
-					System.out.println("***********App Created**************");
-					System.out.println("************************************");
+					response = Response.status(Status.CREATED).entity(temp).build();
 				}
 			} else {
 				// 302 is not implemented in the response status, we can create

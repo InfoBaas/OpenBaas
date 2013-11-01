@@ -469,17 +469,6 @@ public class MongoDBDataModel implements DatabaseInterface {
 		return videoExistsInApp;
 	}
 
-	// @Override
-	// public Set<String> getAllStorageIds(String appId) {
-	// DBCollection coll = db.getCollection(StorageColl);
-	// Set<String> storageIds = new HashSet<String>();
-	// DBCursor cursor = coll.find();
-	// while (cursor.hasNext()) {
-	// storageIds.add((String) cursor.next().get("_id"));
-	// }
-	// return storageIds;
-	// }
-
 	@Override
 	public Boolean createStorageInApp(String appId, String storageId,
 			String directory, String type, String size, String creationDate,
@@ -517,8 +506,7 @@ public class MongoDBDataModel implements DatabaseInterface {
 	}
 
 	@Override
-	public String getFileDirectory(String appId, String id, String folderType,
-			String requestType) {
+	public String getFileDirectory(String appId, String id, String folderType, String requestType) {
 		DBCollection coll = null;
 		String type = null;
 		// Switch performance is not guaranteed

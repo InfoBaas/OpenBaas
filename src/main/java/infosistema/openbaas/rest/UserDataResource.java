@@ -93,6 +93,8 @@ public class UserDataResource {
 	}
 
 	//TODO: LOCATION (documents)
+	//XPTO: PARA QUE SERVE ISTO????
+	/*
 	@POST
 	@Path("/{pathId:.+}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -110,27 +112,23 @@ public class UserDataResource {
 				e.printStackTrace();
 			}
 			if (appsMid.appExists(appId)) {
-				String url = docMid.createUserDocPathFromListWithSlashes(
-						appId, userId, path);
-				if (docMid.createNonPublishableUserDocument(appId, userId,
-						data, url, location))
+				String url = docMid.createUserDocPathFromListWithSlashes(appId, userId, path);
+				if (docMid.createNonPublishableUserDocument(appId, userId, data, url, location))
 					response = Response.status(Status.OK).entity(appId).build();
 				else
-					response = Response.status(Status.BAD_REQUEST)
-							.entity(appId).build();
+					response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
 		} else if (code == -2) {
 			response = Response.status(Status.FORBIDDEN)
 					.entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
-
+	*/
+	
 	// *** UPDATE *** //
 	
 	//TODO: LOCATION (location de defeito???)
@@ -145,10 +143,8 @@ public class UserDataResource {
 	@Path("/{pathId:.+}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createOrReplaceDocument(JSONObject inputJsonObj,
-			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
-			@Context HttpHeaders hh,
-			@HeaderParam(value = "location") String location) {
+	public Response createOrReplaceDocument(JSONObject inputJsonObj, @PathParam("pathId") List<PathSegment> path,
+			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = "location") String location) {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -160,18 +156,13 @@ public class UserDataResource {
 				e.printStackTrace();
 			}
 			if (appsMid.appExists(appId)) {
-				String url = docMid.createUserDocPathFromListWithSlashes(
-						appId, userId, path);
-				if (docMid.insertIntoUserDocument(appId, userId, url, data,
-						location))
-					response = Response.status(Status.CREATED).entity(appId)
-							.build();
+				String url = docMid.createUserDocPathFromListWithSlashes(appId, userId, path);
+				if (docMid.insertIntoUserDocument(appId, userId, url, data, location))
+					response = Response.status(Status.CREATED).entity(appId).build();
 				else
-					response = Response.status(Status.BAD_REQUEST).entity(data)
-							.build();
+					response = Response.status(Status.BAD_REQUEST).entity(data).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
 		} else if (code == -2) {
 			response = Response.status(Status.FORBIDDEN)
@@ -202,30 +193,24 @@ public class UserDataResource {
 				if (docMid.deleteUserDataInElement(appId, userId, path))
 					response = Response.status(Status.OK).entity("").build();
 				else
-					response = Response.status(Status.BAD_REQUEST).entity(path)
-							.build();
+					response = Response.status(Status.BAD_REQUEST).entity(path).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 
 
 	// *** GET LIST *** //
 	
-	// *** GET *** //
-	
 	//TODO: LOCATION (documents)
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAllElementsInDocument(@Context UriInfo ui, @Context HttpHeaders hh, 
+	public Response getAllUserData(@Context UriInfo ui, @Context HttpHeaders hh, 
 			@QueryParam("latitude") String latitude, @QueryParam("longitude") String longitude, @QueryParam("radius") String radius,
 			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
 			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
@@ -256,6 +241,8 @@ public class UserDataResource {
 		return response;
 	}
 
+	// *** GET *** //
+	
 	/**
 	 * Retrieves the data contained in a key.
 	 * 
@@ -270,23 +257,18 @@ public class UserDataResource {
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			if (docMid.dataExistsForElement(appId, path)) {
-				String data = docMid.getElementInUserDocument(appId, userId,
-						path);
+				String data = docMid.getElementInUserDocument(appId, userId, path);
 				if (data == null)
-					response = Response.status(Status.BAD_REQUEST)
-							.entity(appId).build();
+					response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 				else
 					response = Response.status(Status.OK).entity(data).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST)
-					.entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 
