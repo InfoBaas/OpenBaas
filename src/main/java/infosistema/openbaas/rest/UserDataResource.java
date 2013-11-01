@@ -34,13 +34,13 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class UserDataResource {
 
+	@Context
+	UriInfo uriInfo;
 	private AppsMiddleLayer appsMid;
 	private DocumentMiddleLayer docMid;
 	private UsersMiddleLayer usersMid;
 	private String appId;
 	private String userId;
-	@Context
-	UriInfo uriInfo;
 
 	public UserDataResource(UriInfo uriInfo, String appId, String userId) {
 		this.appsMid = MiddleLayerFactory.getAppsMiddleLayer();
@@ -77,7 +77,7 @@ public class UserDataResource {
 				e.printStackTrace();
 			}
 			if (appsMid.appExists(appId) && usersMid.userExistsInApp(appId, userId)) {
-				if (docMid.insertUserDocumentRoot(appId, userId, data, location)) {
+				if (docMid.insertDocumentInPath(appId, userId, null, data, location)) {
 					response = Response.status(Status.CREATED).entity(appId).build();
 				} else {
 					response = Response.status(Status.BAD_REQUEST).entity(data).build();
@@ -92,42 +92,6 @@ public class UserDataResource {
 		return response;
 	}
 
-	//TODO: LOCATION (documents)
-	//XPTO: PARA QUE SERVE ISTO????
-	/*
-	@POST
-	@Path("/{pathId:.+}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response createNonPublishableUserDocument(JSONObject inputJsonObj, @PathParam("pathId") List<PathSegment> path,
-			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = "location") String location) {
-		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
-		if (code == 1) {
-			JSONObject data = null;
-			try {
-				data = (JSONObject) inputJsonObj.get("data");
-			} catch (JSONException e) {
-				System.out.println("Error parsing the JSON file.");
-				e.printStackTrace();
-			}
-			if (appsMid.appExists(appId)) {
-				String url = docMid.createUserDocPathFromListWithSlashes(appId, userId, path);
-				if (docMid.createNonPublishableUserDocument(appId, userId, data, url, location))
-					response = Response.status(Status.OK).entity(appId).build();
-				else
-					response = Response.status(Status.BAD_REQUEST).entity(appId).build();
-			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
-			}
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN)
-					.entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
-		return response;
-	}
-	*/
 	
 	// *** UPDATE *** //
 	
@@ -156,8 +120,7 @@ public class UserDataResource {
 				e.printStackTrace();
 			}
 			if (appsMid.appExists(appId)) {
-				String url = docMid.createUserDocPathFromListWithSlashes(appId, userId, path);
-				if (docMid.insertIntoUserDocument(appId, userId, url, data, location))
+				if (docMid.updateDocumentInPath(appId, userId, path, data, location))
 					response = Response.status(Status.CREATED).entity(appId).build();
 				else
 					response = Response.status(Status.BAD_REQUEST).entity(data).build();
@@ -189,8 +152,8 @@ public class UserDataResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			if (docMid.dataExistsForUserElement(appId, userId, path)) {
-				if (docMid.deleteUserDataInElement(appId, userId, path))
+			if (docMid.existsDocumentInPath(appId, userId, path)) {
+				if (docMid.deleteDocumentInPath(appId, userId, path))
 					response = Response.status(Status.OK).entity("").build();
 				else
 					response = Response.status(Status.BAD_REQUEST).entity(path).build();
@@ -207,6 +170,7 @@ public class UserDataResource {
 
 	// *** GET LIST *** //
 	
+	//XPTO: Refazer isto tudo
 	//TODO: LOCATION (documents)
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -223,13 +187,14 @@ public class UserDataResource {
 		if (code == 1) {
 			//query parameters are present, only return the elements 
 			if (latitude != null && longitude != null && radius != null) {
-				ArrayList<String> all = docMid.getAllUserDocsInRadius(appId, userId, Double.parseDouble(latitude), 
-						Double.parseDouble(longitude), Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
+				ArrayList<String> all = null; 
+						//docMid.getAllUserDocsInRadius(appId, userId, Double.parseDouble(latitude), 
+						//Double.parseDouble(longitude), Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
 				IdsResultSet res = new IdsResultSet(all,pageNumber);
 				response = Response.status(Status.OK).entity(res).build();
 			//no query parameters return all docs
 			} else {
-				String all = docMid.getAllUserDocs(appId, userId);
+				String all = null; //docMid.getAllUserDocs(appId, userId);
 				response = Response.status(Status.OK).entity(all).build();
 			}
 		} else if (code == -2) {
@@ -256,8 +221,8 @@ public class UserDataResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			if (docMid.dataExistsForElement(appId, path)) {
-				String data = docMid.getElementInUserDocument(appId, userId, path);
+			if (docMid.existsDocumentInPath(appId, userId, path)) {
+				String data = docMid.getDocumentInPath(appId, userId, path);
 				if (data == null)
 					response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 				else
