@@ -1,6 +1,8 @@
 package infosistema.openbaas.middleLayer;
 
-import java.util.ArrayList;
+import infosistema.openbaas.dataaccess.geolocation.Geolocation;
+import infosistema.openbaas.model.ModelEnum;
+
 import java.util.List;
 import javax.ws.rs.core.PathSegment;
 
@@ -45,7 +47,14 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	public boolean insertDocumentInPath(String appId, String userId, List<PathSegment> path, JSONObject data, String location) {
 		try {
-			return docModel.insertDocumentInPath(appId, getDocumentPath(userId, path), data, location);
+			String pathRes = getDocumentPath(userId, path);
+			Boolean res =  docModel.insertDocumentInPath(appId, userId, pathRes, data);
+			if (location != null){
+				String[] splitted = location.split(":");
+				Geolocation geo = Geolocation.getInstance();
+				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, pathRes);
+			}
+			return res;
 		} catch (JSONException e) {
 			return false;
 		} catch (Exception e) {
@@ -58,7 +67,14 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	public boolean updateDocumentInPath(String appId, String userId, List<PathSegment> path, JSONObject data, String location) {
 		try {
-			return docModel.updateDocumentInPath(appId, getDocumentPath(userId, path), data, location);
+			String pathRes = getDocumentPath(userId, path);
+			Boolean res =  docModel.updateDocumentInPath(appId, userId, pathRes, data);
+			if (location != null){
+				String[] splitted = location.split(":");
+				Geolocation geo = Geolocation.getInstance();
+				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, pathRes);
+			}
+			return res;
 		} catch (JSONException e) {
 			return false;
 		} catch (Exception e) {
@@ -132,7 +148,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	public String getDocumentInPath(String appId, String userId, List<PathSegment> path) {
 		try {
-			return docModel.getDocumentInPath(appId, getDocumentPath(userId, path));
+			return docModel.getDocumentInPath(appId, userId, getDocumentPath(userId, path));
 		} catch (Exception e) {
 			return null;
 		}

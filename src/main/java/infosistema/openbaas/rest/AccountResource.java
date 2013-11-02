@@ -86,19 +86,20 @@ public class AccountResource {
 			if (userName == null) {
 				userName = email;
 			}
-			if (readOk && MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
+			if(!MiddleLayerFactory.getAppsMiddleLayer().appExists(appId))
+				return Response.status(Status.NOT_FOUND).entity("{\"App\": "+appId+"}").build();
+			if (readOk) {
 				if (!usersMid.userExistsInApp(appId, userId, email)) {
 					if (uriInfo == null) uriInfo=ui;
-					UserInterface outUser = usersMid.createUserAndLogin(headerParams, ui, userId, userName, email, password, userFile);
+					UserInterface outUser = usersMid.createUserAndLogin(headerParams, ui, appId, userName, email, password, userFile);
 					
 					response = Response.status(Status.CREATED).entity(outUser).build();
 				} else {
-					String foundUserId = usersMid.getUserIdUsingUserName(appId,userName);
-					// 302 = found
-					response = Response.status(302).entity("User "+foundUserId+" with email: "+email+" already exists in app.").build();
+					//String foundUserId = usersMid.getUserIdUsingUserName(appId,userName);
+					response = Response.status(Status.FORBIDDEN).entity("{\"email exists\": "+email+"}").build();
 				}
 			} else {
-				response = Response.status(Status.BAD_REQUEST).entity(userName).build();
+				response = Response.status(Status.BAD_REQUEST).entity("").build();
 			}
 		return response;
 	}

@@ -2,6 +2,7 @@ package infosistema.openbaas.dataaccess.models.document;
 
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.model.ModelEnum;
+import infosistema.openbaas.utils.Const;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.util.JSON;
 
 /*MongoDB java driver has quite a few important things that are not easilly found. 
  * Whenever you want to get the descendants or do the "like" shell option you need to turn it into a pattern
@@ -38,19 +40,13 @@ public class DocumentModel implements DocumentInterface {
 
 	private MongoClient mongoClient;
 	private DB db;
-	public static final String APP_COLL_FORMAT = "app_%s";
-
-	public static final String SERVER = "localhost";
+	public static final String APP_COLL_FORMAT = "app%sData";
 	public static final String UserDataColl = "users:data";
-	public static final int PORT = 27017;
-	private static final String specialCharacter = "~";
 	Geolocation geo;
 	
 	public DocumentModel() {
-		mongoClient = null;
-		geo = Geolocation.getInstance();
 		try {
-			mongoClient = new MongoClient(SERVER, PORT);
+			mongoClient = new MongoClient(Const.MONGO_SERVER, Const.MONGO_PORT);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
@@ -63,16 +59,180 @@ public class DocumentModel implements DocumentInterface {
 		return db.getCollection(String.format(APP_COLL_FORMAT, appId));
 	}
 	
+	/*
+	//returns the document id based on path
+	private String getDocumentId(DBCollection coll, String path) {
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.append(path, "{$exists:true}");
+		BasicDBObject projection = new BasicDBObject();
+		projection.append(path, 1);
+		DBCursor cursor = coll.find(searchQuery,projection);
+		while(cursor.hasNext()){
+			DBObject dbObj = cursor.next();
+			if(!dbObj.get("_id").equals(""))
+				return (String) dbObj.get("_id");
+		}
+		return null;
+	}
+	*/
+	
+	
 	
 	// *** CREATE *** //
+	// criar nó da arvore se nao existe raiz (data ou userId)
+	private boolean checkPath(DBCollection coll, String appId, String path, String userId) throws JSONException {
+		//se nao existir raiz faz um insert
+		//db.appTeste.insert({"userId || appId":{}})
+		try{
+			String[] splitted = path.split("\\.");
+			path =  splitted[0];
+			if (!existsDocumentInPath(appId, path)){
+				DBObject dbObject = null; 
+				if(userId == null)
+					dbObject =  (DBObject) JSON.parse("{'data':{}}");
+				else 
+					dbObject =  (DBObject) JSON.parse("{'"+userId+"':{}}");
+				coll.insert(dbObject);
+			}
+		}catch (Exception e){
+			return false;
+		}
+		return true;
+	}
+	
+	// *** PUT *** //
+	public Boolean insertDocumentInPath(String appId, String userId, String path, JSONObject data) throws JSONException{
+		
+		//db.appTeste.update({"f":{$exists:1}},{$set:{"zzzz.f.e.r.t":{"h":4}}})
+		DBCollection coll = getAppCollection(appId);
+		String[] splitted = path.split("\\.");
+		String baseKey =  splitted[0];
+		try{
+			if(checkPath(coll,appId,path, userId)){
+				DBObject dbData = (DBObject) JSON.parse(data.toString());
+				BasicDBObject dbQuery = new BasicDBObject();
+				dbQuery.append(baseKey, new  BasicDBObject("$exists", true));
+				BasicDBObject dbBaseData = new BasicDBObject();
+				dbBaseData.append(path, dbData);
+				BasicDBObject dbInsert = new BasicDBObject();
+				dbInsert.append("$set", dbBaseData);
+				coll.update(dbQuery, dbInsert);
+			}else 
+				return false;
+		}catch (Exception e){
+			System.err.println(e.toString());
+			return false;
+		}
+		return true;
+	}
+	
+	// *** PATCH *** //
+	public Boolean updateDocumentInPath(String appId, String userId, String path, JSONObject data) throws JSONException{
+		//db.appTeste.update({"restaurante1":{$exists:1}},{$set:{"restaurante1.nome.nome3":"33311111to"}})
+		DBCollection coll = getAppCollection(appId);
+		String[] splitted = path.split("\\.");
+		String baseKey =  splitted[0];
+		try{
+			if(checkPath(coll,appId,path,userId)){
+				Iterator<?> it = data.keys();
+				while (it.hasNext()) {
+					String key = (String) it.next();
+					String value = (String) data.get(key);
+					//DBObject dbData = (DBObject) JSON.parse(data.toString());
+					BasicDBObject dbQuery = new BasicDBObject();
+					dbQuery.append(baseKey, new  BasicDBObject("$exists", true));
+					BasicDBObject dbBaseData = new BasicDBObject();
+					dbBaseData.append(path+"."+key, value);
+					BasicDBObject dbInsert = new BasicDBObject();
+					dbInsert.append("$set", dbBaseData);
+					coll.update(dbQuery, dbInsert);
+				}
+			}
+		}catch (Exception e){
+			System.err.println(e.toString());
+			return false;
+		}
+		return true;
+	}
+	
+	
+	// *** DELETE *** //
+	public Boolean deleteDocumentInPath(String appId, String path) throws JSONException{
+		//db.collection_name.update({ _id: 1234 }, { $unset : { description : 1} });
+		DBCollection coll = getAppCollection(appId);
+		String[] splitted = path.split("\\.");
+		String baseKey =  splitted[0];
+		try{
+			BasicDBObject existsQuery = new BasicDBObject();
+			existsQuery.append("$exists", 1);
+			BasicDBObject dbQuery = new BasicDBObject();
+			dbQuery.append(baseKey, existsQuery);
+			BasicDBObject dbBaseData = new BasicDBObject();
+			dbBaseData.append(path, 1);
+			BasicDBObject dbProjection = new BasicDBObject();
+			dbProjection.append("$unset", dbBaseData);
+			coll.update(dbQuery, dbProjection);
+		}catch (Exception e){
+			System.err.println(e.toString());
+			return false;
+		}
+		return true;
+	}
+	
+	
+	// *** GET *** //
+	//XPTO: eu acho que isto devia devolver um jason, mas é preciso ver o que fazem as funções que chamam isto
+	@Override
+	public String getDocumentInPath(String appId, String userId, String path) {
+		//db.appTeste.find({"restaurante1.nome":{$exists:true}},{"restaurante1.nome":1,"_id":0})
+		String[] splitted = path.split("\\.");
+		String keyValue = splitted[splitted.length-1];
+		DBCollection coll = getAppCollection(appId);
+		BasicDBObject existsQuery = new BasicDBObject();
+		existsQuery.append("$exists", true);
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.append(path, existsQuery);
+		BasicDBObject projection = new BasicDBObject();
+		projection.append(path, "\"_id\":0");
+		DBCursor cursor = coll.find(searchQuery,projection);
+		if(cursor.hasNext()){
+			DBObject obj = cursor.next();
+			return (String)obj.get(keyValue);
+		}
+		return "{}";
+	}
+
+	// *** EXISTS *** //
+	//XPTO: verificar se a path exist
+	@Override
+	public boolean existsDocumentInPath(String appId, String path) {
+		DBCollection coll = getAppCollection(appId);
+		String[] splitted = path.split("\\.");
+		String keyValue = splitted[0];
+		BasicDBObject existsQuery = new BasicDBObject();
+		existsQuery.append("$exists", true);
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put(keyValue, existsQuery);
+		DBCursor cursor = coll.find(searchQuery);
+		boolean exists = false;
+		if (cursor.hasNext())
+			exists = true;
+		return exists;
+	}
+
+	
+	
+/*
 	
 	//XPTO antes de inserir os elementos que vêm lá apagar todos os que estão. O insert apaga tudo
-	public boolean insertDocumentInPath(String appId, String userId, String inPath, JSONObject data, String location) throws JSONException {
+	public boolean insertDocumentInPath(String appId, String path, String userId, JSONObject data, String location) throws JSONException {
 		DBCollection coll = getAppCollection(appId);
-		Iterator<?> it = data.keys();// iterate the new content and
-		// make it accessible
+		
+		//obter o primeiro no
+		//se não existir inser
+		
+		Iterator<?> it = data.keys();
 		while (it.hasNext()) {
-			String path = "";
 			String key = (String) it.next();
 			BasicDBObject searchQuery = new BasicDBObject();
 			searchQuery.append("_id", userId + ": " + key);
@@ -84,6 +244,7 @@ public class DocumentModel implements DocumentInterface {
 			temp.append("data", (String)data.get(key));
 			if (location != null){
 				String[] splitted = location.split(":");
+				geo = Geolocation.getInstance();
 				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, path);
 			}
 			if (!cursor.hasNext())
@@ -216,7 +377,7 @@ public class DocumentModel implements DocumentInterface {
 	
 
 	// *** UPDATE *** //
-
+/*
 	//XPTO para cada elemento que vem no jason se existir substitui se não existir insere
 	public boolean updateDocumentInPath(String appId, String userId, String inPath, JSONObject data, String location) throws JSONException {
         DBCollection coll = db.getCollection(UserDataColl);
@@ -347,9 +508,9 @@ public class DocumentModel implements DocumentInterface {
 		
 	}
 
-
+*/
 	// *** GET LIST *** //
-
+/*
 	//XPTO: Substituir isto tudo (as 4 funções) por um search. É para deixar para o fim.
 	@Override
 	public String getAllDocInApp(String appId) {
@@ -419,55 +580,7 @@ public class DocumentModel implements DocumentInterface {
 	}
 
 	
-	// *** GET *** //
-
-	//XPTO: eu acho que isto devia devolver um jason, mas é preciso ver o que fazem as funções que chamam isto
-	@Override
-	public String getDocumentInPath(String appId, String userId, String path) {
-		DBCollection coll = getAppCollection(appId);
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.append("path", path);
-		DBCursor cursor = coll.find(searchQuery);
-		DBObject obj = null;
-		String data = null;
-		obj = cursor.next();
-		data = (String) obj.get("data");
-		return data;
-	}
-
-	
-	// *** DELETE *** //
-
-	//XPTO: eliminar o doc que está na path
-	@Override
-	public boolean deleteDocumentInPath(String appId, String userId, String path) {
-		String[] array = path.split("/");
-		DBCollection coll = getAppCollection(appId);
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("path", Pattern.compile(array[array.length - 1]));
-		DBCursor cursor = coll.find(searchQuery);
-		while (cursor.hasNext()) {
-			coll.remove(cursor.next());
-		}
-		return true;
-	}
-
-	
-	// *** EXISTS *** //
-	
-	//XPTO: verificar se a path exist
-	@Override
-	public boolean existsDocumentInPath(String appId, String userId, String path) {
-		DBCollection coll = getAppCollection(appId);
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("path", path);
-		DBCursor cursor = coll.find(searchQuery);
-		boolean exists = false;
-		if (cursor.hasNext())
-			exists = true;
-		return exists;
-	}
-
+	*/
 	// *** OTHERS *** //
 	
 	//XPTO: isto é para apagar daqui. isto terá que ir para o geolocation
@@ -511,5 +624,7 @@ public class DocumentModel implements DocumentInterface {
 		//return allElements;
 		return all;
 	}
+
+	
 
 }
