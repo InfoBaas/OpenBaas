@@ -14,11 +14,11 @@ import redis.clients.jedis.JedisPoolConfig;
 public class AppModel {
 
 	// request types
-	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_CACHE_SERVER);
+	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_GENERAL_SERVER);
 	Jedis jedis;
 	
 	public AppModel() {
-		jedis = new Jedis(Const.REDIS_CACHE_SERVER, Const.REDIS_CACHE_PORT);
+		jedis = new Jedis(Const.REDIS_GENERAL_SERVER, Const.REDIS_GENERAL_PORT);
 	}
 
 	public Object clone() throws CloneNotSupportedException {

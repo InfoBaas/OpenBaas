@@ -6,10 +6,10 @@ public class Const {
 	public static final String ORDER_BY = "_id";
 	public static final String ORDER_TYPE = "desc";
 	//public static final String SERVER = "localhost";
-	public static final int REDIS_CACHE_PORT = 6379;
+	public static final int REDIS_GENERAL_PORT = 6382;
 	public static final int REDIS_SESSION_PORT = 6380;
 	public static final int REDIS_GEO_PORT = 6381;
-	public static final String REDIS_CACHE_SERVER = "localhost";
+	public static final String REDIS_GENERAL_SERVER = "localhost";
 	public static final String REDIS_SESSION_SERVER = "localhost";
 	public static final String REDIS_GEO_SERVER = "localhost";
 	public static final int MONGO_PORT = 27017;
