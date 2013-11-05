@@ -47,7 +47,7 @@ public class Startup implements ServletContextListener {
 			System.out.println("*****************Creating user***************");
 			System.out.println("userId: " + AdminId + " email: " + AdminEmail);
 			System.out.println("********************************************");
-			usersMid.createUser(this.AdminAppId, AdminId,OPENBAASADMIN,"NOK", "NOK", AdminEmail, salt, hash, null);
+			usersMid.createUser(this.AdminAppId, AdminId,OPENBAASADMIN,"NOK", "NOK", AdminEmail, salt, hash, null, null, null);
 			// Output a simple message to the server's console
 			System.out
 					.println("***********************************************");

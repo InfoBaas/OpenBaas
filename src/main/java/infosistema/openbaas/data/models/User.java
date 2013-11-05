@@ -1,4 +1,4 @@
-package infosistema.openbaas.model.user;
+package infosistema.openbaas.data.models;
 
 
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
@@ -19,7 +19,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
  * 
  */
 @XmlRootElement
-public class User implements UserInterface {
+public class User {
 	private String userId;
 	private String email;
 	private String userName;
@@ -162,26 +162,21 @@ public class User implements UserInterface {
 	public void setInactive(){
 		this.setAlive("false");
 	}
-	@Override
 	public void setCreationDate(String creationDate) {
 		this.creationDate = creationDate;
 	}
-	@Override
 	public void setUpdatedDate(String updateDate) {
 		this.updatedDate = updateDate;
 	}
-	@Override
 	public String getUserName() {
 		return this.userName;
 	}	
 	public void setUserName(String userName){
 		this.userName = userName;
 	}
-	@Override
 	public String getAlive() {
 		return alive;
 	}
-	@Override
 	public void setAlive(String alive) {
 		this.alive = alive;
 	}

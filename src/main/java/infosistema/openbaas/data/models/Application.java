@@ -1,12 +1,10 @@
-package infosistema.openbaas.model.application;
+package infosistema.openbaas.data.models;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 
 @XmlRootElement
-public class Application 
-implements ApplicationInterface 
-{
+public class Application {
 
 	private String createdAt;
 	private String updatedAt;
@@ -52,23 +50,18 @@ implements ApplicationInterface
 	/**
 	 * Gets the application alive field (true -> an app is active, false -> it is not).
 	 */
-	@Override
 	public String getAlive() {
 		return this.alive;
 	}
-	@Override
 	public String getAppName(){
 		return this.appName;
 	}
-	@Override
 	public void setAppName(String appName){
 		this.appName = appName;
 	}
-	@Override
 	public String getConfirmUsersEmail() {
 		return confirmationEmail;
 	}
-	@Override
 	public void setConfirmUsersEmail(String confirmationEmail) {
 		this.confirmationEmail = confirmationEmail;
 	}

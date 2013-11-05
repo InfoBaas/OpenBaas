@@ -77,7 +77,7 @@ public class SessionsResource {
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
 		String userId = usersMid.getUserIdUsingUserName(appId, userName);
 		if (userId != null) {
-			boolean usersConfirmedOption = usersMid.confirmUsersEmailOption(appId);
+			boolean usersConfirmedOption = usersMid.getConfirmUsersEmailOption(appId);
 			// Remember the order of evaluation in java
 			if (usersConfirmedOption) {
 				if (usersMid.userEmailIsConfirmed(appId, userId)) {

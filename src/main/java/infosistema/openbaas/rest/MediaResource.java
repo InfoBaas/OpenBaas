@@ -1,7 +1,7 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.IdsResultSet;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
-import infosistema.openbaas.model.IdsResultSet;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 

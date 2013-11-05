@@ -1,10 +1,11 @@
-package infosistema.openbaas.model;
+package infosistema.openbaas.data;
 
 public enum ModelEnum {
 	image,
 	video,
 	audio,
 	users,
+	storage,
 	data;
 
 	public static ModelEnum getModelForExtension(String extension) {

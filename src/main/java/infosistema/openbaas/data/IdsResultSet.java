@@ -1,4 +1,4 @@
-package infosistema.openbaas.model;
+package infosistema.openbaas.data;
 
 import java.util.List;
 

@@ -12,7 +12,7 @@ import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 
 //test
-public class AclDatabase implements AclInterface{
+public class Acl {
 
 	private MongoClient mongoClient;
 	private DB db;
@@ -31,7 +31,7 @@ public class AclDatabase implements AclInterface{
      * users------users(_id : acl:apps:3222:users)(_id : acl:apps:1223:users)
 	 * 
 	*/
-	public AclDatabase(){
+	public Acl(){
 		try {
 			mongoClient = new MongoClient(Const.MONGO_SERVER, Const.MONGO_PORT);
 		} catch (UnknownHostException e) {
@@ -62,7 +62,6 @@ public class AclDatabase implements AclInterface{
 		return (String) temp.get("permissions");
 	}
 
-	@Override
 	public boolean writePermissions(String path, String permissions, String parent, String ancestors) {
 		DBCollection coll = db.getCollection(ACLTREE);
 		BasicDBObject searchQuery = new BasicDBObject();

@@ -3,8 +3,7 @@ package infosistema.openbaas.rest;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
-import infosistema.openbaas.model.user.User;
-import infosistema.openbaas.model.user.UserInterface;
+import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
@@ -91,7 +90,7 @@ public class AccountResource {
 			if (readOk) {
 				if (!usersMid.userExistsInApp(appId, userId, email)) {
 					if (uriInfo == null) uriInfo=ui;
-					UserInterface outUser = usersMid.createUserAndLogin(headerParams, ui, appId, userName, email, password, userFile);
+					User outUser = usersMid.createUserAndLogin(headerParams, ui, userId, userName, email, password, userFile);
 					
 					response = Response.status(Status.CREATED).entity(outUser).build();
 				} else {
@@ -121,7 +120,7 @@ public class AccountResource {
 		String email = null; // user inserted fields
 		String attemptedPassword = null; // user inserted fields
 		Response response = null;
-		UserInterface outUser = new User();
+		User outUser = new User();
 		List<String> locationList = null;
 		List<String> userAgentList = null;
 		String userAgent = null;
@@ -150,7 +149,7 @@ public class AccountResource {
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
 		String userId = usersMid.getUserIdUsingEmail(appId, email);
 		if (userId != null) {
-			boolean usersConfirmedOption = usersMid.confirmUsersEmailOption(appId);
+			boolean usersConfirmedOption = usersMid.getConfirmUsersEmailOption(appId);
 			// Remember the order of evaluation in java
 			if (usersConfirmedOption) {
 				if (usersMid.userEmailIsConfirmed(appId, userId)) {

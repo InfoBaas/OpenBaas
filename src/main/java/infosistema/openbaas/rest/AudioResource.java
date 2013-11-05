@@ -1,11 +1,11 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.IdsResultSet;
+import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.data.models.Audio;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
-import infosistema.openbaas.middleLayer.AudioMiddleLayer;
+import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
-import infosistema.openbaas.model.IdsResultSet;
-import infosistema.openbaas.model.media.audio.Audio;
-import infosistema.openbaas.model.media.audio.AudioInterface;
 import infosistema.openbaas.utils.Utils;
 
 import java.io.InputStream;
@@ -37,12 +37,12 @@ public class AudioResource {
 	static Map<String, Audio> audio = new HashMap<String, Audio>();
 	String appId;
 	static final int idGenerator = 3;
-	private AudioMiddleLayer audioMid;
+	private MediaMiddleLayer mediaMid;
 	private AppsMiddleLayer appsMid;
 
 	public AudioResource(String appId) {
 		this.appId = appId;
-		this.audioMid = MiddleLayerFactory.getAudioMiddleLayer();
+		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
 	}
 
 	
@@ -63,60 +63,22 @@ public class AudioResource {
 	@POST
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response uploadAudio(@Context HttpServletRequest request,
-			@Context UriInfo ui, @Context HttpHeaders hh,
-			@FormDataParam("file") InputStream uploadedInputStream,
-			@FormDataParam("file") FormDataContentDisposition fileDetail,
-			@PathParam("appId") String appId,
-			@HeaderParam(value = "location") String location) {
+	public Response uploadAudio(@Context HttpServletRequest request, @Context UriInfo ui, @Context HttpHeaders hh,
+			@FormDataParam("file") InputStream uploadedInputStream, @FormDataParam("file") FormDataContentDisposition fileDetail,
+			@PathParam("appId") String appId, @HeaderParam(value = "location") String location) {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
-		String fileNameWithType = null;
-		String fileType = new String();
-		String fileName = new String();
 		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("*********Uploading Audio************");
-
-			fileNameWithType = fileDetail.getFileName();
-			char[] charArray = fileNameWithType.toCharArray();
-			boolean pop = false;
-			int i = 0;
-			while (!pop) {
-				fileName += charArray[i];
-				if (charArray[i + 1] == '.')
-					pop = true;
-				i++;
+			String audioId = mediaMid.uploadMedia(uploadedInputStream, fileDetail, appId, ModelEnum.audio, location);
+			if (audioId == null) { 
+				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
+			} else {
+				response = Response.status(Status.OK).entity(audioId).build();
 			}
-			for (int k = 0; k < charArray.length - 1; k++) {
-				if (charArray[k] == '.') {
-					for (int j = k + 1; j < charArray.length; j++)
-						fileType += charArray[j];
-				}
-			}
-			String dir = "apps/" + appId + "/storage/";
-			String audioId = MiddleLayerFactory.getStorageMiddleLayer().createLocalFile(uploadedInputStream, fileDetail, appId, fileType, dir);
-			/* save it
-			 *
-			 * :::::::::::::::::MAJOR WARNING::::::::::::::::::::::Handling the
-			 * Packet inputstream creates an infinite loop, you should not
-			 * attempt it,the ReadMultiStream does not return -1 on EOS, it goes
-			 * to the begining.You can read about it here:
-			 * http://stackoverflow.com
-			 * /questions/17861088/inputstream-infinit-loop
-			 * 
-			 * Solution: use the IOUtils to handle it, they have it implemented
-			 * in a way that this error is handled produces the file
-			 * successfully.
-			 */
-			this.audioMid.uploadAudioFileToServerWithGeoLocation(appId, location, fileType, fileName, audioId);
-
-		}else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-					.build();
-		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			.build();
+		} else if(code == -2) {
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		} else if(code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 
@@ -142,8 +104,8 @@ public class AudioResource {
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("***********Deleting Audio***********");
-			if (audioMid.audioExistsInApp(appId, audioId)) {
-				this.audioMid.deleteAudioInApp(appId, audioId);
+			if (mediaMid.mediaExists(appId, ModelEnum.audio, audioId)) {
+				this.mediaMid.deleteMedia(appId, ModelEnum.audio, audioId);
 				response = Response.status(Status.OK).entity(appId).build();
 			} else {
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();
@@ -178,10 +140,10 @@ public class AudioResource {
 			System.out.println("********Finding all Audio**********");
 			ArrayList<String> audioIds = null;
 			if (latitude != null && longitude != null && radius != null) {
-				audioIds = audioMid.getAllAudioIdsInRadius(appId, Double.parseDouble(latitude),
+				audioIds = mediaMid.getAllAudioIdsInRadius(appId, Double.parseDouble(latitude),
 						Double.parseDouble(longitude), Double.parseDouble(radius));
 			}else
-				audioIds = audioMid.getAllAudioIds(appId,pageNumber,pageSize,orderBy,orderType);
+				audioIds = mediaMid.getAllMediaIds(appId, ModelEnum.audio, pageNumber, pageSize, orderBy, orderType);
 			IdsResultSet res = new IdsResultSet(audioIds,pageNumber);
 			response = Response.status(Status.OK).entity(res).build();
 		} else if(code == -2){
@@ -212,10 +174,10 @@ public class AudioResource {
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("********Finding Audio Meta**********");
-			AudioInterface temp = null;
+			Audio temp = null;
 			if (appsMid.appExists(this.appId)) {
-				if (audioMid.audioExistsInApp(this.appId, audioId)) {
-					temp = audioMid.getAudioInApp(appId, audioId);
+				if (mediaMid.mediaExists(this.appId, ModelEnum.audio, audioId)) {
+					temp = (Audio)(mediaMid.getMedia(appId, ModelEnum.audio, audioId));
 					response = Response.status(Status.OK).entity(temp).build();
 				} else {
 					response = Response.status(Status.NOT_FOUND).entity(temp)
@@ -251,9 +213,9 @@ public class AudioResource {
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("*********Downloading Audio**********");
-			if (this.audioMid.audioExistsInApp(appId, audioId)) {
-				AudioInterface audio = this.audioMid.getAudioInApp(appId, audioId);
-				sucess = audioMid.downloadAudioInApp(appId, audioId,audio.getType());
+			if (this.mediaMid.mediaExists(appId, ModelEnum.audio, audioId)) {
+				Audio audio = (Audio)(mediaMid.getMedia(appId, ModelEnum.audio, audioId));
+				sucess = mediaMid.download(appId, ModelEnum.audio, audioId,audio.getType());
 				if (sucess!=null)
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
 							.header("content-disposition","attachment; filename = "+audio.getFileName()+"."+audio.getType()).build();

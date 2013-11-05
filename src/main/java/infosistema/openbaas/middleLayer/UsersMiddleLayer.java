@@ -1,13 +1,10 @@
 package infosistema.openbaas.middleLayer;
 
-import infosistema.openbaas.dataaccess.email.EmailInterface;
+import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.dataaccess.email.Email;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
-import infosistema.openbaas.dataaccess.sessions.RedisSessions;
-import infosistema.openbaas.dataaccess.sessions.SessionInterface;
-import infosistema.openbaas.model.ModelEnum;
-import infosistema.openbaas.model.user.User;
-import infosistema.openbaas.model.user.UserInterface;
+import infosistema.openbaas.dataaccess.models.SessionModel;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
@@ -16,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,14 +21,12 @@ import java.util.Map.Entry;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
-import com.mongodb.util.JSONSerializers;
-
 public class UsersMiddleLayer extends MiddleLayerAbstract {
 
 	// *** MEMBERS *** //
 
-	SessionInterface sessions;
-	EmailInterface emailOp;
+	SessionModel sessions;
+	Email emailOp;
 	private static PasswordEncryptionService service;
 	
 	// *** INSTANCE *** //
@@ -44,15 +40,15 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	
 	private UsersMiddleLayer() {
 		super();
-		sessions = new RedisSessions();
+		sessions = new SessionModel();
 		emailOp = new Email();
 	}
 
 	// *** CREATE *** //
 
-	public UserInterface createUserAndLogin(MultivaluedMap<String, String> headerParams, UriInfo uriInfo, String appId, String userName, 
+	public User createUserAndLogin(MultivaluedMap<String, String> headerParams, UriInfo uriInfo, String appId, String userName, 
 			String email, String password, String userFile) {
-		UserInterface outUser = new User();
+		User outUser = new User();
 
 		String userId = null;
 		List<String> userAgentList = null;
@@ -77,9 +73,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			e.printStackTrace();
 		}
 
-		if (!confirmUsersEmailOption(appId)) {
+		if (!getConfirmUsersEmailOption(appId)) {
 			SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
-			createUser(appId, userId,	userName, "NOK", "NOK", email, salt, hash, userFile);
+			createUser(appId, userId, userName, "NOK", "NOK", email, salt, hash, userFile, null, null);
 			String sessionToken = Utils.getRandomString(Const.IDLENGTH);
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, password);
 			for (Entry<String, List<String>> entry : headerParams.entrySet()) {
@@ -100,19 +96,18 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 				outUser.setUserID2(userId);
 				outUser.setReturnToken(sessionToken);
 			}
-		} else if (confirmUsersEmailOption(appId)) {
+		} else if (getConfirmUsersEmailOption(appId)) {
 			boolean emailConfirmed = false;
-			createUserWithEmailConfirmation(appId, userId, userName, "NOK", "NOK", email, salt,hash, userFile, emailConfirmed, uriInfo);
+			createUser(appId, userId, userName, "NOK", "NOK", email, salt,hash, userFile, emailConfirmed, uriInfo);
 			outUser.setUserID2(userId);
 		}
 		return outUser;
 		
 	}
 	
-	
-	public UserInterface createSocialUserAndLogin(MultivaluedMap<String, String> headerParams, String appId, 
+	public User createSocialUserAndLogin(MultivaluedMap<String, String> headerParams, String appId, 
 			String userName, String email, String socialId, String socialNetwork) {
-		UserInterface outUser = new User();
+		User outUser = new User();
 		String userId = null;
 		List<String> userAgentList = null;
 		List<String> locationList = null;
@@ -137,7 +132,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		}
 
 		SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
-		createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash, null);
+		createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash, null, null, null);
 		String sessionToken = Utils.getRandomString(Const.IDLENGTH);
 		boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
@@ -174,32 +169,16 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	 * @param password
 	 * @return
 	 */
-	public boolean createUser(String appId, String userId, String userName, String socialId, String socialNetwork, 
-			String email, byte[] salt, byte[] hash, String userFile) {
-		boolean sucess = false;
-		try {
-			if(userFile != null) 
-				sucess = createUserWithFlag(appId, userId, userName, socialId, socialNetwork, email, salt, hash, userFile);
-			else 
-				sucess = createUserWithoutFlag(appId, userId, userName, socialId, socialNetwork, email, salt, hash);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-		return sucess;
-	}
-
-	public boolean createUserWithEmailConfirmation(String appId, String userId, String userName, String socialId, String socialNetwork,
-			String email, byte[] salt, byte[] hash,	String flag, boolean emailConfirmed, UriInfo uriInfo) {
+	public boolean createUser(String appId, String userId, String userName, String socialId, String socialNetwork,
+			String email, byte[] salt, byte[] hash,	String flag, Boolean emailConfirmed, UriInfo uriInfo) {
 		boolean sucessModel = false;
 		try {
-			if(flag != null) 
-				sucessModel = createUserWithFlagWithEmailConfirmation(appId, userId, userName, socialId, socialNetwork,
-					email, salt, hash, flag, emailConfirmed);
-			else 
-				sucessModel = createUserWithoutFlagWithEmailConfirmation(appId, userId, userName, socialId, socialNetwork,
-						email, salt, hash, emailConfirmed);
+			userModel.createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash,
+					(new Date()).toString(), flag, emailConfirmed);
 			String ref = Utils.getRandomString(Const.IDLENGTH);
-			emailOp.sendRegistrationEmailWithRegistrationCode(appId, userId, userName, email, ref, uriInfo.getAbsolutePath().toASCIIString());
+			if (uriInfo != null) {
+				emailOp.sendRegistrationEmailWithRegistrationCode(appId, userId, userName, email, ref, uriInfo.getAbsolutePath().toASCIIString());
+			}
 			this.emailOp.addUrlToUserId(appId, userId, ref);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -210,46 +189,23 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	// *** UPDATE *** //
 	
 	public void updateUser(String appId, String userId, String email) {
-		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			mongoModel.updateUser(appId, userId, email);
-			if (redisModel.userExistsInApp(appId, email))
-				redisModel.updateUser(appId, userId, email);
-		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-			System.out.println("Database not implemented.");
+		userModel.updateUser(appId, userId, email);
 	}
 
 	public void updateUser(String appId, String userId, String email, byte[] hash, byte[] salt) {
-		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			try {
-				mongoModel.updateUser(appId, userId, email, hash, salt);
-			} catch (UnsupportedEncodingException e1) {
-				e1.printStackTrace();
-			}
-			if (redisModel.userExistsInApp(appId, email))
-				try {
-					redisModel.updateUser(appId, userId, email, hash, salt);
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-			System.out.println("Database not implemented.");
+		try {
+			userModel.updateUser(appId, userId, email, hash, salt);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void updateUser(String appId, String userId, String email, byte[] hash, byte[] salt, String alive) {
-		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			try {
-				mongoModel.updateUser(appId, userId, email, hash, salt, alive);
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-			if (redisModel.userExistsInApp(appId, email))
-				try {
-					redisModel.updateUser(appId, userId, email, hash, salt,	alive);
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-			System.out.println("Database not implemented.");
+		try {
+			userModel.updateUser(appId, userId, email, hash, salt,	alive);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public boolean updateUserPassword(String appId, String userId, String password) {
@@ -266,18 +222,15 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			e.printStackTrace();
 		}
 		boolean sucess = false;
-		String email = mongoModel.getEmailUsingUserId(appId, userId);
-		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			try {
-				sucess = mongoModel.updateUserPassword(appId, userId, hash, salt);
-				if (redisModel.appExists(appId) && redisModel.userExistsInApp(appId, email)) {
-					redisModel.updateUserPassword(appId, userId, hash, salt);
-				}
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
+		String email = userModel.getEmailUsingUserId(appId, userId);
+		try {
+			if (appModel.appExists(appId) && userModel.userExistsInApp(appId, email)) {
+				userModel.updateUserPassword(appId, userId, hash, salt);
 			}
-			
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
 		}
+
 		return sucess;
 	}
 
@@ -289,19 +242,11 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		else {
 			System.out.println("FileSystem not yet implemented.");
 		}
-		boolean auxOk = false;
-		boolean cacheOk = false;
 		boolean operationOk = false;
-		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			auxOk = mongoModel.deleteUser(appId, userId);
-			String email = redisModel.getEmailUsingUserId(appId, userId);
-			if (redisModel.userExistsInApp(appId, email)) {
-				cacheOk = redisModel.deleteUser(appId, userId);
-				if (auxOk && cacheOk)
-					operationOk = true;
-			}
-		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-			System.out.println("Database not implemented.");
+		String email = userModel.getEmailUsingUserId(appId, userId);
+		if (userModel.userExistsInApp(appId, email)) {
+			operationOk = userModel.deleteUser(appId, userId);
+		}
 		return operationOk;
 	}
 
@@ -315,15 +260,11 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			Geolocation geo = Geolocation.getInstance();
 			return geo.getObjectsInDistance(latitude, longitude, radius, appId, ModelEnum.users);
 		} else {
-			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				return mongoModel.getAllUserIdsForApp(appId,pageNumber,pageSize,orderBy,orderType);
-			else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-				System.out.println("Database not implemented.");
-			return null;
+			return userModel.getAllUserIdsForApp(appId,pageNumber,pageSize,orderBy,orderType);
 		}
 	}
 
-	public UserInterface getUserInApp(String appId, String userId) {
+	public User getUserInApp(String appId, String userId) {
 		Map<String, String> userFields = null;
 		try {
 			userFields = getUserFields(appId, userId);
@@ -331,7 +272,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		UserInterface temp = new User(userId);
+		User temp = new User(userId);
 		for (Map.Entry<String, String> entry : userFields.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase("email"))
 				temp.setUserEmail(entry.getValue());
@@ -346,27 +287,15 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	}
 
 	public String getEmailUsingUserName(String appId, String userName) {
-		String email = redisModel.getEmailUsingUserName(appId, userName);
-		if (email == null)
-			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				email = mongoModel.getEmailUsingUserName(appId, userName);
-		return email;
+		return userModel.getEmailUsingUserName(appId, userName);
 	}
 
 	public String getUserIdUsingUserName(String appId, String userName) {
-		String userId = redisModel.getUserIdUsingUserName(appId, userName);
-		if (userId == null)
-			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				userId = mongoModel.getUserIdUsingUserName(appId, userName);
-		return userId;
+		return userModel.getUserIdUsingUserName(appId, userName);
 	}
 
 	public String getUserIdUsingEmail(String appId, String email) {
-		String userId = redisModel.getUserIdUsingEmail(appId, email);
-		if (userId == null)
-			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				userId = mongoModel.getUserIdUsingEmail(appId, email);
-		return userId;
+		return userModel.getUserIdUsingEmail(appId, email);
 	}
 
 	// *** EXISTS *** //
@@ -375,51 +304,28 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	// *** OTHERS *** //
 	
 	public boolean userExistsInApp(String appId, String userId, String email) {
-		if (redisModel.userExistsInApp(appId, email))
-			return true;
-		else if (auxDatabase.equalsIgnoreCase(MONGODB))
-			return mongoModel.userExistsInApp(appId, email);
-		else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-			System.out.println("Database not implemented.");
-		return false;
+		return userModel.userExistsInApp(appId, email);
 	}
 
 	public boolean userExistsInApp(String appId, String userId) {
-		if (redisModel.userExistsInApp(appId, redisModel.getEmailUsingUserId(appId, userId)))
-			return true;
-		else if (auxDatabase.equalsIgnoreCase(MONGODB))
-			return mongoModel.userExistsInApp(appId, mongoModel.getEmailUsingUserId(appId, userId));
-		else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-			System.out.println("Database not implemented.");
-		return false;
+		return userModel.userExistsInApp(appId, userModel.getEmailUsingUserId(appId, userId));
 	}
 
 	public String socialUserExistsInApp(String appId, String socialId, String socialNetwork) {
-		if (redisModel.socialUserExistsInApp(appId, socialId, socialNetwork))
-			return redisModel.getUserIdUsingSocialInfo(appId, socialId,socialNetwork);
-		else if (auxDatabase.equalsIgnoreCase(MONGODB))
-			return mongoModel.getUserIdUsingSocialInfo(appId, socialId, socialNetwork);
-		else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-			System.out.println("Database not implemented.");
+		if (userModel.socialUserExistsInApp(appId, socialId, socialNetwork))
+			return userModel.getUserIdUsingSocialInfo(appId, socialId,socialNetwork);
 		return null;
 	}
 
 	public boolean identifierInUseByUserInApp(String appId, String userId) {
-		if (auxDatabase.equalsIgnoreCase(MONGODB))
-			return mongoModel.identifierInUseByUserInApp(appId, userId);
-		else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-			System.out.println("Database not implemented.");
-		return false;
+		return userModel.identifierInUseByUserInApp(appId, userId);
 	}
 
-	public boolean confirmUsersEmailOption(String appId) {
-		if(redisModel.appExists(appId))
-			return redisModel.confirmUsersEmail(appId);
-		else if(auxDatabase.equalsIgnoreCase(MONGODB))
-			return mongoModel.confirmUsersEmail(appId);
-		else{
+	public boolean getConfirmUsersEmailOption(String appId) {
+		if (appModel.appExists(appId))
+			return appModel.getConfirmUsersEmail(appId);
+		else
 			return false;
-		}
 	}
 
 	public String getUrlUserId(String appId, String userId) {
@@ -431,33 +337,21 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	}
 
 	public void confirmUserEmail(String appId, String userId) {
-		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			mongoModel.confirmUserEmail(appId, userId);
-			String email = redisModel.getEmailUsingUserId(appId, userId);
-			if (redisModel.userExistsInApp(appId, email)) {
-				redisModel.confirmUserEmail(appId, userId);
-			}
-		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-			System.out.println("Database not implemented.");
+		String email = userModel.getEmailUsingUserId(appId, userId);
+		if (userModel.userExistsInApp(appId, email)) {
+			userModel.confirmUserEmail(appId, userId);
+		}
 	}
 
 	public boolean userEmailIsConfirmed(String appId, String userId) {
-		if (redisModel.userEmailIsConfirmed(appId, userId))
-			return true;
-		else if (auxDatabase.equalsIgnoreCase(MONGODB))
-			return mongoModel.userEmailIsConfirmed(appId, userId);
-		else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-			System.out.println("Database not implemented.");
-		return false;
+		return userModel.userEmailIsConfirmed(appId, userId);
 	}
 
 	public boolean updateConfirmUsersEmailOption(String appId, Boolean confirmUsersEmail) {
 		boolean sucess = false;
-		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			sucess = mongoModel.updateConfirmUsersEmailOption(appId, confirmUsersEmail);
-			if (redisModel.appExists(appId)) {
-				redisModel.updateConfirmUsersEmailOption(appId, confirmUsersEmail);
-			}
+		if (appModel.appExists(appId)) {
+			appModel.updateConfirmUsersEmailOption(appId, confirmUsersEmail);
+			sucess = true;
 		}
 		return sucess;
 	}
@@ -498,55 +392,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	}
 
 	private Map<String, String> getUserFields(String appId, String userId)throws UnsupportedEncodingException {
-		Map<String, String> userFields = redisModel.getUser(appId, userId);
-		String email = null;
-		String creationDate = null;
-		String userName = null;
-		String socialId = null;
-		String socialNetwork = null;
-		
-		byte[] hash = null;
-		byte[] salt = null;
-		String flag = null;
-		
-		if (userFields == null || userFields.size() == 0) {
-			if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-				userFields = mongoModel.getUser(appId, userId);
-				if (redisModel.getCacheSize() <= MAXCACHESIZE) {
-					for (Entry<String, String> entry : userFields.entrySet()) {
-						if (entry.getKey().equalsIgnoreCase("email"))
-							email = entry.getValue();
-						else if (entry.getKey()
-								.equalsIgnoreCase("creationDate"))
-							creationDate = entry.getValue();
-						else if (entry.getKey().equalsIgnoreCase("userName"))
-							userName = entry.getValue();
-						else if (entry.getKey().equalsIgnoreCase("hash"))
-							hash = JSONSerializers.getStrict()
-									.serialize(entry.getValue()).getBytes();
-						else if (entry.getKey().equalsIgnoreCase("salt"))
-							salt = JSONSerializers.getStrict()
-									.serialize(entry.getValue()).getBytes();
-						else if(entry.getKey().equalsIgnoreCase("flag"))
-							flag = entry.getValue();
-						else if(entry.getKey().equalsIgnoreCase("socialId"))
-							socialId = entry.getValue();
-						else if(entry.getKey().equalsIgnoreCase("socialNetwork"))
-							socialNetwork = entry.getValue();
-					}
-					if(flag != null)
-						redisModel.createUserWithFlag(appId, userId,userName, socialId, socialNetwork, email, salt, hash, creationDate, flag);
-					else{
-						redisModel.createUserWithoutFlag(appId, userId, userName, socialId, socialNetwork, email, salt, hash, creationDate);
-					}
-				} else {
-					System.out.println("Warning: Cache is full.");
-				}
-			} else {
-				System.out.println("Database not implemented.");
-			}
-		}
-		return userFields;
+		return userModel.getUser(appId, userId);
 	}
 
 }

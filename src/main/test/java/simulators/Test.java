@@ -1,7 +1,5 @@
 package simulators;
 
-import infosistema.openbaas.dataaccess.models.document.DocumentModel;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -22,17 +20,10 @@ public class Test {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		testData();
-		//createImage("");
+		createImage("");
 		//getImagesData();
 	}
 
-	private static void testData() {
-	
-		DocumentModel dm = new DocumentModel();
-		dm.putDocument("222", "data.", "{ \"a\" : { \"b\" : 1, \"c\" : [  \"x\",  \"y\",  \"z\" ] }, \"d\" : 2 }",null)
-	
-	}
 	private static void getImagesData() {
 		try{
 			AppsMiddleLayer appsMid = new AppsMiddleLayer();

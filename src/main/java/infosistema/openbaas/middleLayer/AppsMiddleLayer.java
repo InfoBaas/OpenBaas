@@ -8,14 +8,16 @@ import java.util.Map.Entry;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.identitymanagement.model.EntityAlreadyExistsException;
 
-import infosistema.openbaas.model.application.Application;
-import infosistema.openbaas.model.application.ApplicationInterface;
+import infosistema.openbaas.data.models.Application;
+import infosistema.openbaas.dataaccess.models.AppModel;
+import infosistema.openbaas.dataaccess.models.MediaModel;
 
 public class AppsMiddleLayer extends MiddleLayerAbstract {
 
 	// *** MEMBERS *** //
 
-	
+	AppModel appModel = new AppModel();	
+	MediaModel mediaModel = new MediaModel();	
 	// *** INSTANCE *** //
 	
 	private static AppsMiddleLayer instance = null;
@@ -39,22 +41,7 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	 * @return
 	 */
 	public boolean createApp(String appId, String appName, boolean userEmailConfirmation) {
-		boolean operationOk = false;
-		boolean cacheOk = false;
-		boolean auxOk = false;
-		if (redisModel.getCacheSize() <= MAXCACHESIZE) {
-			cacheOk = redisModel.createApp(appId, appName, new Date().toString(), userEmailConfirmation);
-			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				auxOk = mongoModel.createApp(appId, appName, new Date().toString(), userEmailConfirmation);
-			if (auxOk && cacheOk)
-				operationOk = true;
-		} else {
-			if (auxDatabase.equalsIgnoreCase(MONGODB))
-				auxOk = mongoModel.createApp(appId, appName, new Date().toString(), userEmailConfirmation);
-			if (auxOk)
-				operationOk = true;
-		}
-		return operationOk;
+		return appModel.createApp(appId, appName, new Date().toString(), userEmailConfirmation);
 	}
 
 	public boolean createAppAWS(String appId) {
@@ -78,16 +65,16 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	
 	public void updateAllAppFields(String appId, String alive, String newAppName, boolean confirmUsersEmail) {
 		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			if (redisModel.appExists(appId)) {
-				redisModel.updateAllAppFields(appId, alive, newAppName, confirmUsersEmail);
+			if (appModel.appExists(appId)) {
+				appModel.updateAllAppFields(appId, alive, newAppName, confirmUsersEmail);
 			}
 		}
 	}
 
 	public void updateAppName(String appId, String newAppName) {
 		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			if (redisModel.appExists(appId)) {
-				redisModel.updateAppName(appId, newAppName);
+			if (appModel.appExists(appId)) {
+				appModel.updateAppName(appId, newAppName);
 			}
 		}
 	}
@@ -96,51 +83,23 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	// *** DELETE *** //
 	
 	public boolean removeApp(String appId) {
-		boolean auxOk = false;
-		boolean operationOk = false;
-		boolean cacheOk = redisModel.deleteApp(appId);
-		if (auxDatabase.equalsIgnoreCase(MONGODB))
-			auxOk = mongoModel.deleteApp(appId);
-		if (cacheOk || auxOk)
-			operationOk = true;
-		return operationOk;
+		return appModel.deleteApp(appId);
 	}
 
 
 	// *** GET LIST *** //
 
 	public ArrayList<String> getAllAppIds(Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
-		if (auxDatabase.equalsIgnoreCase(MONGODB))
-			return mongoModel.getAllAppIds(pageNumber, pageSize, orderBy, orderType);
-		else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-			System.out.println("Database not implemented.");
-		return null;
+		return appModel.getAllAppIds(pageNumber, pageSize, orderBy, orderType);
 	}
 
 
 	// *** GET *** //
 	
-	public ApplicationInterface getApp(String appId) {
-		Map<String, String> fields = redisModel.getApplication(appId);
-		String creationDate = null;
-		String appName = null;
-		Boolean confirmUsersEmail = false;
-		if (fields == null || fields.size() == 0) {
-			fields = mongoModel.getApplication(appId);
-			if (redisModel.getCacheSize() <= MAXCACHESIZE) {
-				for (Entry<String, String> entry : fields.entrySet()) {
-					if (entry.getKey().equalsIgnoreCase("creationdate"))
-						creationDate = entry.getValue();
-					else if (entry.getKey().equalsIgnoreCase("appName"))
-						appName = entry.getValue();
-					else if(entry.getKey().equalsIgnoreCase("confirmUsersEmail"))
-						confirmUsersEmail = Boolean.parseBoolean(entry.getValue());
-				}
-				redisModel.createApp(appId, appName, creationDate, confirmUsersEmail);
-			}
-		}
+	public Application getApp(String appId) {
+		Map<String, String> fields = appModel.getApplication(appId);
 		
-		ApplicationInterface temp = new Application(appId);
+		Application temp = new Application(appId);
 
 		if (fields == null) {
 			temp = null;
@@ -164,29 +123,18 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	// *** EXISTS *** //
 
 	public boolean appExists(String appId) {
-		if (redisModel.appExists(appId))
-			return true;
-		else {
-			return mongoModel.appExists(appId);
-		}
+		return appModel.appExists(appId);
 	}
 
 	
 	// *** OTHERS *** //
 	
 	public void reviveApp(String appId){
-		if (redisModel.appExists(appId))
-			redisModel.reviveApp(appId);
-		if (auxDatabase.equalsIgnoreCase(MONGODB))
-			mongoModel.reviveApp(appId);
+		appModel.reviveApp(appId);
 	}
 
 	public ArrayList<String> getAllMediaIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
-		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			return mongoModel.getAllMediaIds(appId, pageNumber, pageSize, orderBy, orderType);
-		} else if (!auxDatabase.equalsIgnoreCase(MONGODB))
-			System.out.println("Database not implemented.");
-		return null;
+		return mediaModel.getAllMediaIds(appId, null, pageNumber, pageSize, orderBy, orderType);
 	}
 
 }

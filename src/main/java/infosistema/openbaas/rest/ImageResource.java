@@ -1,9 +1,10 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.middleLayer.ImageMiddleLayer;
+import infosistema.openbaas.data.IdsResultSet;
+import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.data.models.Image;
+import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
-import infosistema.openbaas.model.IdsResultSet;
-import infosistema.openbaas.model.media.image.ImageInterface;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 
@@ -37,12 +38,12 @@ import com.sun.jersey.multipart.FormDataParam;
 public class ImageResource {
 
 	private String appId;
-	private ImageMiddleLayer imageMid;
+	private MediaMiddleLayer mediaMid;
 
 
 	public ImageResource(String appId) {
 		this.appId = appId;
-		this.imageMid = MiddleLayerFactory.getImageMiddleLayer();
+		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
 	}
 
 	// *** CREATE *** //
@@ -56,21 +57,18 @@ public class ImageResource {
 	@POST
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response uploadImage(@Context HttpHeaders hh, @Context UriInfo ui,
-			@FormDataParam("file") InputStream uploadedInputStream,
-			@FormDataParam("file") FormDataContentDisposition fileDetail,
-			@HeaderParam(value = "location") String location) {
-		
+	public Response uploadImage(@Context HttpHeaders hh, @Context UriInfo ui, @FormDataParam("file") InputStream uploadedInputStream,
+			@FormDataParam("file") FormDataContentDisposition fileDetail, @HeaderParam(value = "location") String location) {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			String imageId = imageMid.uploadImage(uploadedInputStream, fileDetail, appId, location);
+			String imageId = mediaMid.uploadMedia(uploadedInputStream, fileDetail, appId, ModelEnum.image, location);
 			if (imageId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			} else {
 				response = Response.status(Status.OK).entity(imageId).build();
 			}
-		} else if(code == -2){
+		} else if(code == -2) {
 			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if(code == -1)
 			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
@@ -98,8 +96,8 @@ public class ImageResource {
 		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken)) {
 			System.out.println("************************************");
 			System.out.println("***********Deleting Image***********");
-			if (imageMid.imageExistsInApp(appId, imageId)) {
-				this.imageMid.deleteImageInApp(appId, imageId);
+			if (mediaMid.mediaExists(appId, ModelEnum.image, imageId)) {
+				this.mediaMid.deleteMedia(appId, ModelEnum.image, imageId);
 				response = Response.status(Status.OK).entity(appId).build();
 			} else
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();
@@ -133,13 +131,11 @@ public class ImageResource {
 		Integer iniIndex = (pageNumber-1)*pageSize;
 		Integer finIndex = (((pageNumber-1)*pageSize)+pageSize);
 		if (code == 1) {
-			System.out.println("******************************************");
-			System.out.println("********Finding all Images - GEO**********");
 			ArrayList<String> imagesIds = new ArrayList<String>();
 			if (latitude != null && longitude != null && radius != null) {
 				if(iniIndex>imagesIds.size())
 					return Response.status(Status.BAD_REQUEST).entity("Invalid pagination indexes.").build();
-				imagesIds = imageMid.getAllImagesIdsInRadius(appId, Double.parseDouble(latitude),Double.parseDouble(longitude), 
+				imagesIds = mediaMid.getAllImagesIdsInRadius(appId, Double.parseDouble(latitude),Double.parseDouble(longitude), 
 						Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
 				if(finIndex>imagesIds.size())
 					listRes = imagesIds.subList(iniIndex, imagesIds.size());
@@ -147,9 +143,9 @@ public class ImageResource {
 					listRes = imagesIds.subList(iniIndex, finIndex);
 				totalNumberPages = (int) Utils.roundUp(imagesIds.size(),pageSize);
 			}else{
-				imagesIds = imageMid.getAllImageIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
+				imagesIds = mediaMid.getAllMediaIds(appId, ModelEnum.image, pageNumber, pageSize, orderBy, orderType);
 				listRes = imagesIds;
-				totalNumberPages = imageMid.countAllImages(appId)/pageSize;
+				totalNumberPages = mediaMid.countAllMedia(appId, ModelEnum.image) / pageSize;
 			}
 
 			IdsResultSet res = new IdsResultSet(listRes,pageNumber,totalNumberPages);
@@ -179,10 +175,10 @@ public class ImageResource {
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("********Finding Image Meta**********");
-			ImageInterface temp = null;
+			Image temp = null;
 			if(MiddleLayerFactory.getAppsMiddleLayer().appExists(this.appId)){
-				if(imageMid.imageExistsInApp(this.appId, imageId)){
-					temp = imageMid.getImageInApp(this.appId, imageId);
+				if(mediaMid.mediaExists(appId, ModelEnum.image, imageId)){
+					temp = (Image)(mediaMid.getMedia(appId, ModelEnum.image, imageId));
 					response = Response.status(Status.OK).entity(temp).build();
 				}
 				else{
@@ -212,9 +208,9 @@ public class ImageResource {
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("*********Downloading Image**********");
-			if (imageMid.imageExistsInApp(appId, imageId)) {
-				ImageInterface image = imageMid.getImageInApp(appId, imageId);
-				sucess = imageMid.downloadImageInApp(appId, imageId,image.getType());
+			if (mediaMid.mediaExists(appId, ModelEnum.image, imageId)) {
+				Image image = (Image)(mediaMid.getMedia(appId, ModelEnum.image, imageId));
+				sucess = mediaMid.download(appId, ModelEnum.image, imageId,image.getType());
 				if (sucess!=null){ 
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
 							.header("content-disposition","attachment; filename = "+image.getFileName()+"."+image.getType()).build();

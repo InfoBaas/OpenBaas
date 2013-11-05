@@ -1,6 +1,5 @@
-package infosistema.openbaas.model.media.video;
+package infosistema.openbaas.data.models;
 
-import infosistema.openbaas.model.media.MediaAbstract;
 
 import java.io.FileOutputStream;
 
@@ -10,7 +9,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jettison.json.JSONObject;
 
 @XmlRootElement
-public class Video extends MediaAbstract implements VideoInterface {
+public class Video extends Media {
+
+	public final static String RESOLUTION = "resolution";
+
 	private String type;
 	private String resolution;
 	public Video(String id, String dir, long size, String location) {
@@ -54,17 +56,14 @@ public class Video extends MediaAbstract implements VideoInterface {
 		super.setFileName(fileName);
 	}
 
-	@Override
 	public void setType(String type) {
 		this.type = type;
 		
 	}
 
-	@Override
 	public void setId(String id) {
 		super.setId(id);
 	}
-	@Override
 	public void setSize(long size) {
 		super.setSize(size);
 	}
@@ -72,7 +71,6 @@ public class Video extends MediaAbstract implements VideoInterface {
 		super.setCreationDate(date);
 	}
 
-	@Override
 	public void setResolution(String resolution) {
 		this.resolution = resolution;
 	}
@@ -80,7 +78,6 @@ public class Video extends MediaAbstract implements VideoInterface {
 		return this.resolution;
 	}
 
-	@Override
 	public String getType() {
 		return type;
 	}

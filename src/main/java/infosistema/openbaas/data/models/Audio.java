@@ -1,6 +1,5 @@
-package infosistema.openbaas.model.media.audio;
+package infosistema.openbaas.data.models;
 
-import infosistema.openbaas.model.media.MediaAbstract;
 
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -12,7 +11,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jettison.json.JSONObject;
 
 @XmlRootElement
-public class Audio extends MediaAbstract implements AudioInterface{
+public class Audio extends Media {
+
+	public final static String BITRATE = "bitRate";
+
 	private static final int [] allBitRates = new int[]{32,40,48, 56, 64,80,96,112,128,144,160,192,224,256,320};
 	
 	private ArrayList<Integer> accessibleBitRates = new ArrayList<Integer>();;
@@ -98,30 +100,19 @@ public class Audio extends MediaAbstract implements AudioInterface{
 		this.type = type;
 		return true;
 	}
+	
 	public String validateType(JSONObject json){
 		return this.type;
 	}
+	
 	public void setMaxBitRate(String maxBitRate){
 		this.maxBitRate = Integer.parseInt(maxBitRate);
 	}
-	public void setSize(long size){
-		super.setSize(size);
-	}
-	public void setCreationDate(String creationDate){
-		super.setCreationDate(creationDate);
-	}
-	public void setFileName(String fileName){
-		super.setFileName(fileName);
-	}
 
-
-	@Override
 	public void setType(String type) {
 		this.type=type;
 	}
 
-
-	@Override
 	public String getType() {
 		return type;
 	}

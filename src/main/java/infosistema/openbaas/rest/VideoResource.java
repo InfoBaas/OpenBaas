@@ -1,10 +1,11 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.IdsResultSet;
+import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
-import infosistema.openbaas.middleLayer.VideoMiddleLayer;
-import infosistema.openbaas.model.IdsResultSet;
-import infosistema.openbaas.model.media.video.VideoInterface;
+import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 
@@ -38,12 +39,12 @@ public class VideoResource {
 
 	private String appId;
 
-	private VideoMiddleLayer videoMid;
+	private MediaMiddleLayer mediaMid;
 	private SessionMiddleLayer sessionMid;
 	
 	public VideoResource(String appId) {
 		this.appId = appId;
-		this.videoMid = MiddleLayerFactory.getVideoMiddleLayer();
+		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
 	}
 
 	// *** CREATE *** //
@@ -60,28 +61,25 @@ public class VideoResource {
 	@POST
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response uploadVideo(@Context HttpHeaders hh, @Context UriInfo ui,
-			@FormDataParam("file") InputStream uploadedInputStream,
-			@FormDataParam("file") FormDataContentDisposition fileDetail,
-			@HeaderParam(value = "location") String location) {
+	public Response uploadVideo(@Context HttpHeaders hh, @Context UriInfo ui, @FormDataParam("file") InputStream uploadedInputStream,
+			@FormDataParam("file") FormDataContentDisposition fileDetail, @HeaderParam(value = "location") String location) {
 
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			String videoId = videoMid.uploadVideo(uploadedInputStream, fileDetail, appId, location);
+			String videoId = mediaMid.uploadMedia(uploadedInputStream, fileDetail, appId, ModelEnum.video, location);
 			if (videoId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			} else {
 				response = Response.status(Status.OK).entity(videoId).build();
 			}
-		} else if(code == -2)
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-			 .build();
-		else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
+		} else if(code == -2) {
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		} else if(code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.") .build();
 		return response;
 	}
+	
 	
 	// *** UPDATE *** //
 	
@@ -104,8 +102,8 @@ public class VideoResource {
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			System.out.println("************************************");
 			System.out.println("***********Deleting Video***********");
-			if (videoMid.videoExistsInApp(appId, videoId)) {
-				videoMid.deleteVideoInApp(appId, videoId);
+			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
+				mediaMid.deleteMedia(appId, ModelEnum.video, videoId);
 				response = Response.status(Status.OK).entity(appId).build();
 			} else
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();
@@ -137,7 +135,8 @@ public class VideoResource {
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			System.out.println("***********************************");
 			System.out.println("********Finding all Video**********");
-			ArrayList<String> videoIds = videoMid.getAllVideoIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
+			ArrayList<String> videoIds = mediaMid.getAllMediaIds(appId, ModelEnum.video, pageNumber, pageSize,
+					orderBy, orderType);
 			IdsResultSet res = new IdsResultSet(videoIds,pageNumber);
 			response = Response.status(Status.OK).entity(res).build();
 		} else
@@ -164,8 +163,8 @@ public class VideoResource {
 			System.out.println("************************************");
 			System.out.println("********Finding Video Meta**********");
 			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
-				if (videoMid.videoExistsInApp(appId, videoId)) {
-					VideoInterface video = videoMid.getVideoInApp(appId, videoId);
+				if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
+					Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId));
 					response = Response.status(Status.OK).entity(video).build();
 				} else
 					response = Response.status(Status.NOT_FOUND).entity(videoId).build();
@@ -196,9 +195,9 @@ public class VideoResource {
 			System.out.println("************************************");
 			System.out.println("*********Downloading Video**********");
 			System.out.println("Trying to download.");
-			if (videoMid.videoExistsInApp(appId, videoId)) {
-				VideoInterface video = videoMid.getVideoInApp(appId, videoId);
-				sucess = videoMid.downloadVideoInApp(appId, videoId,video.getType());
+			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
+				Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId));
+				sucess = mediaMid.download(appId, ModelEnum.video, videoId,video.getType());
 				if (sucess!=null)
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
 							.header("content-disposition","attachment; filename = "+video.getFileName()+"."+video.getType()).build();

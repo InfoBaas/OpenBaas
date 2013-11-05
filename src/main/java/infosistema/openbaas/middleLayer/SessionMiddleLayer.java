@@ -1,9 +1,7 @@
 package infosistema.openbaas.middleLayer;
 
-import infosistema.openbaas.dataaccess.email.EmailInterface;
 import infosistema.openbaas.dataaccess.email.Email;
-import infosistema.openbaas.dataaccess.sessions.RedisSessions;
-import infosistema.openbaas.dataaccess.sessions.SessionInterface;
+import infosistema.openbaas.dataaccess.models.SessionModel;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -15,8 +13,8 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 
 	// *** MEMBERS *** //
 
-	SessionInterface sessions;
-	EmailInterface emailOp;
+	SessionModel sessions;
+	Email emailOp;
 	private static PasswordEncryptionService service;
 	private static String OPENBAASADMIN = "openbaasAdmin";
 	
@@ -32,7 +30,7 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 	private SessionMiddleLayer() {
 		super();
 		service = new PasswordEncryptionService();
-		sessions = new RedisSessions();
+		sessions = new SessionModel();
 		emailOp = new Email();
 	}
 
@@ -94,31 +92,19 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 	
 	private boolean authenticateUser(String appId, String userId, String attemptedPassword) {
 		try {
-			Map<String, String> userFields = redisModel.getUser(appId, userId);
+			Map<String, String> userFields = userModel.getUser(appId, userId);
 			PasswordEncryptionService service = new PasswordEncryptionService();
 			byte[] salt = null;
 			byte[] hash = null;
 			boolean authenticated = false;
-			if (userFields == null) {
-				userFields = mongoModel.getUser(appId, userId);
-				for (Map.Entry<String, String> entry : userFields.entrySet()) {
-					if (entry.getKey().equalsIgnoreCase("salt")) {
-						salt = entry.getValue().getBytes("ISO-8859-1");
-					} else if (entry.getKey().equalsIgnoreCase("hash")) {
-						hash = entry.getValue().getBytes("ISO-8859-1");
-					}
+			for (Map.Entry<String, String> entry : userFields.entrySet()) {
+				if (entry.getKey().equalsIgnoreCase("salt")) {
+					salt = entry.getValue().getBytes("ISO-8859-1");
+				} else if (entry.getKey().equalsIgnoreCase("hash")) {
+					hash = entry.getValue().getBytes("ISO-8859-1");
 				}
-				authenticated = service.authenticate(attemptedPassword, hash, salt);
-			} else {
-				for (Map.Entry<String, String> entry : userFields.entrySet()) {
-					if (entry.getKey().equalsIgnoreCase("salt")) {
-						salt = entry.getValue().getBytes("ISO-8859-1");
-					} else if (entry.getKey().equalsIgnoreCase("hash")) {
-						hash = entry.getValue().getBytes("ISO-8859-1");
-					}
-				}
-				authenticated = service.authenticate(attemptedPassword, hash, salt);
 			}
+			authenticated = service.authenticate(attemptedPassword, hash, salt);
 			return authenticated;
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();

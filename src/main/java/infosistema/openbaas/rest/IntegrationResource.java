@@ -3,11 +3,10 @@ package infosistema.openbaas.rest;
 import java.util.List;
 import java.util.Map.Entry;
 
+import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
-import infosistema.openbaas.model.user.User;
-import infosistema.openbaas.model.user.UserInterface;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 
@@ -66,7 +65,7 @@ public class IntegrationResource {
 		List<String> userAgentList = null;
 		String userAgent = null;
 		String location = null;
-		UserInterface outUser = new User();
+		User outUser = new User();
 		String userId =null;
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase("location"))
@@ -139,7 +138,7 @@ public class IntegrationResource {
 		List<String> userAgentList = null;
 		String userAgent = null;
 		String location = null;
-		UserInterface outUser = new User();
+		User outUser = new User();
 		String userId =null;
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase("location"))

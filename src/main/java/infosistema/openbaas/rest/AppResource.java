@@ -1,9 +1,9 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.IdsResultSet;
+import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
-import infosistema.openbaas.model.IdsResultSet;
-import infosistema.openbaas.model.application.ApplicationInterface;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 
@@ -69,7 +69,7 @@ public class AppResource {
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			long start = System.currentTimeMillis();
-			ApplicationInterface temp = null;
+			Application temp = null;
 			String appName = null;
 			boolean confirmUsersEmail;
 			String appId = null;
@@ -213,8 +213,6 @@ public class AppResource {
 		// Parameters treatment
 		int code = Utils.treatParameters(ui, hh);
 		if(code == 1){
-		System.out.println("***********************************");
-		System.out.println("********Finding all apps***********");
 		JSONObject temp = new JSONObject();
 		ArrayList<String> ids = new ArrayList<String>();
 		try {
@@ -254,7 +252,7 @@ public class AppResource {
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("********Finding App info************");
-			ApplicationInterface temp = appsMid.getApp(appId);
+			Application temp = appsMid.getApp(appId);
 			if (temp == null)
 				return Response.status(Status.NOT_FOUND).entity(temp).build();
 			response = Response.status(Status.OK).entity(temp).build();

@@ -1,4 +1,6 @@
-package infosistema.openbaas.dataaccess.models.fileSystem;
+package infosistema.openbaas.dataaccess.models;
+
+import infosistema.openbaas.data.ModelEnum;
 
 import java.io.ByteArrayInputStream;
 
@@ -31,7 +33,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 
-public class AWSModel implements FileSystemInterface{
+public class AWSModel {
 	private static AWSModel ref;
 	private static final String OPENBAASBUCKET = "openbaas";
 
@@ -77,7 +79,6 @@ public class AWSModel implements FileSystemInterface{
 		}
 	}
 	
-	@Override
 	/**
 	 * Allowed types images, audio, video
 	 * 
@@ -89,12 +90,12 @@ public class AWSModel implements FileSystemInterface{
 	 * @return
 	 * @throws IOException
 	 */
-	public byte[] download(String appId, String folder, String requestType, String id, String ext) throws IOException {
+	public byte[] download(String appId, ModelEnum type, String id, String ext) throws IOException {
 		OutputStream soutputStream=null;
 		byte[] byteArray = null;
 		try{
 			this.startAWS();
-			StringBuffer directory = new StringBuffer("apps/" + appId + "/" + folder + "/" + requestType + "/"+id);
+			StringBuffer directory = new StringBuffer("apps/" + appId + "/media/" + type.toString() + "/" + id);
 			if(ext!=null)
 				directory.append("."+ext);
 			System.out.println(directory);
@@ -118,17 +119,12 @@ public class AWSModel implements FileSystemInterface{
 		return byteArray;
 	}
 
-	@Override
-	public boolean upload(String appId, String destinationDirectory, String id,
-			File file) throws AmazonServiceException, AmazonClientException {
+	public boolean upload(String appId, String destinationDirectory, String id, File file) throws AmazonServiceException, AmazonClientException {
 		this.startAWS();
-		s3.putObject(new PutObjectRequest(OPENBAASBUCKET, destinationDirectory,
-				file));
-
+		s3.putObject(new PutObjectRequest(OPENBAASBUCKET, destinationDirectory, file));
 		return true;
 	}
 	
-	@Override
 	/**
 	 * Other possibility is to deploy individual buckets per app, not viable
 	 * because you can't create buckets that already exists in the AWS. Try to
@@ -175,7 +171,6 @@ public class AWSModel implements FileSystemInterface{
 		sucess = true;
 		return sucess;
 	}
-	@Override
 	public boolean createUser(String appId, String userId, String userName)
 			throws EntityAlreadyExistsException {
 		System.out.println("appId: " + appId + " userId: " + userId
@@ -192,13 +187,11 @@ public class AWSModel implements FileSystemInterface{
 		client.addUserToGroup(addUserToGroupRequest);
 		return true;
 	}
-	@Override
 	public boolean deleteFile(String fileDirectory) {
 		this.startAWS();
 		s3.deleteObject(OPENBAASBUCKET, fileDirectory);
 		return true;
 	}
-	@Override
 	public void deleteUser(String appId, String userId)
 			throws NoSuchEntityException {
 		try{

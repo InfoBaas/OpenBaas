@@ -1,6 +1,5 @@
-package infosistema.openbaas.model.media.image;
+package infosistema.openbaas.data.models;
 
-import infosistema.openbaas.model.media.MediaAbstract;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -10,7 +9,11 @@ import org.codehaus.jettison.json.JSONObject;
 
 
 @XmlRootElement
-public class Image extends MediaAbstract implements ImageInterface{
+public class Image extends Media {
+
+	public final static String RESOLUTION = "resolution";
+	public final static String PIXELSIZE = "pixelsSize";
+
 	private String type;
 	private String defaultResolution;
 	public Image(String id, String dir, long size, String location) {
@@ -22,30 +25,30 @@ public class Image extends MediaAbstract implements ImageInterface{
 		
 	}
 
-	public ImageInterface getThumbnailSize() {
+	public Image getThumbnailSize() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	 
-	public ImageInterface getSmallSize() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	 
-	public ImageInterface getMediumSize() {
+	public Image getSmallSize() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	 
-	public ImageInterface getLargeSize() {
+	public Image getMediumSize() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	 
-	public ImageInterface getOriginalSize() {
+	public Image getLargeSize() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	 
+	public Image getOriginalSize() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -82,7 +85,6 @@ public class Image extends MediaAbstract implements ImageInterface{
 		super.setDir(directory);
 	}
 
-	@Override
 	public void setImageType(String type) {
 		this.type = type;
 	}
@@ -99,27 +101,22 @@ public class Image extends MediaAbstract implements ImageInterface{
 		super.setId(id);
 	}
 
-	@Override
 	public void setPixelsSize(String res) {
 		this.defaultResolution = res;
 	}
 
-	@Override
 	public void setResolution(String res) {
 		this.defaultResolution = res;
 	}
 
-	@Override
 	public String getResolution() {
 		return this.defaultResolution;
 	}
 
-	@Override
 	public void setType(String type) {
 		this.type=type;		
 	}
 
-	@Override
 	public String getType() {
 		return type;
 	}

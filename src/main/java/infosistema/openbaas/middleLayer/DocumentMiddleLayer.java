@@ -1,7 +1,8 @@
 package infosistema.openbaas.middleLayer;
 
+
+import infosistema.openbaas.data.ModelEnum;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
-import infosistema.openbaas.model.ModelEnum;
 
 import java.util.List;
 import javax.ws.rs.core.PathSegment;

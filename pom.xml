@@ -4,7 +4,7 @@
 	<groupId>com.bitbucket.Openbaas</groupId>
 	<artifactId>Openbaas</artifactId>
 	<packaging>war</packaging>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>Openbaas Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<dependencies>
@@ -127,18 +127,17 @@
 			<artifactId>aws-java-sdk</artifactId>
 			<version>1.4.5</version>
 		</dependency>
-		<dependency>
-			<groupId>com.google.appengine</groupId>
-			<artifactId>appengine-api-1.0-sdk</artifactId>
-			<version>1.6.1</version>
-		</dependency>
-                
 	<dependency>
 	 <groupId>javax.mail</groupId>
 	 <artifactId>mail</artifactId>
 	 <version>1.4.7</version>
     </dependency>
 
+	<dependency>
+		<groupId>log4j</groupId>
+		<artifactId>log4j</artifactId>
+		<version>1.2.13</version>
+	</dependency>
 	</dependencies>
 	<build>
 		<finalName>Openbaas</finalName>

@@ -1,4 +1,4 @@
-package infosistema.openbaas.model.media;
+package infosistema.openbaas.data.models;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,7 +25,15 @@ import org.codehaus.jettison.json.JSONObject;
  * @author Miguel Aniceto
  * @version 0.0 
  */
-public abstract class MediaAbstract {
+public abstract class Media {
+
+	public final static String ID = "id";
+	public final static String TYPE = "type";
+	public final static String DIR = "dir";
+	public final static String SIZE = "size";
+	public final static String FILENAME = "fileName";
+	public final static String CREATIONDATE = "creationDate";
+
 	private String id;
 	private String creationDate;
 	private long size;
@@ -36,7 +44,7 @@ public abstract class MediaAbstract {
 	 * Constructor
 	 * 
 	 */
-	public MediaAbstract(String id, String dir, long size, String location){
+	public Media(String id, String dir, long size, String location){
 		this.id = id;
 		this.dir = dir;
 		this.size = size;
@@ -44,10 +52,10 @@ public abstract class MediaAbstract {
 		this.location = location;
 	}
 
-	public MediaAbstract(String id) {
+	public Media(String id) {
 		this.id = id;
 	}
-	public MediaAbstract(){
+	public Media(){
 		
 	}
 	/**

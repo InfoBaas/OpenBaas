@@ -1,10 +1,10 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.IdsResultSet;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.DocumentMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
-import infosistema.openbaas.model.IdsResultSet;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 
@@ -15,7 +15,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;

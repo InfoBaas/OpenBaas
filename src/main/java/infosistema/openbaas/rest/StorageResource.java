@@ -1,8 +1,9 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.IdsResultSet;
+import infosistema.openbaas.data.ModelEnum;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
-import infosistema.openbaas.middleLayer.StorageMiddleLayer;
-import infosistema.openbaas.model.IdsResultSet;
+import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 
@@ -40,14 +41,14 @@ import com.sun.jersey.multipart.FormDataParam;
 public class StorageResource {
 	
 	private String appId;
-	private StorageMiddleLayer storageMid;
+	private MediaMiddleLayer mediaMid;
 
 	public StorageResource() {
 	}
 
 	public StorageResource(String appId) {
 		this.appId = appId;
-		this.storageMid = MiddleLayerFactory.getStorageMiddleLayer();
+		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
 	}
 
 	// *** CREATE *** //
@@ -66,58 +67,21 @@ public class StorageResource {
 	@POST
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response uploadStorageFile(@Context UriInfo ui, @Context HttpHeaders hh,
-			@FormDataParam("file") InputStream uploadedInputStream,
-			@FormDataParam("file") FormDataContentDisposition fileDetail,
-			@PathParam("appId") String appId,
-			@HeaderParam(value = "location") String location) {
+	public Response uploadStorageFile(@Context UriInfo ui, @Context HttpHeaders hh, @FormDataParam("file") InputStream uploadedInputStream,
+			@FormDataParam("file") FormDataContentDisposition fileDetail, @PathParam("appId") String appId, @HeaderParam(value = "location") String location) {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
-		String fileNameWithType = null;
-		String fileType = new String();
-		String fileName = new String();
 		if (code == 1) {
-			fileNameWithType = fileDetail.getFileName();
-			char[] charArray = fileNameWithType.toCharArray();
-			boolean pop = false;
-			int i = 0;
-			while (!pop) {
-				fileName += charArray[i];
-				if (charArray[i + 1] == '.')
-					pop = true;
-				i++;
+			String storageId = mediaMid.uploadMedia(uploadedInputStream, fileDetail, appId, ModelEnum.storage, location);
+			if (storageId == null) { 
+				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
+			} else {
+				response = Response.status(Status.OK).entity(storageId).build();
 			}
-			for (int k = 0; k < charArray.length - 1; k++) {
-				if (charArray[k] == '.') {
-					for (int j = k + 1; j < charArray.length; j++)
-						fileType += charArray[j];
-				}
-			}
-			String dir = "apps/" + appId + "/storage/";
-			String storageId = storageMid.createLocalFile(uploadedInputStream, fileDetail, appId, fileType, dir);
-			/* save it
-			 *
-			 * :::::::::::::::::MAJOR WARNING::::::::::::::::::::::Handling the
-			 * Packet inputstream creates an infinite loop, you should not
-			 * attempt it,the ReadMultiStream does not return -1 on EOS, it goes
-			 * to the begining.You can read about it here:
-			 * http://stackoverflow.com
-			 * /questions/17861088/inputstream-infinit-loop
-			 * 
-			 * Solution: use the IOUtils to handle it, they have it implemented
-			 * in a way that this error is handled produces the file
-			 * successfully.
-			 */
-			//String file = dir + storageId + "." + fileType;
-			this.storageMid.uploadStorageFileToServer(this.appId, storageId, fileType,
-					fileName);
-			response = Response.status(200).entity(fileNameWithType).build();
-		}else if(code == -2)
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-			 .build();
-		else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
+		} else if(code == -2) {
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		} else if(code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 	
@@ -137,10 +101,8 @@ public class StorageResource {
 			@CookieParam(value = "sessionToken") String sessionToken) {
 		Response response = null;
 		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken)) {
-			System.out.println("************************************");
-			System.out.println("***********Deleting Storage***********");
-			if (storageMid.storageExistsInApp(appId, storageId)) {
-				this.storageMid.deleteStorageInApp(appId, storageId);
+			if (mediaMid.mediaExists(appId, ModelEnum.storage, storageId)) {
+				this.mediaMid.deleteMedia(appId, ModelEnum.storage, storageId);
 				response = Response.status(Status.OK).entity(appId).build();
 			} else
 				response = Response.status(Status.NOT_FOUND).entity(appId)
@@ -174,7 +136,8 @@ public class StorageResource {
 		if (code == 1) {
 			System.out.println("***********************************");
 			System.out.println("********Finding all Storage********");
-			ArrayList<String> storageIds = storageMid.getAllStorageIdsInApp(appId,pageNumber,pageSize,orderBy,orderType);
+			ArrayList<String> storageIds = mediaMid.getAllMediaIds(appId, ModelEnum.storage, pageNumber,
+					pageSize,orderBy,orderType);
 			IdsResultSet res = new IdsResultSet(storageIds,pageNumber);
 			response = Response.status(Status.OK).entity(res).build();
 		} else if (code == -2) {
@@ -222,7 +185,7 @@ public class StorageResource {
 			File file = new File(url);
 			extension = FilenameUtils.getExtension(url);
 			if (!file.exists()) {
-				found = storageMid.downloadStorageInApp(appId, storageId,null);
+				found = mediaMid.download(appId, ModelEnum.storage, storageId, null);
 			} else if(file.exists()){
 				FileInputStream fis = new FileInputStream(file);
 				ByteArrayOutputStream bos = new ByteArrayOutputStream();

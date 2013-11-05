@@ -1,7 +1,6 @@
 package infosistema.openbaas.middleLayer;
 
-import infosistema.openbaas.dataaccess.acl.AclDatabase;
-import infosistema.openbaas.dataaccess.acl.AclInterface;
+import infosistema.openbaas.dataaccess.acl.Acl;
 
 import java.util.List;
 
@@ -32,7 +31,7 @@ public class AclMiddleLayer {
 
 	// *** MEMBERS *** //
 	
-	private AclInterface acl;
+	private Acl acl;
 	
 	// *** INSTANCE *** //
 	
@@ -44,7 +43,7 @@ public class AclMiddleLayer {
 	}
 	
 	private AclMiddleLayer(){
-		acl = new AclDatabase();
+		acl = new Acl();
 	}
 
 	// *** CREATE *** //
@@ -110,6 +109,7 @@ public class AclMiddleLayer {
 		}
 		return new String(building);
 	}
+	
 	public char getPermissionAtCharAt(List<PathSegment> path, String userId, int charAt){
 		int i = path.size()-2; //1 level above
 		String permissions = readPermissions(path.get(i).getPath(), path.subList(0, i+1), 

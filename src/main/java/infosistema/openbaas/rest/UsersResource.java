@@ -1,9 +1,9 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.IdsResultSet;
+import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
-import infosistema.openbaas.model.IdsResultSet;
-import infosistema.openbaas.model.user.UserInterface;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
@@ -219,7 +219,7 @@ public class UsersResource {
 		if (code == 1) {
 			System.out.println("************************************");
 			System.out.println("********Finding User info************");
-			UserInterface temp = null;
+			User temp = null;
 			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
 				if (usersMid.identifierInUseByUserInApp(appId, userId)) {
 					temp = usersMid.getUserInApp(appId, userId);

@@ -10,8 +10,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
-import infosistema.openbaas.dataaccess.sessions.RedisSessions;
-import infosistema.openbaas.dataaccess.sessions.SessionInterface;
+import infosistema.openbaas.dataaccess.models.SessionModel;
 
 public class Utils {
 	
@@ -46,7 +45,7 @@ public class Utils {
 				userAgentList = entry.getValue();*/
 		}
 		if (sessionToken != null) {
-			SessionInterface sessions = new RedisSessions();
+			SessionModel sessions = new SessionModel();
 			if (sessions.sessionTokenExists(sessionToken.getValue())) {
 				code = 1;
 					sessions.refreshSession(sessionToken.getValue(), location, new Date().toString(), userAgent);
