@@ -12,6 +12,7 @@ import infosistema.openbaas.dataaccess.models.AWSModel;
 import infosistema.openbaas.dataaccess.models.AppModel;
 import infosistema.openbaas.dataaccess.models.DocumentModel;
 import infosistema.openbaas.dataaccess.models.UserModel;
+import infosistema.openbaas.utils.Log;
 
 public abstract class MiddleLayerAbstract {
 
@@ -63,10 +64,10 @@ public abstract class MiddleLayerAbstract {
 			try {
 				return this.aws.download(appId, type, id,ext);
 			} catch (IOException e) {
-				e.printStackTrace();
+				Log.error("", this, "download", "An error ocorred.", e); 
 			}
 		else{
-			System.out.println("FileSystem not yet implemented.");
+			Log.error("", this, "download", "FileSystem not yet implemented.");
 		}
 		return null;
 	}
@@ -77,12 +78,12 @@ public abstract class MiddleLayerAbstract {
 				AWSModel aws = new AWSModel();  
 				return aws.upload(appId, filePath, id, fileToUpload);
 			}catch(AmazonServiceException e){
-				System.out.println("Amazon Service Exception."+ e.toString());
+				Log.error("", this, "upload", "Amazon Service error.", e); 
 			}catch(AmazonClientException e){
-				System.out.println("Amazon Client Exception." + e.toString());
+				Log.error("", this, "upload", "Amazon Client error.", e); 
 			}
 		else{
-			System.out.println("FileSystem not yet implemented.");
+			Log.error("", this, "createAppAWS", "FileSystem not yet implemented.");
 			return true;
 		}
 		return false;
@@ -96,10 +97,10 @@ public abstract class MiddleLayerAbstract {
 			try{
 				return this.aws.deleteFile(filePath);
 			}catch(NoSuchEntityException e){
-				System.out.println("No such element exception.");
+				Log.error("", this, "deleteFile", "No such element error.", e); 
 			}
 		else{
-			System.out.println("FileSystem not yet implemented.");
+			Log.error("", this, "deleteFile", "FileSystem not yet implemented.");
 			return true;
 		}
 		return false;

@@ -1,6 +1,7 @@
 package infosistema.openbaas.data.models;
 
 
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
 import java.security.NoSuchAlgorithmException;
@@ -109,11 +110,9 @@ public class User {
 
 			this.hash = service.getEncryptedPassword(password, salt);
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.error("", this, "updateAllFields", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
 		} catch (InvalidKeySpecException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.error("", this, "updateAllFields", "Invalid Key.", e); 
 		}
 	}
 
@@ -147,11 +146,9 @@ public class User {
 			salt = service.generateSalt();
 			hash = service.getEncryptedPassword(password, salt);
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.error("", this, "setUserPassword", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
 		} catch (InvalidKeySpecException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.error("", this, "setUserPassword", "Invalid Key.", e); 
 		}
 
 	}

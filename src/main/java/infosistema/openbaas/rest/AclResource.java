@@ -22,6 +22,7 @@ import org.codehaus.jettison.json.JSONObject;
 import infosistema.openbaas.middleLayer.AclMiddleLayer;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
+import infosistema.openbaas.utils.Log;
 
 
 // test MARCIO
@@ -79,8 +80,7 @@ public class AclResource {
 			try {
 				json.put("permissions", permissions);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.error("", this, "getPermissions", "Error parsing the JSON.", e); 
 			}
 			response = Response.status(Status.OK).entity(json).build();
 		}
@@ -96,8 +96,7 @@ public class AclResource {
 		String userId = getUserIdFromSessionToken(hh);
 		Response response;
 		if (userId == null) {
-			response = Response.status(Status.BAD_REQUEST).entity(ERROR_TOKEN)
-					.build();
+			response = Response.status(Status.BAD_REQUEST).entity(ERROR_TOKEN).build();
 		} else {
 			boolean permissionsError = false;
 			String permissions = null;
@@ -105,7 +104,7 @@ public class AclResource {
 				permissions = inputJson.getString("permissions");
 			} catch (JSONException e) {
 				permissionsError = true;
-				e.printStackTrace();
+				Log.error("", this, "setPermissions", "Error parsing the JSON.", e); 
 			}
 			// only 4 permissions to set CRUD
 			if (permissions == null || permissions.length() != 4)

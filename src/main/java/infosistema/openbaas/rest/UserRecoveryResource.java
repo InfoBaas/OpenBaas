@@ -4,6 +4,7 @@ import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
@@ -66,7 +67,7 @@ public class UserRecoveryResource {
 			try {
 				email = (String) inputJson.get("email");
 			} catch (JSONException e) {
-				e.printStackTrace();
+				Log.error("", this, "makeRecoveryRequest", "Error parsing the JSON.", e); 
 			}
 			String newPass="aaa";
 			boolean opOk = usersMid.recoverUser(appId, userId, email, ui,newPass,null,null);
@@ -90,8 +91,7 @@ public class UserRecoveryResource {
 		try {
 			password = (String) inputJson.get("password");
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.error("", this, "changePassword", "Error parsing the JSON.", e); 
 		}
 		String dbRecoveryCode = usersMid.getRecoveryCode(appId, userId);
 	

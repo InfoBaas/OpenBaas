@@ -1,5 +1,7 @@
 package infosistema.openbaas.dataaccess.email;
 
+import infosistema.openbaas.utils.Log;
+
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -106,10 +108,10 @@ public class Email {
 			message.setSubject(SUBJECTEMAILRECOVERY);
 			message.setContent("Dear " + userName +"," + '\n' + "Your new password is "+ newPass+"."+ '\n' +"Please enter the application and change it", "text/html;charset=UTF-8");
 			Transport.send(message);
-		} catch (AddressException ex) {
-			System.out.println( ex.getMessage());
-		} catch (MessagingException ex) {
-			System.out.println( ex.getMessage());
+		} catch (AddressException e) {
+			Log.error("", this, "sendRecoveryEmail", "Address erros.", e); 
+		} catch (MessagingException e) {
+			Log.error("", this, "sendRecoveryEmail", "An error ocorred.", e); 
 		}
 		return true;
 	}
@@ -167,10 +169,10 @@ public class Email {
 			message.setContent("Dear " + userName +"," + '\n' + "In order to confirm your registration, please open the following URL:"+'\n'
 					+ link.replace("account/signup", "users") + userId+"/confirmation?registrationCode="+registrationCode, "text/html;charset=UTF-8");
 			Transport.send(message);
-		} catch (AddressException ex) {
-			System.out.println( ex.getMessage());
-		} catch (MessagingException ex) {
-			System.out.println( ex.getMessage());
+		} catch (AddressException e) {
+			Log.error("", this, "sendRegistrationEmailWithRegistrationCode", "Address erros.", e); 
+		} catch (MessagingException e) {
+			Log.error("", this, "sendRegistrationEmailWithRegistrationCode", "An error ocorred.", e); 
 		}
 		return true;
 	}

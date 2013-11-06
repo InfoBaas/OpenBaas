@@ -1,5 +1,7 @@
 package simulators;
 
+import infosistema.openbaas.utils.Log;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -37,13 +39,13 @@ public class Test {
 				String latitude = loc[0];
 				String longitude = loc[1];
 				String text = latitude+";"+longitude+";"+imageId+";"+imageId;
-				System.out.println(text);
+				Log.debug("", this, "getImagesData", text);
 				out.println(text);
 				i++;
 			}
 			out.close();
 		}catch(Exception e){
-			System.out.println(e);
+			Log.error("", this, "getImagesData", "An error ocorred.", e); 
 		}
 	}
 
@@ -66,14 +68,13 @@ public class Test {
 				}
 				String imageName = "IMAGE"+i;
 				String location = latitude+":"+longitude;
-				//System.out.println(latitude+";"+longitude+";"+imageName+";"+imageName+" - "+locationRand);
-				System.out.println(i);
+				Log.debug("", this, "createImage", i);
 				String imageId = appsMid.createLocalFile(is,null, "296", "jpg", "apps/296/media/images/",imageName);
 				appsMid.uploadImageFileToServerWithGeoLocation("296",location, "jpg", imageName, imageId);
 				i++;
 			}
 		}catch(Exception e){
-			System.out.println(e);
+			Log.error("", this, "createImage", "An error ocorred.", e); 
 		}
 		
 	}

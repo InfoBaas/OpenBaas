@@ -31,7 +31,10 @@ public final class LoadProperties {
                 key = (String) keys.nextElement();
                 properties.setProperty(key, resourceBundle.getString(key));
             }
-        } catch (Throwable throwable) {}
+        } catch (Throwable throwable) {
+			Log.error("", "LoadProperties", "gtProperties", "An error ocorred loadin properties from " +
+					resource + ".", throwable); 
+        }
         return properties;
     }
 

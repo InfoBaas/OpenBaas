@@ -6,6 +6,7 @@ import infosistema.openbaas.middleLayer.DocumentMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import java.util.ArrayList;
@@ -72,8 +73,7 @@ public class UserDataResource {
 			try {
 				data = (JSONObject) inputJsonObj.get("data");
 			} catch (JSONException e) {
-				System.out.println("Error parsing the JSON file.");
-				e.printStackTrace();
+				Log.error("", this, "createDocumentRoot", "Error parsing the JSON.", e); 
 			}
 			if (appsMid.appExists(appId) && usersMid.userExistsInApp(appId, userId)) {
 				if (docMid.insertDocumentInPath(appId, userId, null, data, location)) {
@@ -115,8 +115,7 @@ public class UserDataResource {
 			try {
 				data = (JSONObject) inputJsonObj.get("data");
 			} catch (JSONException e) {
-				System.out.println("Error parsing the JSON file.");
-				e.printStackTrace();
+				Log.error("", this, "createOrReplaceDocument", "Error parsing the JSON.", e); 
 			}
 			if (appsMid.appExists(appId)) {
 				if (docMid.updateDocumentInPath(appId, userId, path, data, location))

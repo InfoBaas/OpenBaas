@@ -23,6 +23,7 @@ import infosistema.openbaas.data.models.Storage;
 import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.dataaccess.models.MediaModel;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 public class MediaMiddleLayer extends MiddleLayerAbstract {
@@ -123,6 +124,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		try {
 			return docModel.getAllAudioIdsInRadius(appId, latitude, longitude, radius);
 		} catch (Exception e) {
+			Log.error("", this, "getAllAudioIdsInRadius", "An error ocorred.", e); 
 			return null;
 		}
 	}
@@ -133,6 +135,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		try{
 			return docModel.getAllImagesIdsInRadius(appId, latitude, longitude, radius,pageNumber,pageSize,orderBy,orderType);
 		} catch (Exception e) {
+			Log.error("", this, "getAllImagesIdsInRadius", "An error ocorred.", e); 
 			return null;
 		}
 	}
@@ -213,9 +216,9 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 			OutputStream out = new FileOutputStream(f);
 			IOUtils.copy(uploadedInputStream, out);
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			Log.error("", this, "createLocalFile", "File not found.", e); 
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.error("", this, "createLocalFile", "An error ocorred.", e); 
 		}
 
 		return id;

@@ -3,6 +3,7 @@ package infosistema.openbaas.middleLayer;
 
 import infosistema.openbaas.data.ModelEnum;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
+import infosistema.openbaas.utils.Log;
 
 import java.util.List;
 import javax.ws.rs.core.PathSegment;
@@ -57,8 +58,10 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 			}
 			return res;
 		} catch (JSONException e) {
+			Log.error("", this, "insertDocumentInPath", "Error parsing the JSON.", e); 
 			return false;
 		} catch (Exception e) {
+			Log.error("", this, "insertDocumentInPath", "An error ocorred.", e); 
 			return false;
 		}
 	}
@@ -77,10 +80,11 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 			}
 			return res;
 		} catch (JSONException e) {
-			return false;
+			Log.error("", this, "updateDocumentInPath", "Error parsing the JSON.", e); 
 		} catch (Exception e) {
-			return false;
+			Log.error("", this, "updateDocumentInPath", "An error ocorred.", e); 
 		}
+		return false;
 	}
 
 	
@@ -90,6 +94,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		try {
 			return docModel.deleteDocumentInPath(appId, getDocumentPath(userId, path));
 		} catch (Exception e) {
+			Log.error("", this, "deleteDocumentInPath", "An error ocorred.", e); 
 			return false;
 		}
 	}
@@ -103,6 +108,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		try {
 			return docModel.getAllUserDocs(appId, userId);
 		} catch (Exception e) {
+			Log.error("", this, "getAllUserDocs", "An error ocorred.", e); 
 			return null;
 		}
 	}
@@ -111,6 +117,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		try {
 			return docModel.getAllDocsInRadius(appId, latitude, longitude, radius);
 		} catch (Exception e) {
+			Log.error("", this, "getAllDocsInRadius", "An error ocorred.", e); 
 			return null;
 		}
 	}
@@ -120,6 +127,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		try {
 			return docModel.getAllUserDocsInRadius(appId, latitude, longitude, radius, pageNumber,pageSize,orderBy,orderType);
 		} catch (Exception e) {
+			Log.error("", this, "getAllUserDocsInRadius", "An error ocorred.", e); 
 			return null;
 		}
 	}
@@ -131,17 +139,11 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 			//return docModel.getDataInDocumentInRadius(appId, url, latitude, longitude,radius);
 			return null;
 		} catch (Exception e) {
+			Log.error("", this, "getElementInAppInRadius", "An error ocorred.", e); 
 			return null;
 		}
 	}
 
-	public String getAllDocInApp(String appId) {
-		try {
-			return docModel.getAllDocInApp(appId);
-		} catch (Exception e) {
-			return null;
-		}
-	}
 	*/
 
 	
@@ -151,6 +153,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		try {
 			return docModel.getDocumentInPath(appId, userId, getDocumentPath(userId, path));
 		} catch (Exception e) {
+			Log.error("", this, "getDocumentInPath", "An error ocorred.", e); 
 			return null;
 		}
 	}
@@ -162,6 +165,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		try {
 			return docModel.existsDocumentInPath(appId, getDocumentPath(userId, path));
 		} catch (Exception e) {
+			Log.error("", this, "existsDocumentInPath", "An error ocorred.", e); 
 			return false;
 		}
 	}

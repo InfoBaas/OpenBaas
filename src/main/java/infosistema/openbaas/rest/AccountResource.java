@@ -6,6 +6,7 @@ import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
@@ -79,8 +80,7 @@ public class AccountResource {
 				password = (String) inputJsonObj.get("password");
 				readOk = true;
 			} catch (JSONException e) {
-				System.out.println("Error parsing the JSON file.");
-				e.printStackTrace();
+				Log.error("", this, "createUserAndLogin", "Error parsing the JSON.", e); 
 			}
 			if (userName == null) {
 				userName = email;
@@ -130,7 +130,7 @@ public class AccountResource {
 			email = (String) inputJsonObj.get("email");
 			attemptedPassword = (String) inputJsonObj.get("password");
 		} catch (JSONException e) {
-			System.out.println("Error Reading the jsonFile");
+			Log.error("", this, "createSession", "Error parsing the JSON.", e); 
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
 		}
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
@@ -166,7 +166,7 @@ public class AccountResource {
 					response = Response.status(Status.FORBIDDEN).entity(Const.EMAIL_CONFIRMATION_ERROR).build();
 				}
 			} else{
-				System.out.println("userId of email: " + email + " is: " + userId);
+				Log.debug("", this, "createSession", "userId of email: " + email + " is: " + userId);
 				String sessionToken = Utils.getRandomString(Const.IDLENGTH);
 				boolean validation = sessionMid.createSession(sessionToken, appId, userId, attemptedPassword);
 				if(validation){
@@ -238,8 +238,7 @@ public class AccountResource {
 						response = Response.status(Status.NOT_FOUND).entity(sessionToken).build();
 				}else{
 					//deletes all sessions user
-					System.out.println("************************************");
-					System.out.println("********DELETING ALL SESSIONS FOR THIS USER");
+					Log.debug("", this, "deleteSession", "********DELETING ALL SESSIONS FOR THIS USER");
 					boolean sucess = sessionMid.deleteAllUserSessions(userId);
 					if (sucess)
 						response = Response.status(Status.OK).entity(userId).build();
@@ -295,18 +294,16 @@ public class AccountResource {
 			try {
 				email = (String) inputJson.get("email");
 			} catch (JSONException e) {
-				e.printStackTrace();
+				Log.error("", this, "makeRecoveryRequest", "Error parsing the JSON.", e); 
 			}
 			PasswordEncryptionService service = new PasswordEncryptionService();
 			try {
 				salt = service.generateSalt();
 				hash = service.getEncryptedPassword(newPass, salt);
 			} catch (NoSuchAlgorithmException e) {
-				System.out.println("Hashing Algorithm failed, please review the PasswordEncryptionService.");
-				e.printStackTrace();
+				Log.error("", this, "makeRecoveryRequest", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
 			} catch (InvalidKeySpecException e) {
-				System.out.println("Invalid Key.");
-				e.printStackTrace();
+				Log.error("", this, "makeRecoveryRequest", "Invalid Key.", e); 
 			}
 			String userId = usersMid.getUserIdUsingEmail(appId, email);
 			boolean opOk = usersMid.recoverUser(appId, userId, email, ui, newPass,hash,salt);
@@ -335,6 +332,7 @@ public class AccountResource {
 		try {
 			return new IntegrationResource(appId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "integration", "Illegal Argument.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}

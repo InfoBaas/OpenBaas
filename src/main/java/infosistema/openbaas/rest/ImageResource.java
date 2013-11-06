@@ -6,6 +6,7 @@ import infosistema.openbaas.data.models.Image;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import java.io.InputStream;
@@ -94,8 +95,7 @@ public class ImageResource {
 	public Response deleteImage(@PathParam("imageId") String imageId, @CookieParam(value = "sessionToken") String sessionToken) {
 		Response response = null;
 		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken)) {
-			System.out.println("************************************");
-			System.out.println("***********Deleting Image***********");
+			Log.debug("", this, "deleteImage", "***********Deleting Image***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.image, imageId)) {
 				this.mediaMid.deleteMedia(appId, ModelEnum.image, imageId);
 				response = Response.status(Status.OK).entity(appId).build();
@@ -173,8 +173,7 @@ public class ImageResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("********Finding Image Meta**********");
+			Log.debug("", this, "getImageMetadata", "********Finding Image Meta**********");
 			Image temp = null;
 			if(MiddleLayerFactory.getAppsMiddleLayer().appExists(this.appId)){
 				if(mediaMid.mediaExists(appId, ModelEnum.image, imageId)){
@@ -206,8 +205,7 @@ public class ImageResource {
 		byte[] sucess = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("*********Downloading Image**********");
+			Log.debug("", this, "downloadImage", "*********Downloading Image**********");
 			if (mediaMid.mediaExists(appId, ModelEnum.image, imageId)) {
 				Image image = (Image)(mediaMid.getMedia(appId, ModelEnum.image, imageId));
 				sucess = mediaMid.download(appId, ModelEnum.image, imageId,image.getType());

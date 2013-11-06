@@ -1,5 +1,7 @@
 package infosistema.openbaas.data.models;
 
+import infosistema.openbaas.utils.Log;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -87,7 +89,6 @@ public class Storage extends Media {
 	
 	public Response download(String appId, String id, String dir){
 		String filePath = dir;
-		System.out.println(dir);
 		if (filePath != null && !"".equals(filePath)) {
 			File file = new File(filePath);
 			StreamingOutput stream = null;
@@ -104,13 +105,14 @@ public class Storage extends Media {
 								out.write(bytes, 0, read);
 							}
 						} catch (Exception e) {
+							Log.error("", this, "download", "An error ocorred.", e); 
 							throw new WebApplicationException(e);
 						}
 					}
 				};
 				in.close();
 			} catch (Exception e) {
-				e.printStackTrace();
+				Log.error("", this, "download", "An error ocorred.", e); 
 				return Response.status(404).entity(appId).build();
 			}
 			return Response
@@ -127,17 +129,14 @@ public class Storage extends Media {
 		String resultStatus = "";
         for (FileItem item : items) {
             if (item.isFormField()) {
-                System.out.println(item.getFieldName() + "="
-                        + item.getString());
+            	Log.debug("", this, "upload", item.getFieldName() + "=" + item.getString());
             }
             if (!item.isFormField()) {
                 try {
-                    // System.out.println(item.getFieldName()+"="+item.getString());
-                    //String filename = item.getName();
                     item.write(new File(dir + ".mp3"));
                     resultStatus = "fileupload success";
                 } catch (Exception e) {
-                    e.printStackTrace();
+    				Log.error("", this, "upload", "An error ocorred.", e); 
                 }
             }
         }

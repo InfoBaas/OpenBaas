@@ -6,6 +6,7 @@ import infosistema.openbaas.dataaccess.email.Email;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.dataaccess.models.SessionModel;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
@@ -66,11 +67,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			salt = service.generateSalt();
 			hash = service.getEncryptedPassword(password, salt);
 		} catch (NoSuchAlgorithmException e) {
-			System.out.println("Hashing Algorithm failed, please review the PasswordEncryptionService.");
-			e.printStackTrace();
+			Log.error("", this, "createUserAndLogin", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
 		} catch (InvalidKeySpecException e) {
-			System.out.println("Invalid Key.");
-			e.printStackTrace();
+			Log.error("", this, "createUserAndLogin", "Invalid Key.", e); 
 		}
 
 		if (!getConfirmUsersEmailOption(appId)) {
@@ -124,11 +123,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			salt = service.generateSalt();
 			hash = service.getEncryptedPassword(socialId, salt);
 		} catch (NoSuchAlgorithmException e) {
-			System.out.println("Hashing Algorithm failed, please review the PasswordEncryptionService.");
-			e.printStackTrace();
+			Log.error("", this, "createSocialUserAndLogin", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
 		} catch (InvalidKeySpecException e) {
-			System.out.println("Invalid Key.");
-			e.printStackTrace();
+			Log.error("", this, "createSocialUserAndLogin", "Invalid Key.", e); 
 		}
 
 		SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
@@ -181,7 +178,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			}
 			this.emailOp.addUrlToUserId(appId, userId, ref);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.error("", this, "createUser", "An error ocorred.", e); 
 		}
 		return sucessModel;
 	}
@@ -196,7 +193,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		try {
 			userModel.updateUser(appId, userId, email, hash, salt);
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			Log.error("", this, "updateUser", "Unsupported Encoding.", e); 
 		}
 	}
 
@@ -204,7 +201,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		try {
 			userModel.updateUser(appId, userId, email, hash, salt,	alive);
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			Log.error("", this, "updateUser", "Unsupported Encoding.", e); 
 		}
 	}
 
@@ -215,11 +212,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			salt = service.generateSalt();
 			hash = service.getEncryptedPassword(password, salt);
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.error("", this, "updateUserPassword", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
 		} catch (InvalidKeySpecException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.error("", this, "updateUserPassword", "Invalid Key.", e); 
 		}
 		boolean sucess = false;
 		String email = userModel.getEmailUsingUserId(appId, userId);
@@ -228,7 +223,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 				userModel.updateUserPassword(appId, userId, hash, salt);
 			}
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			Log.error("", this, "updateUserPassword", "Unsupported Encoding.", e); 
 		}
 
 		return sucess;
@@ -240,7 +235,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		if(FILESYSTEM.equalsIgnoreCase("aws"))
 			this.aws.deleteUser(appId, userId);
 		else {
-			System.out.println("FileSystem not yet implemented.");
+			Log.error("", this, "deleteUserInApp", "FileSystem not yet implemented.");
 		}
 		boolean operationOk = false;
 		String email = userModel.getEmailUsingUserId(appId, userId);
@@ -269,8 +264,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		try {
 			userFields = getUserFields(appId, userId);
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.error("", this, "getUserInApp", "Unsupported Encoding.", e); 
 		}
 		User temp = new User(userId);
 		for (Map.Entry<String, String> entry : userFields.entrySet()) {
@@ -381,8 +375,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 				}
 			}
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.error("", this, "recoverUser", "Unsupported Encoding.", e); 
 		}
 		return opOk;
 	}

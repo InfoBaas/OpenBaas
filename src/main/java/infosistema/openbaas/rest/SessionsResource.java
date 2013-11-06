@@ -5,6 +5,7 @@ import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -70,7 +71,7 @@ public class SessionsResource {
 			userName = (String) inputJsonObj.get("userName");
 			attemptedPassword = (String) inputJsonObj.get("password");
 		} catch (JSONException e) {
-			System.out.println("Error Reading the jsonFile");
+			Log.error("", this, "createSession", "Error parsing the JSON.", e); 
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
 		}
 		if(userName == null && attemptedPassword == null)
@@ -81,7 +82,7 @@ public class SessionsResource {
 			// Remember the order of evaluation in java
 			if (usersConfirmedOption) {
 				if (usersMid.userEmailIsConfirmed(appId, userId)) {
-					System.out.println("userId of " + userName + " is: " + userId);
+					Log.debug("", this, "createSession", "userId of " + userName + " is: " + userId);
 					String sessionToken = Utils.getRandomString(Const.IDLENGTH);
 					boolean validation = sessionMid.createSession(sessionToken, appId, userId, attemptedPassword);
 					if (validation) {
@@ -155,8 +156,7 @@ public class SessionsResource {
 	public Response deleteAllSessions(@CookieParam(value = "sessionToken") String sessionToken) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
-			System.out.println("************************************");
-			System.out.println("********DELETING ALL SESSIONS FOR THIS USER");
+			Log.debug("", this, "deleteAllSession", "********DELETING ALL SESSIONS FOR THIS USER");
 			boolean sucess = sessionMid.deleteAllUserSessions(userId);
 			if (sucess)
 				response = Response.status(Status.OK).entity(userId).build();

@@ -317,15 +317,10 @@ public class UserModel {
 		try {
 			if (jedis.exists("users:"+userId)) {
 				jedis.zrem("users:time", userId);
-				if(jedis==this.jedis)
-					System.out.println("ss");
 				Client c1 = this.jedis.getClient();
-				/*int a = */c1.getPort();
-				if(this.jedis.equals(this.jedis))
-					System.out.println("aa");
+				c1.getPort();
 				this.jedis.hset("users:" + userId, "alive", "false");
-				this.jedis.sadd("app:" + appId + ":users:inactive", appId + ":"
-						+ userId);
+				this.jedis.sadd("app:" + appId + ":users:inactive", appId + ":" + userId);
 				sucess = true;
 			} else {
 				sucess = false;

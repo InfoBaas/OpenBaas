@@ -3,6 +3,7 @@ package infosistema.openbaas.dataaccess.models;
 import infosistema.openbaas.data.ModelEnum;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class DocumentModel {
 		try {
 			mongoClient = new MongoClient(Const.MONGO_SERVER, Const.MONGO_PORT);
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			Log.error("", this, "DocumentModel", "Unknown Host.", e); 
 		}
 		db = mongoClient.getDB("openbaas");
 	}
@@ -62,7 +63,6 @@ public class DocumentModel {
 	// criar nó da arvore se nao existe raiz (data ou userId)
 	private boolean checkPath(DBCollection coll, String appId, String path, String userId) throws JSONException {
 		//se nao existir raiz faz um insert
-		//db.appTeste.insert({"userId || appId":{}})
 		try{
 			String[] splitted = path.split("\\.");
 			path =  splitted[0];
@@ -75,6 +75,7 @@ public class DocumentModel {
 				coll.insert(dbObject);
 			}
 		}catch (Exception e){
+			Log.error("", this, "checkPath", "An error ocorred.", e); 
 			return false;
 		}
 		return true;
@@ -84,8 +85,6 @@ public class DocumentModel {
 	// *** CREATE *** //
 	
 	public Boolean insertDocumentInPath(String appId, String userId, String path, JSONObject data) throws JSONException{
-		
-		//db.appTeste.update({"f":{$exists:1}},{$set:{"zzzz.f.e.r.t":{"h":4}}})
 		DBCollection coll = getAppCollection(appId);
 		String[] splitted = path.split("\\.");
 		String baseKey =  splitted[0];
@@ -101,8 +100,8 @@ public class DocumentModel {
 				coll.update(dbQuery, dbInsert);
 			}else 
 				return false;
-		}catch (Exception e){
-			System.err.println(e.toString());
+		} catch (Exception e) {
+			Log.error("", this, "insertDocumentInPath", "An error ocorred.", e); 
 			return false;
 		}
 		return true;
@@ -131,8 +130,8 @@ public class DocumentModel {
 					coll.update(dbQuery, dbInsert);
 				}
 			}
-		}catch (Exception e){
-			System.err.println(e.toString());
+		} catch (Exception e) {
+			Log.error("", this, "updateDocumentInPath", "An error ocorred.", e); 
 			return false;
 		}
 		return true;
@@ -140,8 +139,8 @@ public class DocumentModel {
 	
 	
 	// *** DELETE *** //
+	
 	public Boolean deleteDocumentInPath(String appId, String path) throws JSONException{
-		//db.collection_name.update({ _id: 1234 }, { $unset : { description : 1} });
 		DBCollection coll = getAppCollection(appId);
 		String[] splitted = path.split("\\.");
 		String baseKey =  splitted[0];
@@ -155,8 +154,8 @@ public class DocumentModel {
 			BasicDBObject dbProjection = new BasicDBObject();
 			dbProjection.append("$unset", dbBaseData);
 			coll.update(dbQuery, dbProjection);
-		}catch (Exception e){
-			System.err.println(e.toString());
+		} catch (Exception e) {
+			Log.error("", this, "deleteDocumentInPath", "An error ocorred.", e); 
 			return false;
 		}
 		return true;
@@ -166,7 +165,6 @@ public class DocumentModel {
 	// *** GET *** //
 	//XPTO: eu acho que isto devia devolver um jason, mas é preciso ver o que fazem as funções que chamam isto
 	public String getDocumentInPath(String appId, String userId, String path) {
-		//db.appTeste.find({"restaurante1.nome":{$exists:true}},{"restaurante1.nome":1,"_id":0})
 		String[] splitted = path.split("\\.");
 		String keyValue = splitted[splitted.length-1];
 		DBCollection coll = getAppCollection(appId);

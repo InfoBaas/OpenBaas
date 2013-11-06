@@ -2,6 +2,7 @@ package infosistema.openbaas.middleLayer;
 
 import infosistema.openbaas.dataaccess.email.Email;
 import infosistema.openbaas.dataaccess.models.SessionModel;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -40,7 +41,7 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 		boolean sucess = false;
 		boolean ok = false;
 		ok = authenticateUser(appId, userId, attemptedPassword);
-		System.out.println("AUTHENTICATED: " + ok);
+		Log.debug("", this, "createSession", "AUTHENTICATED: " + ok);
 		if (ok) {
 			sessions.createSession(sessionId, appId, userId);
 			sucess = true;
@@ -67,8 +68,8 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 					adminHash = entry.getValue().getBytes("ISO-8859-1");
 				}
 			}
-			System.out.println("ADMIN HASH: " + adminHash.toString());
-			System.out.println("ADMIN SALT: " + adminSalt.toString());
+			Log.debug("", this, "createAdminSession", "ADMIN HASH: " + adminHash.toString());
+			Log.debug("", this, "createAdminSession", "ADMIN SALT: " + adminSalt.toString());
 			if (adminId.equals(OPENBAASADMIN)
 					&& service.authenticate(attemptedPassword, adminHash,
 							adminSalt)) {
@@ -76,14 +77,11 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 				sucess = true;
 			}
 		} catch (NoSuchAlgorithmException e) {
-			System.out.println("Hashing Algorithm does not exist.");
-			e.printStackTrace();
+			Log.error("", this, "createAdminSession", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
 		} catch (InvalidKeySpecException e) {
-			System.out.println("InvalidKey.");
-			e.printStackTrace();
+			Log.error("", this, "createAdminSession", "Invalid Key.", e); 
 		} catch (UnsupportedEncodingException e) {
-			System.out.println("Unsupported Encoding.");
-			e.printStackTrace();
+			Log.error("", this, "createAdminSession", "Unsupported Encoding.", e); 
 		}
 		return sucess;
 	}
@@ -107,11 +105,11 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 			authenticated = service.authenticate(attemptedPassword, hash, salt);
 			return authenticated;
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			Log.error("", this, "authenticateUser", "Unsupported Encoding.", e); 
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+			Log.error("", this, "authenticateUser", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
 		} catch (InvalidKeySpecException e) {
-			e.printStackTrace();
+			Log.error("", this, "authenticateUser", "Invalid Key.", e); 
 		}
 		return false;
 	}

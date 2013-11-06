@@ -7,6 +7,7 @@ import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import java.io.InputStream;
@@ -51,7 +52,7 @@ public class VideoResource {
 
 	//TODO: LOCATION
 	/**
-	 * Uploads an audio File.
+	 * Uploads an video File.
 	 * 
 	 * @param request
 	 * @param headers
@@ -100,8 +101,7 @@ public class VideoResource {
 			@CookieParam(value = "sessionToken") String sessionToken) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
-			System.out.println("************************************");
-			System.out.println("***********Deleting Video***********");
+			Log.debug("", this, "deleteVideo", "***********Deleting Video***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 				mediaMid.deleteMedia(appId, ModelEnum.video, videoId);
 				response = Response.status(Status.OK).entity(appId).build();
@@ -133,8 +133,7 @@ public class VideoResource {
 		if (orderType == null) 	orderType = Const.ORDER_TYPE;
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
-			System.out.println("***********************************");
-			System.out.println("********Finding all Video**********");
+			Log.debug("", this, "findAllvideos", "********Finding all Video**********");
 			ArrayList<String> videoIds = mediaMid.getAllMediaIds(appId, ModelEnum.video, pageNumber, pageSize,
 					orderBy, orderType);
 			IdsResultSet res = new IdsResultSet(videoIds,pageNumber);
@@ -160,8 +159,7 @@ public class VideoResource {
 			@CookieParam(value = "sessionToken") String sessionToken) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
-			System.out.println("************************************");
-			System.out.println("********Finding Video Meta**********");
+			Log.debug("", this, "findById", "********Finding Video Meta**********");
 			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
 				if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 					Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId));
@@ -179,7 +177,7 @@ public class VideoResource {
 	// *** DOWNLOAD *** //
 	
 	/**
-	 * Downloads the audio File.
+	 * Downloads the video File.
 	 * 
 	 * @param videoId
 	 * @return
@@ -187,14 +185,12 @@ public class VideoResource {
 	@Path("{videoId}/{quality}/download")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response downloadAudio(@PathParam("videoId") String videoId,
+	public Response downloadVideo(@PathParam("videoId") String videoId,
 			@CookieParam(value = "sessionToken") String sessionToken) {
 		Response response = null;
 		byte[] sucess = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
-			System.out.println("************************************");
-			System.out.println("*********Downloading Video**********");
-			System.out.println("Trying to download.");
+			Log.debug("", this, "updateUser", "*********Downloading Video**********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 				Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId));
 				sucess = mediaMid.download(appId, ModelEnum.video, videoId,video.getType());

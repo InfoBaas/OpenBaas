@@ -11,6 +11,7 @@ import com.amazonaws.services.identitymanagement.model.EntityAlreadyExistsExcept
 import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.dataaccess.models.AppModel;
 import infosistema.openbaas.dataaccess.models.MediaModel;
+import infosistema.openbaas.utils.Log;
 
 public class AppsMiddleLayer extends MiddleLayerAbstract {
 
@@ -49,12 +50,12 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 			try{
 			return this.aws.createApp(appId);
 			}catch(EntityAlreadyExistsException e){
-				System.out.print("Entity Already Exists.");
+				Log.error("", this, "createAppAWS", "Entity Already Exists.", e); 
 			}catch(AmazonServiceException e){
-				System.out.println("Amazon Service Exception.");
+				Log.error("", this, "createAppAWS", "Amazon Service error.", e); 
 			}
 		else{
-			System.out.println("FileSystem not yet implemented.");
+			Log.warning("", this, "createAppAWS", "FileSystem not yet implemented.");
 			return true;
 		}
 		return false;

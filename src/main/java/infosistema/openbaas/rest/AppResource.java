@@ -5,6 +5,7 @@ import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import java.lang.annotation.ElementType;
@@ -79,8 +80,7 @@ public class AppResource {
 				confirmUsersEmail = (boolean) inputJsonObj.optBoolean("confirmUsersEmail", false);
 				readSucess = true;
 			} catch (JSONException e) {
-				System.out.println("Error reading json input.");
-				e.printStackTrace();
+				Log.error("", this, "createApp", "Error parsing the JSON.", e); 
 				return Response.status(Status.BAD_REQUEST).entity(temp).build();
 			}
 			if (readSucess) {
@@ -102,7 +102,7 @@ public class AppResource {
 				// No time for details = put 302 in the parameter
 				response = Response.status(302).entity(temp).build();
 			}
-			System.out.println("TIME TO FULLFILL REQUEST: " + (System.currentTimeMillis() - start));
+			Log.debug("", this, "createApp", "TIME TO FULLFILL REQUEST: " + (System.currentTimeMillis() - start));
 		} else if(code == -2){
 			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
 		 .build();
@@ -176,10 +176,9 @@ public class AppResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("*Deleting App (setting as inactive)*");
+			Log.debug("", this, "deleteApp", "*Deleting App (setting as inactive)*");
 			if (this.appsMid.removeApp(appId)) {
-				System.out.println("******Deletion OK*******");
+				Log.debug("", this, "deleteApp", "******Deletion OK*******");
 				response = Response.status(Status.OK).entity(appId).build();
 			} else
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();
@@ -222,7 +221,7 @@ public class AppResource {
 				temp.accumulate("appId", it.next());
 			}
 		} catch (JSONException e) {
-			e.printStackTrace();
+			Log.error("", this, "findAllApplicationIds", "Error parsing the JSON.", e); 
 		}
 		IdsResultSet res = new IdsResultSet(ids,pageNumber);
 		response = Response.status(Status.OK).entity(res).build();
@@ -250,8 +249,7 @@ public class AppResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("********Finding App info************");
+			Log.debug("", this, "findById", "********Finding App info************");
 			Application temp = appsMid.getApp(appId);
 			if (temp == null)
 				return Response.status(Status.NOT_FOUND).entity(temp).build();
@@ -288,6 +286,7 @@ public class AppResource {
 		try {
 			return new UsersResource(uriInfo, appId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "users", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
@@ -303,6 +302,7 @@ public class AppResource {
 		try {
 			return new MediaResource(appsMid, appId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "media", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
@@ -318,6 +318,7 @@ public class AppResource {
 		try {
 			return new AppDataResource(uriInfo, appId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "data", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
@@ -333,6 +334,7 @@ public class AppResource {
 		try {
 			return new AudioResource(appId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "audio", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
@@ -348,6 +350,7 @@ public class AppResource {
 		try {
 			return new VideoResource(appId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "video", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
@@ -363,6 +366,7 @@ public class AppResource {
 		try {
 			return new ImageResource(appId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "image", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
@@ -378,6 +382,7 @@ public class AppResource {
 		try {
 			return new StorageResource(appId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "storage", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
@@ -393,6 +398,7 @@ public class AppResource {
 		try {
 			return new AccountResource(appId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "acount", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}

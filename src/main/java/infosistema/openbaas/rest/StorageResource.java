@@ -5,6 +5,7 @@ import infosistema.openbaas.data.ModelEnum;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
@@ -134,8 +135,7 @@ public class StorageResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			System.out.println("***********************************");
-			System.out.println("********Finding all Storage********");
+			Log.debug("", this, "findAllStorageIds", "********Finding all Storage********");
 			ArrayList<String> storageIds = mediaMid.getAllMediaIds(appId, ModelEnum.storage, pageNumber,
 					pageSize,orderBy,orderType);
 			IdsResultSet res = new IdsResultSet(storageIds,pageNumber);
@@ -199,8 +199,8 @@ public class StorageResource {
 			else{
 				builder.status(Status.NOT_FOUND);
 			}
-		} catch (IOException ex) {
-			ex.printStackTrace();
+		} catch (IOException e) {
+			Log.error("", this, "downloadStorageUsingId", "An error ocorred.", e); 
 		}
 		builder.entity(found);
 		builder.header("fileType", extension);

@@ -12,6 +12,7 @@ import redis.clients.jedis.JedisPoolConfig;
 
 import infosistema.openbaas.data.ModelEnum;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.ValueComparator;
 
 public class Geolocation {
@@ -124,8 +125,8 @@ public class Geolocation {
 		try{
 			jedis.sadd(gridSquareId, gridObjectId);
 			success = true;
-		}catch(Exception e){
-			System.err.println(e.toString());
+		} catch (Exception e) {
+			Log.error("", this, "insert", "An error ocorred.", e); 
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -183,7 +184,7 @@ public class Geolocation {
 			jedis.srem(gridSquareId, gridObjectId);
 			success = true;
 		}catch(Exception e){
-			System.err.println(e.toString());
+			Log.error("", this, "delete", "An error ocorred.", e); 
 		} finally {
 			pool.returnResource(jedis);
 		}

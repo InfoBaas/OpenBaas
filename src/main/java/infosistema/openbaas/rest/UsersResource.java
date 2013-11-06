@@ -6,6 +6,7 @@ import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
@@ -81,11 +82,9 @@ public class UsersResource {
 					salt = service.generateSalt();
 					hash = service.getEncryptedPassword(password, salt);
 				} catch (NoSuchAlgorithmException e) {
-					System.out.println("Hashing Algorithm failed, please review the PasswordEncryptionService.");
-					e.printStackTrace();
+					Log.error("", this, "updateUser", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
 				} catch (InvalidKeySpecException e) {
-					System.out.println("Invalid Key.");
-					e.printStackTrace();
+					Log.error("", this, "updateUser", "Invalid Key.", e); 
 				}
 			}
 			//boolean sucess;
@@ -104,10 +103,10 @@ public class UsersResource {
 			} else {
 				response = Response.status(Status.NOT_FOUND).entity("Invalid Session Token.").build();
 			}
-			System.out.println("appId: " + appId + "UserId: " + userId);
-			System.out.println("email: " + email + "alive: " + alive);
-			System.out.println("hash: " + hash.toString());
-			System.out.println("salt: " + salt.toString());
+			Log.debug("", this, "updateUser", "appId: " + appId + "UserId: " + userId);
+			Log.debug("", this, "updateUser", "email: " + email + "alive: " + alive);
+			Log.debug("", this, "updateUser", "hash: " + hash.toString());
+			Log.debug("", this, "updateUser", "salt: " + salt.toString());
 		} else if (code == -2) {
 			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
@@ -133,8 +132,7 @@ public class UsersResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("*Deleting User(setting as inactive)*");
+			Log.debug("", this, "deleteUser", "*Deleting User(setting as inactive)*");
 			boolean sucess = usersMid.deleteUserInApp(appId, userId);
 			if (sucess)
 				response = Response.status(Status.OK).entity(userId).build();
@@ -217,13 +215,12 @@ public class UsersResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("********Finding User info************");
+			Log.debug("", this, "findById", "********Finding User info************");
 			User temp = null;
 			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
 				if (usersMid.identifierInUseByUserInApp(appId, userId)) {
 					temp = usersMid.getUserInApp(appId, userId);
-					System.out.println("userId: " + temp.getUserId()+ "email: " + temp.getEmail());
+					Log.debug("", this, "findById", "userId: " + temp.getUserId()+ "email: " + temp.getEmail());
 					response = Response.status(Status.OK).entity(temp).build();
 				} else {
 					response = Response.status(Status.NOT_FOUND).entity(temp).build();
@@ -254,6 +251,7 @@ public class UsersResource {
 		try {
 			return new SessionsResource(appId, userId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "sessions", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
@@ -263,6 +261,7 @@ public class UsersResource {
 		try {
 			return new UserRecoveryResource(uriInfo, appId, userId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "userRecovery", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
@@ -272,6 +271,7 @@ public class UsersResource {
 		try {
 			return new UserDataResource(uriInfo, appId, userId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "userData", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
@@ -283,11 +283,11 @@ public class UsersResource {
 	 * @return
 	 */
 	@Path("{userId}/confirmation")
-	public UserConfirmationResource userConfirmation(
-			@PathParam("userId") String userId) {
+	public UserConfirmationResource userConfirmation(@PathParam("userId") String userId) {
 		try {
 			return new UserConfirmationResource(uriInfo, appId, userId);
 		} catch (IllegalArgumentException e) {
+			Log.error("", this, "userConfirmation", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}

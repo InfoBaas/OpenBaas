@@ -1,5 +1,7 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.utils.Log;
+
 import java.util.List;
 
 import javax.ws.rs.Path;
@@ -18,8 +20,8 @@ public class RootResource {
 		try {
 			return new AppResource();
 		} catch (IllegalArgumentException e) {
-			throw new WebApplicationException(Response
-					.status(Status.BAD_REQUEST).entity("Parse error").build());
+			Log.error("", this, "appsResource", "Illegal Arguments.", e); 
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
 
@@ -28,8 +30,8 @@ public class RootResource {
 		try {
 			return new AclResource(path);
 		} catch (IllegalArgumentException e) {
-			throw new WebApplicationException(Response
-					.status(Status.BAD_REQUEST).entity("Parse error").build());
+			Log.error("", this, "aclResource", "Illegal Arguments.", e); 
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
 		}
 	}
 

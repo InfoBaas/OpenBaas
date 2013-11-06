@@ -7,6 +7,7 @@ import javax.servlet.*;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
 /**
@@ -36,17 +37,14 @@ public class Startup implements ServletContextListener {
 			salt = service.generateSalt();
 			hash = service.getEncryptedPassword(ADMINPASSWORD, salt);
 		} catch (NoSuchAlgorithmException e) {
-			System.out
-					.println("Hashing Algorithm failed, please review the PasswordEncryptionService.");
-			e.printStackTrace();
+			Log.error("", this, "contextInitialized", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
 		} catch (InvalidKeySpecException e) {
-			System.out.println("Invalid Key.");
-			e.printStackTrace();
+			Log.error("", this, "contextInitialized", "Invalid Key.", e); 
 		}
 		if (!usersMid.userExistsInApp(AdminAppId, AdminId, AdminEmail)) {
-			System.out.println("*****************Creating user***************");
-			System.out.println("userId: " + AdminId + " email: " + AdminEmail);
-			System.out.println("********************************************");
+			Log.debug("", this, "contextInitialized", "*****************Creating user***************");
+			Log.debug("", this, "contextInitialized", "userId: " + AdminId + " email: " + AdminEmail);
+			Log.debug("", this, "contextInitialized", "********************************************");
 			usersMid.createUser(this.AdminAppId, AdminId,OPENBAASADMIN,"NOK", "NOK", AdminEmail, salt, hash, null, null, null);
 			// Output a simple message to the server's console
 			System.out
@@ -61,9 +59,9 @@ public class Startup implements ServletContextListener {
 					.println("***********************************************");
 		}
 		if(sessionMid.createSession(AdminSessionId, AdminAppId,AdminId, ADMINPASSWORD))
-			System.out.println("Admin Session created. Id: ~session");
+			Log.debug("", this, "contextInitialized", "Admin Session created. Id: ~session");
 		else{
-			System.out.println("No admin Session created.");
+			Log.warning("", this, "contextInitialized", "No admin Session created.");
 		}
 	}
 

@@ -6,6 +6,7 @@ import infosistema.openbaas.data.models.Audio;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import java.io.InputStream;
@@ -102,8 +103,7 @@ public class AudioResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("***********Deleting Audio***********");
+			Log.debug("", this, "deleteAudio", "***********Deleting Audio***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.audio, audioId)) {
 				this.mediaMid.deleteMedia(appId, ModelEnum.audio, audioId);
 				response = Response.status(Status.OK).entity(appId).build();
@@ -136,8 +136,7 @@ public class AudioResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			System.out.println("***********************************");
-			System.out.println("********Finding all Audio**********");
+			Log.debug("", this, "findAllAudioIds", "********Finding all Audio**********");
 			ArrayList<String> audioIds = null;
 			if (latitude != null && longitude != null && radius != null) {
 				audioIds = mediaMid.getAllAudioIdsInRadius(appId, Double.parseDouble(latitude),
@@ -172,8 +171,7 @@ public class AudioResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("********Finding Audio Meta**********");
+			Log.debug("", this, "findAudioById", "********Finding Audio Meta**********");
 			Audio temp = null;
 			if (appsMid.appExists(this.appId)) {
 				if (mediaMid.mediaExists(this.appId, ModelEnum.audio, audioId)) {
@@ -211,8 +209,7 @@ public class AudioResource {
 		byte[] sucess = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			System.out.println("************************************");
-			System.out.println("*********Downloading Audio**********");
+			Log.debug("", this, "downloadAudio", "*********Downloading Audio**********");
 			if (this.mediaMid.mediaExists(appId, ModelEnum.audio, audioId)) {
 				Audio audio = (Audio)(mediaMid.getMedia(appId, ModelEnum.audio, audioId));
 				sucess = mediaMid.download(appId, ModelEnum.audio, audioId,audio.getType());

@@ -1,6 +1,7 @@
 package infosistema.openbaas.dataaccess.acl;
 
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 
 import java.net.UnknownHostException;
 
@@ -35,11 +36,10 @@ public class Acl {
 		try {
 			mongoClient = new MongoClient(Const.MONGO_SERVER, Const.MONGO_PORT);
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			Log.error("", this, "Acl", "Unknown Host.#", e); 
 		}
 		
 		db = mongoClient.getDB("openbaas");
-		//DBCollection coll = db.getCollection(ACLTREE);
 	}
 
 	public boolean checkIfExists(String id, String pathAncestors, String parent, String userId){

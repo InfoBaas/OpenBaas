@@ -3,6 +3,7 @@ package infosistema.openbaas.dataaccess.models;
 import infosistema.openbaas.data.ModelEnum;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 
 import java.io.UnsupportedEncodingException;
 
@@ -135,17 +136,20 @@ public class SessionModel {
 				} else { // Calculate the distances
 					// Split the data previous location
 					String[] previousLocationArray = previousLocation.split(":");
+					String[] currentLocationArray = location.split(":");
 					double previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue;
 					try{
 						previousLatitudeValue = Double.parseDouble(previousLocationArray[0]);
 						previousLongitudeValue = Double.parseDouble(previousLocationArray[1]);
 		
-						// Current Location
-						String[] currentLocationArray = location.split(":");
-						
 						currentLatitudeValue = Double.parseDouble(currentLocationArray[0]);
 						currentLongitudeValue = Double.parseDouble(currentLocationArray[1]);
-					}catch(NumberFormatException e){
+					}catch (NumberFormatException e){
+						Log.error("", this, "refreshSession", "Wrong number format of " +
+								"previousLocationArray[0]=" + previousLocationArray[0] + " or " +
+								"previousLocationArray[1=]=" + previousLocationArray[1] + " or " +
+								"currentLocationArray[0]=" + currentLocationArray[0] + " or " +
+								"currentLocationArray[1]=" + currentLocationArray[1], e); 
 						return false;
 					}
 					// Test if distance < MAXIMUM DISTANCE Spherical Law of Cosines

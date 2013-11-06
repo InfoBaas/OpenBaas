@@ -8,6 +8,7 @@ import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import javax.ws.rs.Consumes;
@@ -85,7 +86,7 @@ public class IntegrationResource {
 			userName = (String) inputJsonObj.opt("userName");
 			
 		} catch (JSONException e) {
-			System.out.println("Error Reading the jsonFile");
+			Log.error("", this, "createOrLoginFacebookUser", "Error parsing the JSON.", e); 
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
 		}
 		if (userName == null) {
@@ -158,7 +159,7 @@ public class IntegrationResource {
 			userName = (String) inputJsonObj.opt("userName");
 			
 		} catch (JSONException e) {
-			System.out.println("Error Reading the jsonFile");
+			Log.error("", this, "createOrLoginLinkedInUser", "Error parsing the JSON.", e); 
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
 		}
 		if (userName == null) {

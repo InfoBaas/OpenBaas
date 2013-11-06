@@ -1,6 +1,7 @@
 package infosistema.openbaas.dataaccess.models;
 
 import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.utils.Log;
 
 import java.io.ByteArrayInputStream;
 
@@ -72,13 +73,6 @@ public class AWSModel {
 				new ClasspathPropertiesFileCredentialsProvider());
 	}
 	
-	public void listBuckets() {
-		System.out.println("Listing buckets");
-		for (Bucket bucket : s3.listBuckets()) {
-			System.out.println(" - " + bucket.getName());
-		}
-	}
-	
 	/**
 	 * Allowed types images, audio, video
 	 * 
@@ -98,11 +92,10 @@ public class AWSModel {
 			StringBuffer directory = new StringBuffer("apps/" + appId + "/media/" + type.toString() + "/" + id);
 			if(ext!=null)
 				directory.append("."+ext);
-			System.out.println(directory);
 			S3Object object = s3.getObject(new GetObjectRequest(OPENBAASBUCKET,directory.toString()));
 			S3ObjectInputStream s3ObjInputStream = object.getObjectContent();
 			byteArray = IOUtils.toByteArray(s3ObjInputStream);
-			System.out.println("Downloading to: " + directory.toString());
+			Log.debug("", this, "download", "Downloading to: " + directory.toString());
 			soutputStream = new FileOutputStream(new File(directory.toString()));
 			int read = 0;
 			byte[] bytes = new byte[1024];
@@ -111,8 +104,8 @@ public class AWSModel {
 			while ((read = object2.getObjectContent().read(bytes)) != -1) {
 				soutputStream.write(bytes, 0, read);
 			}	 
-		}catch(Exception e){
-			System.err.println(e.toString());
+		} catch(Exception e) {
+			Log.error("", this, "download", "An error ocorred.", e); 
 		}finally{
 			soutputStream.close();
 		}
@@ -173,33 +166,34 @@ public class AWSModel {
 	}
 	public boolean createUser(String appId, String userId, String userName)
 			throws EntityAlreadyExistsException {
-		System.out.println("appId: " + appId + " userId: " + userId
-				+ " userName: " + userName);
+		Log.debug("", this, "createUser", "appId: " + appId + " userId: " + userId + " userName: " + userName);
 		this.startIAM();
 		CreateUserRequest user = new CreateUserRequest(userId);
 		CreateAccessKeyRequest key = new CreateAccessKeyRequest();
 		key.withUserName(user.getUserName());
 		user.setRequestCredentials(key.getRequestCredentials());
 		user.setPath("/");
-		/*CreateUserResult result = */client.createUser(user); //Occasional error here, WHY?
+		client.createUser(user); //Occasional error here, WHY?
 		AddUserToGroupRequest addUserToGroupRequest = new AddUserToGroupRequest()
 				.withGroupName(APPMASTERSGROUP).withUserName(appId);
 		client.addUserToGroup(addUserToGroupRequest);
 		return true;
 	}
+	
 	public boolean deleteFile(String fileDirectory) {
 		this.startAWS();
 		s3.deleteObject(OPENBAASBUCKET, fileDirectory);
 		return true;
 	}
+	
 	public void deleteUser(String appId, String userId)
 			throws NoSuchEntityException {
 		try{
 			this.startIAM();
 			DeleteUserRequest user = new DeleteUserRequest(userId);
 			client.deleteUser(user);
-		}catch(Exception e){
-			System.err.println(e.toString());
+		} catch(Exception e) {
+			Log.error("", this, "deleteUser", "An error ocorred.", e); 
 		}
 	}
 

@@ -31,7 +31,6 @@ public class ManagementResource {
 		//list com 
 		//sadd "column:" + i + ":rows"
 		jedis = new Jedis(Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
-		System.out.println("---------------------TESTING--------------------------");
 		for(long j = 0; j < 1000000; j++){
 			jedis.lpush("columns", Utils.getRandomString(32));
 			
