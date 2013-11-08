@@ -17,11 +17,11 @@ import redis.clients.jedis.JedisPoolConfig;
 public class UserModel {
 
 	// request types
-	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_GENERAL_SERVER);
+	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer());
 	Jedis jedis;
 	
 	public UserModel() {
-		jedis = new Jedis(Const.REDIS_GENERAL_SERVER, Const.REDIS_GENERAL_PORT);
+		jedis = new Jedis(Const.getRedisGeneralServer(), Const.getRedisGeneralPort());
 	}
 
 	public Object clone() throws CloneNotSupportedException {
@@ -122,7 +122,7 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		try{
 			jedis.hset(("users:" + userId), "lastActive", date);
-			jedis.hset(("users:" + userId), "location", location);
+			jedis.hset(("users:" + userId), Const.LOCATION, location);
 		}finally{
 			pool.returnResource(jedis);
 		}

@@ -21,8 +21,8 @@ public class Geolocation {
 	private static final String GRID_FORMAT = "%s:%s:%s:%s"; // latitude;longitude;appid;objecttype
 	
 	//TODO: fazer por app
-	private double latp = Const.LATITUDE_PRECISION;
-	private double longp = Const.LONGITUDE_PRECISION;
+	private double latp = Const.getLatitudePrecision();
+	private double longp = Const.getLongitudePrecision();
 
 	/*
 	final static char[] digits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'b', 'c', 'd', 'e',
@@ -120,7 +120,7 @@ public class Geolocation {
 	//private
 	private boolean insert(String gridSquareId, String gridObjectId) {
 		Boolean success = false;
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_GEO_SERVER, Const.REDIS_GEO_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeoServer(), Const.getRedisGeoPort());
 		Jedis jedis = pool.getResource();
 		try{
 			jedis.sadd(gridSquareId, gridObjectId);
@@ -178,7 +178,7 @@ public class Geolocation {
 	//private
 	private boolean delete(String gridSquareId, String gridObjectId) {
 		Boolean success = false;
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_GEO_SERVER, Const.REDIS_GEO_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeoServer(), Const.getRedisGeoPort());
 		Jedis jedis = pool.getResource();
 		try{
 			jedis.srem(gridSquareId, gridObjectId);
@@ -243,7 +243,7 @@ public class Geolocation {
 
 	//private
 	private Set<String> getObjectsIn(String gridSquareId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_GEO_SERVER, Const.REDIS_GEO_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeoServer(), Const.getRedisGeoPort());
 		Jedis jedis = pool.getResource();
 		Set<String> retObj = new TreeSet<String>();
 		try {

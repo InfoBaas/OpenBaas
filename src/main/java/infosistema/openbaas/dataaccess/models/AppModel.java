@@ -14,11 +14,11 @@ import redis.clients.jedis.JedisPoolConfig;
 public class AppModel {
 
 	// request types
-	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_GENERAL_SERVER);
+	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer());
 	Jedis jedis;
 	
 	public AppModel() {
-		jedis = new Jedis(Const.REDIS_GENERAL_SERVER, Const.REDIS_GENERAL_PORT);
+		jedis = new Jedis(Const.getRedisGeneralServer(), Const.getRedisGeneralPort());
 	}
 
 	public Object clone() throws CloneNotSupportedException {
@@ -158,8 +158,7 @@ public class AppModel {
 	}
 	*/
 
-	public ArrayList<String> getAllAppIds(Integer pageNumber, Integer pageSize,
-			String orderBy, String orderType) {
+	public ArrayList<String> getAllAppIds(Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		// TODO Auto-generated method stub
 		return null;
 	}

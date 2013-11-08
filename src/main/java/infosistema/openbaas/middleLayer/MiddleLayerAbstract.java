@@ -12,6 +12,7 @@ import infosistema.openbaas.dataaccess.models.AWSModel;
 import infosistema.openbaas.dataaccess.models.AppModel;
 import infosistema.openbaas.dataaccess.models.DocumentModel;
 import infosistema.openbaas.dataaccess.models.UserModel;
+import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 
 public abstract class MiddleLayerAbstract {
@@ -19,38 +20,11 @@ public abstract class MiddleLayerAbstract {
 	// *** MEMBERS *** //
 
 	protected AWSModel aws = new AWSModel();
-	protected static String FILESYSTEM = "aws";
 
-	protected static String auxDatabase = "mongodb";
-	protected static final String MONGODB = "mongodb";
 	protected AppModel appModel = new AppModel();;
 	protected UserModel userModel = new UserModel();;
 	protected DocumentModel docModel;
-	protected static final long MAXCACHESIZE = 10485760; // bytes
 
-	// request types
-	protected static final String AUDIO = "audio";
-	protected static final String IMAGES = "image";
-	protected static final String VIDEO = "video";
-
-	// Request folders
-	protected static final String MEDIAFOLDER = "media";
-	protected static final String STORAGEFOLDER = "storage";
-
-	// File stuff
-	protected static final String DEFAULTIMAGEFORMAT = ".jpg";
-	protected static final String DEFAULTVIDEOFORMAT = ".mpg";
-	protected static final String DEFAULTAUDIOFORMAT = ".mp3";
-
-	// VIDEO RESOLUTIONS
-	protected static final String SMALLRESOLUTION = "360p";
-
-	// Image Sizes
-	protected static final String SMALLIMAGE = "300x300";
-
-	// AUDIO BITRATES
-	protected static final String MINIMUMBITRATE = "32";
-	
 	// *** INIT *** //
 	protected MiddleLayerAbstract() {
 		docModel = new DocumentModel();
@@ -60,7 +34,7 @@ public abstract class MiddleLayerAbstract {
 	// *** FILESYSTEM *** //
 
 	public byte[] download(String appId, ModelEnum type, String id,String ext) {
-		if(FILESYSTEM.equalsIgnoreCase("aws"))
+		if (Const.AWS.equalsIgnoreCase(Const.getFileSystem()))
 			try {
 				return this.aws.download(appId, type, id,ext);
 			} catch (IOException e) {
@@ -73,7 +47,7 @@ public abstract class MiddleLayerAbstract {
 	}
 
 	protected boolean upload(String appId, String filePath, String id, File fileToUpload) {
-		if(FILESYSTEM.equalsIgnoreCase("aws"))
+		if (Const.AWS.equalsIgnoreCase(Const.getFileSystem()))
 			try{
 				AWSModel aws = new AWSModel();  
 				return aws.upload(appId, filePath, id, fileToUpload);
@@ -93,7 +67,7 @@ public abstract class MiddleLayerAbstract {
 		File f = new File(filePath);
 		if(f.exists())
 			f.delete();
-		if(FILESYSTEM.equalsIgnoreCase("aws"))
+		if (Const.AWS.equalsIgnoreCase(Const.getFileSystem()))
 			try{
 				return this.aws.deleteFile(filePath);
 			}catch(NoSuchEntityException e){

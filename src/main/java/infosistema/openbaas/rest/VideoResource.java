@@ -62,8 +62,8 @@ public class VideoResource {
 	@POST
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response uploadVideo(@Context HttpHeaders hh, @Context UriInfo ui, @FormDataParam("file") InputStream uploadedInputStream,
-			@FormDataParam("file") FormDataContentDisposition fileDetail, @HeaderParam(value = "location") String location) {
+	public Response uploadVideo(@Context HttpHeaders hh, @Context UriInfo ui, @FormDataParam(Const.FILE) InputStream uploadedInputStream,
+			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @HeaderParam(value = Const.LOCATION) String location) {
 
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
@@ -98,7 +98,7 @@ public class VideoResource {
 	@DELETE
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response deleteVideo(@PathParam("videoId") String videoId,
-			@CookieParam(value = "sessionToken") String sessionToken) {
+			@CookieParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "deleteVideo", "***********Deleting Video***********");
@@ -124,13 +124,13 @@ public class VideoResource {
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response findAllVideoIds(
-			@CookieParam(value = "sessionToken") String sessionToken,
-			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
-			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
-		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
-		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
-		if (orderBy == null) 	orderBy = Const.ORDER_BY;
-		if (orderType == null) 	orderType = Const.ORDER_TYPE;
+			@CookieParam(value = Const.SESSION_TOKEN) String sessionToken,
+			@QueryParam(Const.PAGE_NUMBER) Integer pageNumber, @QueryParam(Const.PAGE_SIZE) Integer pageSize, 
+			@QueryParam(Const.ORDER_BY) String orderBy, @QueryParam(Const.ORDER_BY) String orderType ) {
+		if (pageNumber == null) pageNumber = Const.getPageNumber();
+		if (pageSize == null) 	pageSize = Const.getPageSize();
+		if (orderBy == null) 	orderBy = Const.getOrderBy();
+		if (orderType == null) 	orderType = Const.getOrderType();
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "findAllvideos", "********Finding all Video**********");
@@ -156,7 +156,7 @@ public class VideoResource {
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response findById(@PathParam("videoId") String videoId,
-			@CookieParam(value = "sessionToken") String sessionToken) {
+			@CookieParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "findById", "********Finding Video Meta**********");
@@ -186,7 +186,7 @@ public class VideoResource {
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response downloadVideo(@PathParam("videoId") String videoId,
-			@CookieParam(value = "sessionToken") String sessionToken) {
+			@CookieParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		byte[] sucess = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {

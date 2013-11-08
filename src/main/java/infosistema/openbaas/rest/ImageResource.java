@@ -58,8 +58,8 @@ public class ImageResource {
 	@POST
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response uploadImage(@Context HttpHeaders hh, @Context UriInfo ui, @FormDataParam("file") InputStream uploadedInputStream,
-			@FormDataParam("file") FormDataContentDisposition fileDetail, @HeaderParam(value = "location") String location) {
+	public Response uploadImage(@Context HttpHeaders hh, @Context UriInfo ui, @FormDataParam(Const.FILE) InputStream uploadedInputStream,
+			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -92,7 +92,7 @@ public class ImageResource {
 	@Path("{imageId}")
 	@DELETE
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response deleteImage(@PathParam("imageId") String imageId, @CookieParam(value = "sessionToken") String sessionToken) {
+	public Response deleteImage(@PathParam("imageId") String imageId, @CookieParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "deleteImage", "***********Deleting Image***********");
@@ -118,12 +118,12 @@ public class ImageResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response findAllImagesIds(@Context UriInfo ui, @Context HttpHeaders hh,
 			@QueryParam("lat") String latitude,	@QueryParam("long") String longitude, @QueryParam("radius") String radius, 
-			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
-			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
-		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
-		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
-		if (orderBy == null) 	orderBy = Const.ORDER_BY;
-		if (orderType == null) 	orderType = Const.ORDER_TYPE;
+			@QueryParam(Const.PAGE_NUMBER) Integer pageNumber, @QueryParam(Const.PAGE_SIZE) Integer pageSize, 
+			@QueryParam(Const.ORDER_BY) String orderBy, @QueryParam(Const.ORDER_BY) String orderType ) {
+		if (pageNumber == null) pageNumber = Const.getPageNumber();
+		if (pageSize == null) 	pageSize = Const.getPageSize();
+		if (orderBy == null) 	orderBy = Const.getOrderBy();
+		if (orderType == null) 	orderType = Const.getOrderType();
 		Response response = null;
 		List<String> listRes = new ArrayList<String>();
 		int code = Utils.treatParameters(ui, hh);

@@ -30,7 +30,7 @@ public class ManagementResource {
 	public Response test(){
 		//list com 
 		//sadd "column:" + i + ":rows"
-		jedis = new Jedis(Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		jedis = new Jedis(Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		for(long j = 0; j < 1000000; j++){
 			jedis.lpush("columns", Utils.getRandomString(32));
 			

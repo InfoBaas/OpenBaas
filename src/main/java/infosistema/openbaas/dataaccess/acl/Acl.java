@@ -34,7 +34,7 @@ public class Acl {
 	*/
 	public Acl(){
 		try {
-			mongoClient = new MongoClient(Const.MONGO_SERVER, Const.MONGO_PORT);
+			mongoClient = new MongoClient(Const.getMongoServer(), Const.getMongoPort());
 		} catch (UnknownHostException e) {
 			Log.error("", this, "Acl", "Unknown Host.#", e); 
 		}

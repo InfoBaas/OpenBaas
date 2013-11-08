@@ -83,16 +83,16 @@ public class SessionsResource {
 			if (usersConfirmedOption) {
 				if (usersMid.userEmailIsConfirmed(appId, userId)) {
 					Log.debug("", this, "createSession", "userId of " + userName + " is: " + userId);
-					String sessionToken = Utils.getRandomString(Const.IDLENGTH);
+					String sessionToken = Utils.getRandomString(Const.getIdLength());
 					boolean validation = sessionMid.createSession(sessionToken, appId, userId, attemptedPassword);
 					if (validation) {
-						NewCookie identifier = new NewCookie("sessionToken", sessionToken);
+						NewCookie identifier = new NewCookie(Const.SESSION_TOKEN, sessionToken);
 
 						response = Response.status(Status.OK).entity(identifier).build();
 					}
 					response = Response.status(Status.OK).entity(sessionToken).build();
 				} else {
-					response = Response.status(Status.FORBIDDEN).entity(Const.EMAIL_CONFIRMATION_ERROR).build();
+					response = Response.status(Status.FORBIDDEN).entity(Const.getEmailConfirmationError()).build();
 				}
 			} else
 				response = Response.status(Status.UNAUTHORIZED).entity("").build();
@@ -108,8 +108,8 @@ public class SessionsResource {
 	@PATCH
 	@Path("{sessionToken}")
 	@Consumes({ MediaType.APPLICATION_JSON })
-	public Response patchSession( @HeaderParam("user-agent") String userAgent, @HeaderParam(value = "location") String location,
-			@PathParam("sessionToken") String sessionToken, @CookieParam(value = "sessionToken") String sessionTokenCookie) {
+	public Response patchSession( @HeaderParam("user-agent") String userAgent, @HeaderParam(value = Const.LOCATION) String location,
+			@PathParam(Const.SESSION_TOKEN) String sessionToken, @CookieParam(value = Const.SESSION_TOKEN) String sessionTokenCookie) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			if (sessionMid.sessionExistsForUser(userId)) {
@@ -136,7 +136,7 @@ public class SessionsResource {
 	 */
 	@DELETE
 	@Path("{sessionToken}")
-	public Response deleteSession(@PathParam("sessionToken") String sessionToken) {
+	public Response deleteSession(@PathParam(Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		if (sessionMid.deleteUserSession(sessionToken, userId))
 			response = Response.status(Status.OK).entity(sessionToken).build();
@@ -153,7 +153,7 @@ public class SessionsResource {
 	 */
 	@DELETE
 	@Path("/all")
-	public Response deleteAllSessions(@CookieParam(value = "sessionToken") String sessionToken) {
+	public Response deleteAllSessions(@CookieParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "deleteAllSession", "********DELETING ALL SESSIONS FOR THIS USER");
@@ -181,8 +181,8 @@ public class SessionsResource {
 	 */
 	@GET
 	@Path("{sessionToken}")
-	public Response getSessionFields( @PathParam("sessionToken") String sessionToken,
-			@CookieParam(value = "sessionToken") String sessionTokenCookie) {
+	public Response getSessionFields( @PathParam(Const.SESSION_TOKEN) String sessionToken,
+			@CookieParam(value = Const.SESSION_TOKEN) String sessionTokenCookie) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionTokenCookie)) {
 			response = Response.status(Status.OK).entity(sessionToken).build();

@@ -69,7 +69,7 @@ public class IntegrationResource {
 		User outUser = new User();
 		String userId =null;
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("location"))
+			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
 				locationList = entry.getValue();
 			else if (entry.getKey().equalsIgnoreCase("user-agent")){
 				userAgentList = entry.getValue();
@@ -104,7 +104,7 @@ public class IntegrationResource {
 			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
 			response = Response.status(Status.CREATED).entity(outUser).build();
 		} else {
-			String sessionToken = Utils.getRandomString(Const.IDLENGTH);
+			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
 			if(validation){
 				sessionMid.refreshSession(sessionToken, location, userAgent);
@@ -142,7 +142,7 @@ public class IntegrationResource {
 		User outUser = new User();
 		String userId =null;
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("location"))
+			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
 				locationList = entry.getValue();
 			else if (entry.getKey().equalsIgnoreCase("user-agent")){
 				userAgentList = entry.getValue();
@@ -177,7 +177,7 @@ public class IntegrationResource {
 			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
 			response = Response.status(Status.CREATED).entity(outUser).build();
 		} else {
-			String sessionToken = Utils.getRandomString(Const.IDLENGTH);
+			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
 			if(validation){
 				sessionMid.refreshSession(sessionToken, location, userAgent);

@@ -1,6 +1,7 @@
 package infosistema.openbaas.dataaccess.models;
 
 import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 
 import java.io.ByteArrayInputStream;
@@ -35,10 +36,8 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 
 public class AWSModel {
-	private static AWSModel ref;
-	private static final String OPENBAASBUCKET = "openbaas";
 
-	private static final String APPMASTERSGROUP = "ApplicationMasters";
+	private static AWSModel ref;
 	private AmazonS3 s3;
 	private AmazonIdentityManagementClient client;
 
@@ -92,14 +91,14 @@ public class AWSModel {
 			StringBuffer directory = new StringBuffer("apps/" + appId + "/media/" + type.toString() + "/" + id);
 			if(ext!=null)
 				directory.append("."+ext);
-			S3Object object = s3.getObject(new GetObjectRequest(OPENBAASBUCKET,directory.toString()));
+			S3Object object = s3.getObject(new GetObjectRequest(Const.getAwsOpenBaasBucket(), directory.toString()));
 			S3ObjectInputStream s3ObjInputStream = object.getObjectContent();
 			byteArray = IOUtils.toByteArray(s3ObjInputStream);
 			Log.debug("", this, "download", "Downloading to: " + directory.toString());
 			soutputStream = new FileOutputStream(new File(directory.toString()));
 			int read = 0;
 			byte[] bytes = new byte[1024];
-			S3Object object2 = s3.getObject(new GetObjectRequest(OPENBAASBUCKET,directory.toString()));
+			S3Object object2 = s3.getObject(new GetObjectRequest(Const.getAwsOpenBaasBucket(), directory.toString()));
 			
 			while ((read = object2.getObjectContent().read(bytes)) != -1) {
 				soutputStream.write(bytes, 0, read);
@@ -114,7 +113,7 @@ public class AWSModel {
 
 	public boolean upload(String appId, String destinationDirectory, String id, File file) throws AmazonServiceException, AmazonClientException {
 		this.startAWS();
-		s3.putObject(new PutObjectRequest(OPENBAASBUCKET, destinationDirectory, file));
+		s3.putObject(new PutObjectRequest(Const.getAwsOpenBaasBucket(), destinationDirectory, file));
 		return true;
 	}
 	
@@ -145,7 +144,7 @@ public class AWSModel {
 		/*CreateUserResult result = */client.createUser(user);
 
 		AddUserToGroupRequest addUserToGroupRequest = new AddUserToGroupRequest()
-			.withGroupName(APPMASTERSGROUP).withUserName(appId);
+			.withGroupName(Const.getAwsAppMastersGroup()).withUserName(appId);
 		client.addUserToGroup(addUserToGroupRequest);
 		// ------------------------------------------------
 		// ------------Creating the Default Folders--------
@@ -156,11 +155,11 @@ public class AWSModel {
 		InputStream input = new ByteArrayInputStream(new byte[0]);
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentLength(0);
-		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/", input, metadata);
-		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/storage/", input, metadata);
-		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/media/audio/", input, metadata);
-		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/media/images/", input,	metadata);
-		s3.putObject(OPENBAASBUCKET, "apps/" + appId + "/media/video/", input, metadata);
+		s3.putObject(Const.getAwsOpenBaasBucket(), "apps/" + appId + "/", input, metadata);
+		s3.putObject(Const.getAwsOpenBaasBucket(), "apps/" + appId + "/storage/", input, metadata);
+		s3.putObject(Const.getAwsOpenBaasBucket(), "apps/" + appId + "/media/audio/", input, metadata);
+		s3.putObject(Const.getAwsOpenBaasBucket(), "apps/" + appId + "/media/images/", input,	metadata);
+		s3.putObject(Const.getAwsOpenBaasBucket(), "apps/" + appId + "/media/video/", input, metadata);
 		sucess = true;
 		return sucess;
 	}
@@ -175,14 +174,14 @@ public class AWSModel {
 		user.setPath("/");
 		client.createUser(user); //Occasional error here, WHY?
 		AddUserToGroupRequest addUserToGroupRequest = new AddUserToGroupRequest()
-				.withGroupName(APPMASTERSGROUP).withUserName(appId);
+				.withGroupName(Const.getAwsAppMastersGroup()).withUserName(appId);
 		client.addUserToGroup(addUserToGroupRequest);
 		return true;
 	}
 	
 	public boolean deleteFile(String fileDirectory) {
 		this.startAWS();
-		s3.deleteObject(OPENBAASBUCKET, fileDirectory);
+		s3.deleteObject(Const.getAwsOpenBaasBucket(), fileDirectory);
 		return true;
 	}
 	

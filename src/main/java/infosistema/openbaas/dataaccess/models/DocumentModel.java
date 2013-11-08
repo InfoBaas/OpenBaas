@@ -47,11 +47,11 @@ public class DocumentModel {
 	
 	public DocumentModel() {
 		try {
-			mongoClient = new MongoClient(Const.MONGO_SERVER, Const.MONGO_PORT);
+			mongoClient = new MongoClient(Const.getMongoServer(), Const.getMongoPort());
 		} catch (UnknownHostException e) {
 			Log.error("", this, "DocumentModel", "Unknown Host.", e); 
 		}
-		db = mongoClient.getDB("openbaas");
+		db = mongoClient.getDB(Const.getMongoDb());
 	}
 
 	// *** PRIVATE *** //

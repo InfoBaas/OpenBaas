@@ -22,6 +22,7 @@ import org.codehaus.jettison.json.JSONObject;
 import infosistema.openbaas.middleLayer.AclMiddleLayer;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
+import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 
 
@@ -55,7 +56,7 @@ public class AclResource {
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		// iterate cookies
 		for (Entry<String, Cookie> entry : cookiesParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
 				sessionToken = entry.getValue();
 		}
 		if (!(sessionToken == null))

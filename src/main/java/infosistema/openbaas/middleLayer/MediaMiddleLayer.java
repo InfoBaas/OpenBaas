@@ -70,7 +70,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 			if (type == ModelEnum.audio) {
 				fields.put(Media.DIR, filePath);
 				fields.put(Media.TYPE, extension);
-				fields.put(Audio.BITRATE, MINIMUMBITRATE);
+				fields.put(Audio.BITRATE, Const.getAudioDegaultBitrate());
 				fields.put(Audio.SIZE, fileSize);
 				fields.put(Audio.CREATIONDATE, new Date().toString());
 				fields.put(Audio.FILENAME, fileName);
@@ -78,15 +78,15 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 				fields.put(Image.DIR, filePath);
 				fields.put(Image.TYPE, type.toString());
 				fields.put(Image.SIZE, fileSize);
-				fields.put(Image.RESOLUTION, SMALLIMAGE);
+				fields.put(Image.RESOLUTION, Const.getImageDefaultSize());
 				fields.put(Image.CREATIONDATE, new Date().toString());
-				fields.put(Image.PIXELSIZE, SMALLIMAGE);
+				fields.put(Image.PIXELSIZE, Const.getImageDefaultSize());
 				fields.put(Image.FILENAME, fileName);
 			} else if (type == ModelEnum.video) {
 				fields.put(Media.DIR, filePath);
 				fields.put(Media.TYPE, type.toString());
 				fields.put(Media.SIZE, fileSize);
-				fields.put(Video.RESOLUTION, SMALLRESOLUTION);
+				fields.put(Video.RESOLUTION, Const.getVideoDefaultResolution());
 				fields.put(Media.CREATIONDATE, new Date().toString());
 				fields.put(Media.FILENAME, fileName);
 			} else if (type == ModelEnum.storage) {
@@ -204,12 +204,12 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	}
 	
 	public String createLocalFile(InputStream uploadedInputStream,FormDataContentDisposition fileDetail, String appId, String fileDirectory, String extension) {
-		String id = Utils.getRandomString(Const.IDLENGTH);
+		String id = Utils.getRandomString(Const.getIdLength());
 		File dirFolders = new File(fileDirectory);
 		dirFolders.mkdirs();
 		File f = new File(fileDirectory + id + "." + extension);
 		while (f.exists()) {
-			id = Utils.getRandomString(Const.IDLENGTH);
+			id = Utils.getRandomString(Const.getIdLength());
 			f = new File(fileDirectory + id);
 		}
 		try {

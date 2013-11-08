@@ -57,9 +57,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		String userAgent = null;
 		String location = null;
 		
-		userId = Utils.getRandomString(Const.IDLENGTH);
+		userId = Utils.getRandomString(Const.getIdLength());
 		while (identifierInUseByUserInApp(appId, userId))
-			userId = Utils.getRandomString(Const.IDLENGTH);
+			userId = Utils.getRandomString(Const.getIdLength());
 		byte[] salt = null;
 		byte[] hash = null;
 		PasswordEncryptionService service = new PasswordEncryptionService();
@@ -75,10 +75,10 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		if (!getConfirmUsersEmailOption(appId)) {
 			SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
 			createUser(appId, userId, userName, "NOK", "NOK", email, salt, hash, userFile, null, null);
-			String sessionToken = Utils.getRandomString(Const.IDLENGTH);
+			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, password);
 			for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-				if (entry.getKey().equalsIgnoreCase("location"))
+				if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
 					locationList = entry.getValue();
 				else if (entry.getKey().equalsIgnoreCase("user-agent")){
 					userAgentList = entry.getValue();
@@ -113,9 +113,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		String userAgent = null;
 		String location = null;
 		
-		userId = Utils.getRandomString(Const.IDLENGTH);
+		userId = Utils.getRandomString(Const.getIdLength());
 		while (identifierInUseByUserInApp(appId, userId))
-			userId = Utils.getRandomString(Const.IDLENGTH);
+			userId = Utils.getRandomString(Const.getIdLength());
 		byte[] salt = null;
 		byte[] hash = null;
 		PasswordEncryptionService service = new PasswordEncryptionService();
@@ -130,10 +130,10 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 
 		SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
 		createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash, null, null, null);
-		String sessionToken = Utils.getRandomString(Const.IDLENGTH);
+		String sessionToken = Utils.getRandomString(Const.getIdLength());
 		boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("location"))
+			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
 				locationList = entry.getValue();
 			else if (entry.getKey().equalsIgnoreCase("user-agent")){
 				userAgentList = entry.getValue();
@@ -172,7 +172,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		try {
 			userModel.createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash,
 					(new Date()).toString(), flag, emailConfirmed);
-			String ref = Utils.getRandomString(Const.IDLENGTH);
+			String ref = Utils.getRandomString(Const.getIdLength());
 			if (uriInfo != null) {
 				emailOp.sendRegistrationEmailWithRegistrationCode(appId, userId, userName, email, ref, uriInfo.getAbsolutePath().toASCIIString());
 			}
@@ -232,7 +232,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	// *** DELETE *** //
 	
 	public boolean deleteUserInApp(String appId, String userId) {
-		if(FILESYSTEM.equalsIgnoreCase("aws"))
+		if (Const.AWS.equalsIgnoreCase(Const.getFileSystem()))
 			this.aws.deleteUser(appId, userId);
 		else {
 			Log.error("", this, "deleteUserInApp", "FileSystem not yet implemented.");

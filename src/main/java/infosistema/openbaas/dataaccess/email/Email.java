@@ -1,5 +1,6 @@
 package infosistema.openbaas.dataaccess.email;
 
+import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 
 import java.util.Properties;
@@ -19,15 +20,6 @@ import redis.clients.jedis.JedisPoolConfig;
 public class Email {
 
 	//Email Properties
-	private static final String AUTH = "true";
-	private static final String STARTTLS = "true";
-	private static final String HOST = "mail.infosistema.com";
-	private static final String PORT = "25";
-
-	private static final String OPENBAASEMAIL = "I13005.openbaas@infosistema.com";
-	private static final String OPENBAASEMAILPASSWORD = "Infosistema1!";
-	private static final String SUBJECTEMAILCONFIRMATION = "Email Registry Confirmation";
-	private static final String SUBJECTEMAILRECOVERY = "Account Recovery";
 	private static final int RedisSessionsAndEmailPORT = 6380;
 	Jedis jedis;
 	private final static String server = "localhost";
@@ -88,24 +80,24 @@ public class Email {
 	public boolean sendRecoveryEmail(String appId, String userName, String userId, String email,
 			String newPass, String url) {
 		Properties props = new Properties();
-		props.put("mail.smtp.auth", AUTH);
-		props.put("mail.smtp.starttls.enable", STARTTLS);
-		props.put("mail.smtp.host", HOST);
-		props.put("mail.smtp.port", PORT);
+		props.put("mail.smtp.auth", Const.getEmailAuth());
+		props.put("mail.smtp.starttls.enable", Const.getEmailStartTLS());
+		props.put("mail.smtp.host", Const.getEmailHost());
+		props.put("mail.smtp.port", Const.getEmailPort());
 
 		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication(OPENBAASEMAIL, OPENBAASEMAILPASSWORD);
+				return new PasswordAuthentication(Const.getEmailOpenBaasEmail(), Const.getEmailOpenBaasEmailPassword());
 			}
 		});
 		
 		Message message = new MimeMessage(session);
 		try {
-			message.setFrom(new InternetAddress(OPENBAASEMAIL));
+			message.setFrom(new InternetAddress(Const.getEmailOpenBaasEmail()));
 			InternetAddress to[] = new InternetAddress[1];
 			to[0] = new InternetAddress(email);
 			message.setRecipients(Message.RecipientType.TO, to);
-			message.setSubject(SUBJECTEMAILRECOVERY);
+			message.setSubject(Const.getEmailSubjectEmailRecovery());
 			message.setContent("Dear " + userName +"," + '\n' + "Your new password is "+ newPass+"."+ '\n' +"Please enter the application and change it", "text/html;charset=UTF-8");
 			Transport.send(message);
 		} catch (AddressException e) {
@@ -148,24 +140,24 @@ public class Email {
 	public boolean sendRegistrationEmailWithRegistrationCode(String appId, String userId,
 			String userName, String email, String registrationCode, String link) {
 		Properties props = new Properties();
-		props.put("mail.smtp.auth", AUTH);
-		props.put("mail.smtp.starttls.enable", STARTTLS);
-		props.put("mail.smtp.host", HOST);
-		props.put("mail.smtp.port", PORT);
+		props.put("mail.smtp.auth", Const.getEmailAuth());
+		props.put("mail.smtp.starttls.enable", Const.getEmailStartTLS());
+		props.put("mail.smtp.host", Const.getEmailHost());
+		props.put("mail.smtp.port", Const.getEmailPort());
 
 		Session session = Session.getInstance(props,
 				new javax.mail.Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication(OPENBAASEMAIL, OPENBAASEMAILPASSWORD);
+				return new PasswordAuthentication(Const.getEmailOpenBaasEmail(), Const.getEmailOpenBaasEmailPassword());
 			}
 		});
 		Message message = new MimeMessage(session);
 		try {
-			message.setFrom(new InternetAddress(OPENBAASEMAIL));
+			message.setFrom(new InternetAddress(Const.getEmailOpenBaasEmail()));
 			InternetAddress to[] = new InternetAddress[1];
 			to[0] = new InternetAddress(email);
 			message.setRecipients(Message.RecipientType.TO, to);
-			message.setSubject(SUBJECTEMAILCONFIRMATION);
+			message.setSubject(Const.getEmailSubjectEmailConfirmation());
 			message.setContent("Dear " + userName +"," + '\n' + "In order to confirm your registration, please open the following URL:"+'\n'
 					+ link.replace("account/signup", "users") + userId+"/confirmation?registrationCode="+registrationCode, "text/html;charset=UTF-8");
 			Transport.send(message);

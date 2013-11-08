@@ -157,12 +157,12 @@ public class UsersResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response findAll(@Context UriInfo ui, @Context HttpHeaders hh,
 			@QueryParam("lat") String latitudeStr,	@QueryParam("long") String longitudeStr, @QueryParam("radius") String radiusStr, 
-			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
-			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
-		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
-		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
-		if (orderBy == null) 	orderBy = Const.ORDER_BY;
-		if (orderType == null) 	orderType = Const.ORDER_TYPE;
+			@QueryParam(Const.PAGE_NUMBER) Integer pageNumber, @QueryParam(Const.PAGE_SIZE) Integer pageSize, 
+			@QueryParam(Const.ORDER_BY) String orderBy, @QueryParam(Const.ORDER_BY) String orderType ) {
+		if (pageNumber == null) pageNumber = Const.getPageNumber();
+		if (pageSize == null) 	pageSize = Const.getPageSize();
+		if (orderBy == null) 	orderBy = Const.getOrderBy();
+		if (orderType == null) 	orderType = Const.getOrderType();
 		Double latitude = null;
 		Double longitude = null;
 		Double radius = null;

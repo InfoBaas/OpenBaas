@@ -28,24 +28,21 @@ public class SessionModel {
 
 	// *** MEMBERS *** //
 
-	private static final int EXPIRETIME = 86400; // 24hours in seconds
-	public static final long MAXCACHESIZE = 5242880; // bytes
 	private Jedis jedis;
 	private Geolocation geo = Geolocation.getInstance();
-	private final static String server = "localhost";
 
 	
 	// *** CONSTRUCTOR *** //
 	
 	public SessionModel() {
-		jedis = new Jedis(server, Const.REDIS_SESSION_PORT);
+		jedis = new Jedis(Const.getRedisSessionServer(), Const.getRedisSessionPort());
 	}
 	
 	
 	// *** CREATE *** //
 	
 	public void createAdmin(String OPENBAASADMIN, byte[] adminSalt, byte[] adminHash) throws UnsupportedEncodingException {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.hset(OPENBAASADMIN, "adminSalt", new String(adminSalt,"ISO-8859-1"));
@@ -64,12 +61,12 @@ public class SessionModel {
 	 * @param userId
 	 */
 	public void createSession(String sessionId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER,	Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(),	Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.sadd("sessions:set", sessionId);
 			jedis.hset("sessions:" + sessionId, "userId", userId);
-			jedis.expire("sessions:" + sessionId, EXPIRETIME);
+			jedis.expire("sessions:" + sessionId, Const.getSessionExpireTime());
 			jedis.sadd("user:sessions:" + userId, sessionId);
 		} finally {
 			pool.returnResource(jedis);
@@ -80,10 +77,10 @@ public class SessionModel {
 	// *** AUX *** //
 
 	private void addLocationToSession(String location, String sessionToken, String userAgent, String appId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		try {
-			jedis.hset("sessions:" + sessionToken, "location", location);
+			jedis.hset("sessions:" + sessionToken, Const.LOCATION, location);
 			jedis.hset("sessions:" + sessionToken, "userAgent", userAgent);
 			String[] locationArray = location.split(":");
 			
@@ -98,10 +95,10 @@ public class SessionModel {
 
 	private void updateLocationToSession(double previousLatitudeValue, double previousLongitudeValue, double currentLatitudeValue, double currentLongitudeValue,
 			String location, String sessionToken, String userAgent, String appId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		try {
-			jedis.hset("sessions:" + sessionToken, "location", location);
+			jedis.hset("sessions:" + sessionToken, Const.LOCATION, location);
 			geo.updateObjectInGrid(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue,
 					currentLongitudeValue, ModelEnum.users, appId, userId);
 		} finally {
@@ -121,14 +118,14 @@ public class SessionModel {
 	// P1=(lat1, lon1) and P2=(lat2, lon2)
 	// dist = arccos(sin(lat1) · sin(lat2) + cos(lat1) · cos(lat2) · cos(lon1 - lon2)) · R
 	public boolean refreshSession(String sessionToken, String location, String date, String userAgent) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		try {
-			jedis.expire("sessions:" + sessionToken, EXPIRETIME);
+			jedis.expire("sessions:" + sessionToken, Const.getSessionExpireTime());
 			jedis.hset("sessions:" + sessionToken, "date", date);
 			
 			if (location != null && !"".equals(location)) {
-				String previousLocation = jedis.hget("sessions:" + sessionToken, "location");
+				String previousLocation = jedis.hget("sessions:" + sessionToken, Const.LOCATION);
 				String userId = this.getUserUsingSessionToken(sessionToken);
 				String appId = this.getAppUsingSessionToken(sessionToken);
 				if (previousLocation == null) { // No previous Location, we simply add it.
@@ -155,7 +152,7 @@ public class SessionModel {
 					// Test if distance < MAXIMUM DISTANCE Spherical Law of Cosines
 					double dist = geo.distance(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue);
 					if (dist >= 1) {
-						jedis.hset("sessions:" + sessionToken, "location", location);
+						jedis.hset("sessions:" + sessionToken, Const.LOCATION, location);
 						UserModel userModel = new UserModel(); 
 						userModel.updateUserLocationAndDate(userId, appId, sessionToken, location, date);
 
@@ -181,7 +178,7 @@ public class SessionModel {
 	// *** GET *** //
 	
 	public Map<String, String> getAdminFields(String OPENBAASADMIN) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER,	Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(),	Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		Map<String, String> adminFields = null;
 		try {
@@ -197,7 +194,7 @@ public class SessionModel {
 	// *** OTHERS *** //
 
 	public boolean adminExists(String admin) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		boolean adminExists = false;
 		try {
@@ -211,13 +208,13 @@ public class SessionModel {
 	}
 
 	public void createSession(String sessionId, String appId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.sadd("sessions:set", sessionId);
 			jedis.hset("sessions:" + sessionId, "appId", appId);
 			jedis.hset("sessions:" + sessionId, "userId", userId);
-			jedis.expire("sessions:" + sessionId, EXPIRETIME);
+			jedis.expire("sessions:" + sessionId, Const.getSessionExpireTime());
 			jedis.sadd("user:sessions:" + userId, sessionId);
 		} finally {
 			pool.returnResource(jedis);
@@ -226,7 +223,7 @@ public class SessionModel {
 	}
 
 	public Map<String, String> getSessionFields(String sessionId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		Map<String, String> sessionFields = null;
 		try {
@@ -239,7 +236,7 @@ public class SessionModel {
 	}
 
 	public boolean sessionTokenExists(String sessionId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		boolean sucess = false;
 		try {
@@ -260,7 +257,7 @@ public class SessionModel {
 	}
 
 	public boolean sessionTokenExistsForUser(String sessionToken, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		boolean sucess = false;
 		try {
@@ -281,7 +278,7 @@ public class SessionModel {
 	}
 
 	public void deleteAdminSession(String adminId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		try {
 			Set<String> sessionIds = jedis.smembers("sessions");
@@ -307,12 +304,12 @@ public class SessionModel {
 	}
 
 	public void createAdminSession(String sessionId, String adminId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.sadd("sessions", sessionId);
 			jedis.hset("sessions:" + sessionId, "adminId", adminId);
-			jedis.expire("sessions:" + sessionId, EXPIRETIME);
+			jedis.expire("sessions:" + sessionId, Const.getSessionExpireTime());
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -320,7 +317,7 @@ public class SessionModel {
 	}
 
 	public boolean deleteUserSession(String sessionToken, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		boolean sucess = false;
 		try {
@@ -343,7 +340,7 @@ public class SessionModel {
 	}
 
 	public String getUserSession(String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		String sessionId = null;
 		try {
@@ -366,7 +363,7 @@ public class SessionModel {
 	}
 
 	public boolean deleteAllUserSessions(String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		boolean sucess = false;
 		try {
@@ -382,7 +379,7 @@ public class SessionModel {
 	}
 
 	public Set<String> getAllUserSessions(String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER, Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		Set<String> userSessions = null;
 		try {
@@ -397,7 +394,7 @@ public class SessionModel {
 	}
 
 	public boolean sessionExistsForUser(String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.REDIS_SESSION_SERVER,	Const.REDIS_SESSION_PORT);
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		boolean exists = false;
 		try {

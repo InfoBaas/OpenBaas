@@ -61,7 +61,7 @@ public class UserRecoveryResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response makeRecoveryRequest(JSONObject inputJson, @Context UriInfo ui, @Context HttpHeaders hh,
-			@HeaderParam(value = "location") String location){
+			@HeaderParam(value = Const.LOCATION) String location){
 		Response response = null;
 		String email = null;
 			try {
@@ -72,7 +72,7 @@ public class UserRecoveryResource {
 			String newPass="aaa";
 			boolean opOk = usersMid.recoverUser(appId, userId, email, ui,newPass,null,null);
 			if(opOk)
-				response = Response.status(Status.OK).entity(Const.EMAIL_CONFIRMATION_SENDED).build();
+				response = Response.status(Status.OK).entity(Const.getEmailConfirmationSended()).build();
 			else
 				response = Response.status(Status.BAD_REQUEST).entity("Wrong email.").build();
 		return response;

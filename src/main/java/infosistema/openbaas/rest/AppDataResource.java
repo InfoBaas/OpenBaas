@@ -54,7 +54,7 @@ public class AppDataResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createDocumentRoot(JSONObject inputJsonObj,@Context UriInfo ui, @Context HttpHeaders hh,
-			@HeaderParam(value = "location") String location) {
+			@HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -90,7 +90,7 @@ public class AppDataResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createOrReplaceDocument(JSONObject inputJsonObj,@PathParam("pathId") List<PathSegment> path, 
-			@Context UriInfo ui,@Context HttpHeaders hh, @HeaderParam(value = "location")String location) {
+			@Context UriInfo ui,@Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION)String location) {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -122,7 +122,7 @@ public class AppDataResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response patchDataInElement( @PathParam("pathId") List<PathSegment> path, JSONObject inputJson,
-			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = "location") String location) {
+			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -190,22 +190,17 @@ public class AppDataResource {
 			@QueryParam("latitude") String latitude,
 			@QueryParam("longitude") String longitude,
 			@QueryParam("radius") String radius,
-			@QueryParam("pageNumber") Integer pageNumber, @QueryParam("pageSize") Integer pageSize, 
-			@QueryParam("orderBy") String orderBy, @QueryParam("orderType") String orderType ) {
-		if (pageNumber == null) pageNumber = Const.PAGE_NUMBER;
-		if (pageSize == null) 	pageSize = Const.PAGE_SIZE;
-		if (orderBy == null) 	orderBy = Const.ORDER_BY;
-		if (orderType == null) 	orderType = Const.ORDER_TYPE;
+			@QueryParam(Const.PAGE_NUMBER) Integer pageNumber, @QueryParam(Const.PAGE_SIZE) Integer pageSize, 
+			@QueryParam(Const.ORDER_BY) String orderBy, @QueryParam(Const.ORDER_BY) String orderType ) {
+		if (pageNumber == null) pageNumber = Const.getPageNumber();
+		if (pageSize == null) 	pageSize = Const.getPageSize();
+		if (orderBy == null) 	orderBy = Const.getOrderBy();
+		if (orderType == null) 	orderType = Const.getOrderType();
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			//query parameters are present, only return the elements 
 			if (latitude != null && longitude != null && radius != null) {
-//				ArrayList<String> all = docMid.getAllDocsInRadius(appId, Double.parseDouble(latitude), 
-//						Double.parseDouble(longitude), Double.parseDouble(radius));
-//				IdsResultSet res = new IdsResultSet(all,pageNumber);
-				
-//				response = Response.status(Status.OK).entity(res).build();
 			//no query parameters return all docs
 			} else {
 				String all = "docMid.getAllDocInApp(appId)";

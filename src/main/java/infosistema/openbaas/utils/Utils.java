@@ -25,24 +25,18 @@ public class Utils {
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		int code = -1;
-		/*List<String> userAgentList = null;
-		List<String> locationList = null;*/
 		String userAgent = null;
 		String location = null;
 		Cookie sessionToken = null;
 		// iterate cookies
 		for (Entry<String, Cookie> entry : cookiesParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
 				sessionToken = entry.getValue();
 		}
 		// iterate headers
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("sessionToken"))
-				sessionToken = new Cookie("sessionToken", entry.getValue().get(0));
-			/*else if (entry.getKey().equalsIgnoreCase("location"))
-				locationList = entry.getValue();
-			else if (entry.getKey().equalsIgnoreCase("user-agent"))
-				userAgentList = entry.getValue();*/
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
 		}
 		if (sessionToken != null) {
 			SessionModel sessions = new SessionModel();

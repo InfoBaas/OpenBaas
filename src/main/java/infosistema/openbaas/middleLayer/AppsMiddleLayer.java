@@ -11,6 +11,7 @@ import com.amazonaws.services.identitymanagement.model.EntityAlreadyExistsExcept
 import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.dataaccess.models.AppModel;
 import infosistema.openbaas.dataaccess.models.MediaModel;
+import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 
 public class AppsMiddleLayer extends MiddleLayerAbstract {
@@ -46,7 +47,7 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	}
 
 	public boolean createAppAWS(String appId) {
-		if(FILESYSTEM.equalsIgnoreCase("aws"))
+		if (Const.AWS.equalsIgnoreCase(Const.getFileSystem()))
 			try{
 			return this.aws.createApp(appId);
 			}catch(EntityAlreadyExistsException e){
@@ -65,18 +66,14 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	// *** UPDATE *** //
 	
 	public void updateAllAppFields(String appId, String alive, String newAppName, boolean confirmUsersEmail) {
-		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			if (appModel.appExists(appId)) {
-				appModel.updateAllAppFields(appId, alive, newAppName, confirmUsersEmail);
-			}
+		if (appModel.appExists(appId)) {
+			appModel.updateAllAppFields(appId, alive, newAppName, confirmUsersEmail);
 		}
 	}
 
 	public void updateAppName(String appId, String newAppName) {
-		if (auxDatabase.equalsIgnoreCase(MONGODB)) {
-			if (appModel.appExists(appId)) {
-				appModel.updateAppName(appId, newAppName);
-			}
+		if (appModel.appExists(appId)) {
+			appModel.updateAppName(appId, newAppName);
 		}
 	}
 

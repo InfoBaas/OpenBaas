@@ -134,7 +134,7 @@ public class AccountResource {
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
 		}
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase("location"))
+			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
 				locationList = entry.getValue();
 			else if (entry.getKey().equalsIgnoreCase("user-agent")){
 				userAgentList = entry.getValue();
@@ -153,7 +153,7 @@ public class AccountResource {
 			// Remember the order of evaluation in java
 			if (usersConfirmedOption) {
 				if (usersMid.userEmailIsConfirmed(appId, userId)) {
-					String sessionToken = Utils.getRandomString(Const.IDLENGTH);
+					String sessionToken = Utils.getRandomString(Const.getIdLength());
 					boolean validation = sessionMid.createSession(sessionToken, appId, userId, attemptedPassword);
 					sessionMid.refreshSession(sessionToken, location, userAgent);
 					refreshCode = true;
@@ -163,11 +163,11 @@ public class AccountResource {
 						response = Response.status(Status.OK).entity(outUser).build();
 					}
 				} else {
-					response = Response.status(Status.FORBIDDEN).entity(Const.EMAIL_CONFIRMATION_ERROR).build();
+					response = Response.status(Status.FORBIDDEN).entity(Const.getEmailConfirmationError()).build();
 				}
 			} else{
 				Log.debug("", this, "createSession", "userId of email: " + email + " is: " + userId);
-				String sessionToken = Utils.getRandomString(Const.IDLENGTH);
+				String sessionToken = Utils.getRandomString(Const.getIdLength());
 				boolean validation = sessionMid.createSession(sessionToken, appId, userId, attemptedPassword);
 				if(validation){
 					sessionMid.refreshSession(sessionToken, location, userAgent);
@@ -192,8 +192,8 @@ public class AccountResource {
 	@PATCH
 	@Path("/sessions/{sessionToken}")
 	@Consumes({ MediaType.APPLICATION_JSON })
-	public Response patchSession( @HeaderParam("user-agent") String userAgent, @HeaderParam("location") String location,
-			@PathParam("sessionToken") String sessionToken) {
+	public Response patchSession( @HeaderParam("user-agent") String userAgent, @HeaderParam(Const.LOCATION) String location,
+			@PathParam(Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId = sessionMid.getUserUsingSessionToken(sessionToken);
@@ -224,7 +224,7 @@ public class AccountResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	@POST
 	@Path("/signout/{sessionToken}")
-	public Response deleteSession(JSONObject inputJsonObj, @PathParam("sessionToken") String sessionToken) {
+	public Response deleteSession(JSONObject inputJsonObj, @PathParam(Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		Boolean flagAll = (Boolean) inputJsonObj.opt("all");
 		String userId = sessionMid.getUserUsingSessionToken(sessionToken);
@@ -267,7 +267,7 @@ public class AccountResource {
 	@GET
 	@Path("/sessions/{sessionToken}")
 	public Response getSessionFields(
-			@PathParam("sessionToken") String sessionToken) {
+			@PathParam(Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId = sessionMid.getUserUsingSessionToken(sessionToken);
@@ -285,10 +285,10 @@ public class AccountResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response makeRecoveryRequest(JSONObject inputJson, @Context UriInfo ui, @Context HttpHeaders hh,
-			@HeaderParam(value = "location") String location){
+			@HeaderParam(value = Const.LOCATION) String location){
 		Response response = null;
 		String email = null;
-		String newPass = Utils.getRandomString(Const.PASSWORD_LENGTH);
+		String newPass = Utils.getRandomString(Const.getPasswordLength());
 		byte[] salt = null;
 		byte[] hash = null;
 			try {
