@@ -89,10 +89,11 @@ public class AppResource {
 			}
 			if (created) {
 				temp = this.appsMid.getApp(appId);
-				boolean awsOkay = this.appsMid.createAppAWS(appId);
-				if (awsOkay) {
+				//boolean awsOkay = this.appsMid.createAppAWS(appId);
+				/*if (awsOkay) {
 					response = Response.status(Status.CREATED).entity(temp).build();
-				}
+				}*/
+				response = Response.status(Status.CREATED).entity(temp).build();
 			} else {
 				// 302 is not implemented in the response status, we can create
 				// it
@@ -104,11 +105,9 @@ public class AppResource {
 			}
 			Log.debug("", this, "createApp", "TIME TO FULLFILL REQUEST: " + (System.currentTimeMillis() - start));
 		} else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
+			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
+			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 

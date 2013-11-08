@@ -89,9 +89,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			if (userAgentList != null)
 				userAgent = userAgentList.get(0);
 			
-			sessionMid.refreshSession(sessionToken, location, userAgent);
+			Boolean refresh = sessionMid.refreshSession(sessionToken, location, userAgent);
 
-			if (validation) {
+			if (validation && refresh) {
 				outUser.setUserID2(userId);
 				outUser.setReturnToken(sessionToken);
 			}

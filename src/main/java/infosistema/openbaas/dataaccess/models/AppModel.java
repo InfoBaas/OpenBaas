@@ -14,7 +14,7 @@ import redis.clients.jedis.JedisPoolConfig;
 public class AppModel {
 
 	// request types
-	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer());
+	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
 	Jedis jedis;
 	
 	public AppModel() {

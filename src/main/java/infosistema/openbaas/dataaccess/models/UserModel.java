@@ -17,7 +17,7 @@ import redis.clients.jedis.JedisPoolConfig;
 public class UserModel {
 
 	// request types
-	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer());
+	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
 	Jedis jedis;
 	
 	public UserModel() {
@@ -185,8 +185,7 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		Boolean userExists = false;
 		try {
-			Set<String> usersInApp = this.jedis.smembers("app:" + appId
-					+ ":users");
+			Set<String> usersInApp = jedis.smembers("app:" + appId	+ ":users");
 			Iterator<String> it = usersInApp.iterator();
 			while (it.hasNext())
 				if (it.next().equalsIgnoreCase(userId))

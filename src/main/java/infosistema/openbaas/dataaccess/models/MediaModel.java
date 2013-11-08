@@ -17,7 +17,7 @@ public class MediaModel {
 	// request types
 	private static final String ID_FORMAT = "%s:%s";
 	private static final String APP_ID_FORMAT = "app:%s:%s";
-	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer());
+	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
 	
 	public MediaModel() {
 	}

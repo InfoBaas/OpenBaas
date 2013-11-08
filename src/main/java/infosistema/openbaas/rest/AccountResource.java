@@ -89,9 +89,9 @@ public class AccountResource {
 				return Response.status(Status.NOT_FOUND).entity("{\"App\": "+appId+"}").build();
 			if (readOk) {
 				if (!usersMid.userExistsInApp(appId, userId, email)) {
-					if (uriInfo == null) uriInfo=ui;
-					User outUser = usersMid.createUserAndLogin(headerParams, ui, userId, userName, email, password, userFile);
-					
+					if (uriInfo == null) 
+						uriInfo=ui;
+					User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile);
 					response = Response.status(Status.CREATED).entity(outUser).build();
 				} else {
 					//String foundUserId = usersMid.getUserIdUsingUserName(appId,userName);
