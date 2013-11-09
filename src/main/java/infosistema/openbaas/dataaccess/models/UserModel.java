@@ -1,5 +1,6 @@
 package infosistema.openbaas.dataaccess.models;
 
+import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.utils.Const;
 
 import java.io.UnsupportedEncodingException;
@@ -300,6 +301,25 @@ public class UserModel {
 		return null;
 	}
 
+	public User getUserUsingEmail(String appId, String email) {
+		Jedis jedis = pool.getResource();
+		User res = new User();
+		try {
+			Set<String> usersInApp = jedis.smembers("app:" + appId + ":users");
+			Iterator<String> it = usersInApp.iterator();
+			while (it.hasNext()) {
+				String userId = it.next();
+				Map<String, String> userFields = jedis.hgetAll("users:"	+ userId);
+				if (userFields.get("email").equalsIgnoreCase(email)){
+					res.setUserID(userFields.get("userId"));
+					res.setUserName(userFields.get("userName"));
+				}
+			} 
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
+	}
 
 	// *** DELETE *** //
 

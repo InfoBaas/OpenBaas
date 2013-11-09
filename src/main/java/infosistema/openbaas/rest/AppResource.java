@@ -73,11 +73,22 @@ public class AppResource {
 			Application temp = null;
 			String appName = null;
 			boolean confirmUsersEmail;
+			boolean AWS;
+			boolean FTP;
+			boolean FileSystem;
 			String appId = null;
 			boolean readSucess = false, created = false;
 			try {
 				appName = (String) inputJsonObj.get("appName");
 				confirmUsersEmail = (boolean) inputJsonObj.optBoolean("confirmUsersEmail", false);
+				AWS = (boolean) inputJsonObj.optBoolean("aws", false);
+				FTP = (boolean) inputJsonObj.optBoolean("ftp", false);
+				if(!AWS && !FTP)
+					FileSystem = (boolean) inputJsonObj.optBoolean("filesystem", true);
+				else 
+					FileSystem = (boolean) inputJsonObj.optBoolean("filesystem", false);
+				if(!AWS && !FTP && !FileSystem)
+					FileSystem = true;
 				readSucess = true;
 			} catch (JSONException e) {
 				Log.error("", this, "createApp", "Error parsing the JSON.", e); 
@@ -85,7 +96,7 @@ public class AppResource {
 			}
 			if (readSucess) {
 				appId = Utils.getRandomString(IDLENGTH);
-				created = appsMid.createApp(appId, appName, confirmUsersEmail);
+				created = appsMid.createApp(appId, appName, confirmUsersEmail,AWS,FTP,FileSystem);
 			}
 			if (created) {
 				temp = this.appsMid.getApp(appId);
@@ -130,22 +141,43 @@ public class AppResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			String alive = null;
+			String newAlive = null;
 			String newAppName = null;
-			Boolean confirmUsersEmail;
-			alive = inputJsonObj.optString("alive"); //mudar para boolean
-			newAppName = inputJsonObj.optString("newAppName");
-			confirmUsersEmail = (boolean) inputJsonObj.optBoolean("confirmUsersEmail", false);
+			Application temp = null;
+			Boolean newAWS;
+			Boolean newFTP;
+			Boolean newFileSystem;
+			Boolean newConfirmUsersEmail;
+			newAlive = inputJsonObj.optString("alive"); //mudar para boolean
+			newAppName = inputJsonObj.optString("appName");
+			newConfirmUsersEmail = (boolean) inputJsonObj.optBoolean("confirmUsersEmail", false);
+			newAWS = (Boolean) inputJsonObj.opt("aws");
+			newFTP = (Boolean) inputJsonObj.opt("ftp");
+			newFileSystem = (Boolean) inputJsonObj.opt("filesystem");
+			Application app = this.appsMid.getApp(appId);
+			
+			
+			if(newAlive.equals(""))
+				newAlive = app.getAlive();
+			if(newAppName.equals(""))
+				newAppName = app.getAppName();
+			if(newConfirmUsersEmail.equals(""))
+				newConfirmUsersEmail = app.getConfirmUsersEmail();
+			
+			if(newAWS==null)
+				newAWS = app.getAWS();
+			if(newFTP==null)
+				newFTP = app.getFTP();
+			if(newFileSystem==null)
+				newFileSystem = app.getFileSystem();
+			
+			if(!newAWS && !newFTP && !newFileSystem)
+				newFileSystem = true;
+			
+			
 			if (this.appsMid.appExists(appId)) {
-				if (alive != null && newAppName != null && confirmUsersEmail != null) {
-					this.appsMid.updateAllAppFields(appId, alive, newAppName,confirmUsersEmail);
-					response = Response.status(Status.OK).entity(appId).build();
-				} else if (alive != null)
-					this.appsMid.reviveApp(appId);
-				else if (newAppName != null)
-					this.appsMid.updateAppName(appId, newAppName);
-				else if(confirmUsersEmail != null)
-					MiddleLayerFactory.getUsersMiddleLayer().updateConfirmUsersEmailOption(appId, confirmUsersEmail);
+				temp = this.appsMid.updateAllAppFields(appId, newAlive, newAppName,newConfirmUsersEmail,newAWS,newFTP,newFileSystem);
+				response = Response.status(Status.OK).entity(temp).build();
 			} else {
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			}

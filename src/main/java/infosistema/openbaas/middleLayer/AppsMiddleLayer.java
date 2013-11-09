@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 
+
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.identitymanagement.model.EntityAlreadyExistsException;
 
@@ -42,8 +43,8 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	 * @param appName
 	 * @return
 	 */
-	public boolean createApp(String appId, String appName, boolean userEmailConfirmation) {
-		return appModel.createApp(appId, appName, new Date().toString(), userEmailConfirmation);
+	public boolean createApp(String appId, String appName, boolean userEmailConfirmation,boolean AWS,boolean FTP,boolean FileSystem) {
+		return appModel.createApp(appId, appName, new Date().toString(), userEmailConfirmation,AWS,FTP,FileSystem);		
 	}
 
 	public boolean createAppAWS(String appId) {
@@ -65,10 +66,12 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 
 	// *** UPDATE *** //
 	
-	public void updateAllAppFields(String appId, String alive, String newAppName, boolean confirmUsersEmail) {
+	public Application updateAllAppFields(String appId, String alive, String newAppName, boolean confirmUsersEmail,boolean AWS,boolean FTP,boolean FILESYSTEM) {
 		if (appModel.appExists(appId)) {
-			appModel.updateAllAppFields(appId, alive, newAppName, confirmUsersEmail);
+			appModel.updateAllAppFields(appId, alive, newAppName, confirmUsersEmail,AWS,FTP,FILESYSTEM);
+			return appModel.getApplication(appId);
 		}
+		return null;
 	}
 
 	public void updateAppName(String appId, String newAppName) {
@@ -94,26 +97,9 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 
 	// *** GET *** //
 	
-	public Application getApp(String appId) {
-		Map<String, String> fields = appModel.getApplication(appId);
-		
+	public Application getApp(String appId) {	
 		Application temp = new Application(appId);
-
-		if (fields == null) {
-			temp = null;
-		} else {
-			for (Entry<String, String> entry : fields.entrySet()) {
-				if (entry.getKey().equalsIgnoreCase("creationdate"))
-					temp.setCreationDate(entry.getValue());
-				else if (entry.getKey().equalsIgnoreCase("alive")
-						&& entry.getValue().equalsIgnoreCase("false"))
-					temp = null;
-				else if (entry.getKey().equalsIgnoreCase("appName"))
-					temp.setAppName(entry.getValue());
-				else if (entry.getKey().equalsIgnoreCase("confirmUsersEmail"))
-					temp.setConfirmUsersEmail(entry.getValue());
-			}
-		}
+		temp = appModel.getApplication(appId);
 		return temp;
 	}
 

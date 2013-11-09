@@ -97,8 +97,6 @@ public class IntegrationResource {
 		
 		if(userId!=null && userSocialId==null)
 			response =  Response.status(302).entity("User "+userId+" with email: "+email+" already exists in app.").build();
-		
-		
 		if (userId==null) {
 			if (uriInfo == null) uriInfo=ui;
 			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
@@ -108,8 +106,10 @@ public class IntegrationResource {
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
 			if(validation){
 				sessionMid.refreshSession(sessionToken, location, userAgent);
-				outUser.setUserID2(userId);
+				outUser.setUserID(userId);
 				outUser.setReturnToken(sessionToken);
+				outUser.setUserEmail(email);
+				outUser.setUserName(userName);
 				response = Response.status(Status.OK).entity(outUser).build();
 			}
 		}
@@ -181,8 +181,10 @@ public class IntegrationResource {
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
 			if(validation){
 				sessionMid.refreshSession(sessionToken, location, userAgent);
-				outUser.setUserID2(userId);
+				outUser.setUserID(userId);
 				outUser.setReturnToken(sessionToken);
+				outUser.setUserEmail(email);
+				outUser.setUserName(userName);
 				response = Response.status(Status.OK).entity(outUser).build();
 			}
 		}

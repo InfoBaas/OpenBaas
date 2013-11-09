@@ -1,11 +1,14 @@
 package infosistema.openbaas.dataaccess.models;
 
+import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.utils.Const;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -38,15 +41,19 @@ public class AppModel {
 	 * @param creationDate
 	 * @return
 	 */
-	public Boolean createApp(String appId, String appName, String creationDate, Boolean confirmUsersEmail) {
+	public Boolean createApp(String appId, String appName, String creationDate, Boolean confirmUsersEmail, Boolean AWS, Boolean FTP, Boolean FileSystem) {
 		Jedis jedis = pool.getResource();
 		Boolean sucess = false;
 		try {
 			if (!jedis.exists("apps:" + appId)) {
 				jedis.hset("apps:" + appId, "creationDate", creationDate);
+				jedis.hset("apps:" + appId, "updateDate", creationDate);
 				jedis.hset("apps:" + appId, "alive", "true");
 				jedis.hset("apps:" + appId, "appName", appName);
 				jedis.hset("apps:" + appId, "confirmUsersEmail", ""+confirmUsersEmail);
+				jedis.hset("apps:" + appId, "AWS", ""+AWS);
+				jedis.hset("apps:" + appId, "FTP", ""+FTP);
+				jedis.hset("apps:" + appId, "FileSystem", ""+FileSystem);
 				long unixTime = System.currentTimeMillis() / 1000L;
 				jedis.zadd("apps:time", unixTime, appId);
 				sucess = true;
@@ -109,7 +116,7 @@ public class AppModel {
 	}
 
 	public Boolean updateAllAppFields(String appId, String alive,
-			String newAppName, Boolean confirmUsersEmail) {
+			String newAppName, Boolean confirmUsersEmail,boolean AWS,boolean FTP,boolean FileSystem) {
 		Jedis jedis = pool.getResource();
 		try {
 			long unixTime = System.currentTimeMillis() / 1000L;
@@ -118,6 +125,10 @@ public class AppModel {
 			jedis.hset("apps:" + appId, "alive", alive);
 			jedis.hset("apps:" + appId, "appName", newAppName);
 			jedis.hset("apps:" + appId, "confirmUsersEmail", ""+confirmUsersEmail);
+			jedis.hset("apps:" + appId, "AWS", ""+AWS);
+			jedis.hset("apps:" + appId, "FTP", ""+FTP);
+			jedis.hset("apps:" + appId, "FileSystem", ""+FileSystem);
+			jedis.hset("apps:" + appId, "updateDate", new Date().toString());
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -168,7 +179,7 @@ public class AppModel {
 
 	/**
 	 * Returns the fields of the corresponding application
-	 */
+	 *//*
 	public Map<String, String> getApplication(String appId) {
 		Jedis jedis = pool.getResource();
 		Map<String, String> appFields = null;
@@ -180,6 +191,41 @@ public class AppModel {
 			pool.returnResource(jedis);
 		}
 		return appFields;
+	}*/
+	
+	public Application getApplication(String appId) {
+		Jedis jedis = pool.getResource();
+		Application res = new Application();
+		Map<String, String> fields = null;
+		try {
+			if (jedis.exists("apps:" + appId)) {
+				fields = jedis.hgetAll("apps:" + appId);
+			}
+			if (fields != null) {
+				for (Entry<String, String> entry : fields.entrySet()) {
+					if (entry.getKey().equalsIgnoreCase("creationdate"))
+						res.setCreationDate(entry.getValue());
+					else if (entry.getKey().equalsIgnoreCase("alive"))
+						res.setAlive(entry.getValue());
+					else if (entry.getKey().equalsIgnoreCase("appName"))
+						res.setAppName(entry.getValue());
+					else if (entry.getKey().equalsIgnoreCase("confirmUsersEmail"))
+						res.setConfirmUsersEmail(Boolean.parseBoolean(entry.getValue()));
+					else if (entry.getKey().equalsIgnoreCase("AWS"))
+						res.setAWS(Boolean.parseBoolean(entry.getValue()));
+					else if (entry.getKey().equalsIgnoreCase("FTP"))
+						res.setFTP(Boolean.parseBoolean(entry.getValue()));
+					else if (entry.getKey().equalsIgnoreCase("FileSystem"))
+						res.setFileSystem(Boolean.parseBoolean(entry.getValue()));
+					else if (entry.getKey().equalsIgnoreCase("updateDate"))
+						res.setUpdateDate(entry.getValue());
+				}
+				res.setAppId(appId);
+			}
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
 	}
 	
 	public Boolean getConfirmUsersEmail(String appId) {

@@ -11,7 +11,13 @@ public class Application {
 	private String appId;
 	private String alive;
 	private String appName;
-	private String confirmationEmail;
+	private Boolean confirmationEmail;
+	private Boolean AWS;
+	private Boolean FTP;
+	private Boolean FileSystem;
+	
+
+
 	/**
 	 * Application constructor with no variables being affected, don't forget to
 	 * affect them later.
@@ -44,6 +50,12 @@ public class Application {
 	public String getAppId() {
 		return this.appId;
 	}
+	public void setAppId(String appId){
+		this.appId = appId;
+	}
+	public void setAlive(String alive){
+		this.alive = alive;
+	}
 	public void setInactive(){
 		this.alive = "false";
 	}
@@ -59,10 +71,34 @@ public class Application {
 	public void setAppName(String appName){
 		this.appName = appName;
 	}
-	public String getConfirmUsersEmail() {
+	public Boolean getConfirmUsersEmail() {
 		return confirmationEmail;
 	}
-	public void setConfirmUsersEmail(String confirmationEmail) {
+	public void setConfirmUsersEmail(Boolean confirmationEmail) {
 		this.confirmationEmail = confirmationEmail;
+	}
+	
+	public Boolean getAWS() {
+		return AWS;
+	}
+
+	public void setAWS(Boolean aWS) {
+		AWS = aWS;
+	}
+
+	public Boolean getFTP() {
+		return FTP;
+	}
+
+	public void setFTP(Boolean fTP) {
+		FTP = fTP;
+	}
+
+	public Boolean getFileSystem() {
+		return FileSystem;
+	}
+
+	public void setFileSystem(Boolean fileSystem) {
+		FileSystem = fileSystem;
 	}
 }

@@ -84,11 +84,11 @@ public class User {
 			return false;
 	}
 
-	public void setUserID(String id) {
+	public void setUpdatedDate() {
 		this.updatedDate = new Date().toString();
 
 	}
-	public void setUserID2(String id) {
+	public void setUserID(String id) {
 		this.userId = id;
 
 	}
@@ -183,4 +183,5 @@ public class User {
 	public void setReturnToken(String returnToken) {
 		this.returnToken = returnToken;
 	}
+	
 }

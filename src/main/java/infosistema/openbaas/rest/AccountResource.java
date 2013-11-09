@@ -147,34 +147,38 @@ public class AccountResource {
 		//// String email = usersMid.getEmailUsingUserName(appId, userName);
 		if(email == null && attemptedPassword == null)
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
-		String userId = usersMid.getUserIdUsingEmail(appId, email);
-		if (userId != null) {
+		outUser = usersMid.getUserUsingEmail(appId, email);
+		if (outUser.getUserId() != null) {
 			boolean usersConfirmedOption = usersMid.getConfirmUsersEmailOption(appId);
 			// Remember the order of evaluation in java
 			if (usersConfirmedOption) {
-				if (usersMid.userEmailIsConfirmed(appId, userId)) {
+				if (usersMid.userEmailIsConfirmed(appId, outUser.getUserId())) {
 					String sessionToken = Utils.getRandomString(Const.getIdLength());
-					boolean validation = sessionMid.createSession(sessionToken, appId, userId, attemptedPassword);
+					boolean validation = sessionMid.createSession(sessionToken, appId, outUser.getUserId(), attemptedPassword);
 					sessionMid.refreshSession(sessionToken, location, userAgent);
 					refreshCode = true;
 					if (validation && refreshCode) {
-						outUser.setUserID2(userId);
+						outUser.setUserID(outUser.getUserId());
 						outUser.setReturnToken(sessionToken);
+						outUser.setUserEmail(email);
+						outUser.setUserName(outUser.getUserName());
 						response = Response.status(Status.OK).entity(outUser).build();
 					}
 				} else {
 					response = Response.status(Status.FORBIDDEN).entity(Const.getEmailConfirmationError()).build();
 				}
 			} else{
-				Log.debug("", this, "createSession", "userId of email: " + email + " is: " + userId);
+				Log.debug("", this, "createSession", "userId of email: " + email + " is: " + outUser.getUserId());
 				String sessionToken = Utils.getRandomString(Const.getIdLength());
-				boolean validation = sessionMid.createSession(sessionToken, appId, userId, attemptedPassword);
+				boolean validation = sessionMid.createSession(sessionToken, appId, outUser.getUserId(), attemptedPassword);
 				if(validation){
 					sessionMid.refreshSession(sessionToken, location, userAgent);
 					refreshCode = true;
 					if (validation && refreshCode) {
-						outUser.setUserID2(userId);
+						outUser.setUserID(outUser.getUserId());
 						outUser.setReturnToken(sessionToken);
+						outUser.setUserEmail(email);
+						outUser.setUserName(outUser.getUserName());
 						response = Response.status(Status.OK).entity(outUser).build();
 					}
 				}else
@@ -309,11 +313,9 @@ public class AccountResource {
 			boolean opOk = usersMid.recoverUser(appId, userId, email, ui, newPass,hash,salt);
 			
 			if(opOk)
-				response = Response.status(Status.OK)
-				.entity("Email sent with recovery details.").build();
+				response = Response.status(Status.OK).entity("Email sent with recovery details.").build();
 			else
-				response = Response.status(Status.BAD_REQUEST)
-				.entity("Wrong email.").build();
+				response = Response.status(Status.BAD_REQUEST).entity("Wrong email.").build();
 		return response;
 		
 	}

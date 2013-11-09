@@ -74,7 +74,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 
 		if (!getConfirmUsersEmailOption(appId)) {
 			SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
-			createUser(appId, userId, userName, "NOK", "NOK", email, salt, hash, userFile, null, null);
+			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt, hash, userFile, null, null);
 			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, password);
 			for (Entry<String, List<String>> entry : headerParams.entrySet()) {
@@ -92,13 +92,17 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			Boolean refresh = sessionMid.refreshSession(sessionToken, location, userAgent);
 
 			if (validation && refresh) {
-				outUser.setUserID2(userId);
+				outUser.setUserID(userId);
 				outUser.setReturnToken(sessionToken);
+				outUser.setUserEmail(email);
+				outUser.setUserName(userName);
 			}
 		} else if (getConfirmUsersEmailOption(appId)) {
 			boolean emailConfirmed = false;
-			createUser(appId, userId, userName, "NOK", "NOK", email, salt,hash, userFile, emailConfirmed, uriInfo);
-			outUser.setUserID2(userId);
+			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt,hash, userFile, emailConfirmed, uriInfo);
+			outUser.setUserID(userId);
+			outUser.setUserEmail(email);
+			outUser.setUserName(userName);
 		}
 		return outUser;
 		
@@ -147,8 +151,10 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		sessionMid.refreshSession(sessionToken, location, userAgent);
 
 		if (validation) {
-			outUser.setUserID2(userId);
+			outUser.setUserID(userId);
 			outUser.setReturnToken(sessionToken);
+			outUser.setUserEmail(email);
+			outUser.setUserName(userName);
 		}
 		
 		return outUser;
@@ -290,6 +296,10 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 
 	public String getUserIdUsingEmail(String appId, String email) {
 		return userModel.getUserIdUsingEmail(appId, email);
+	}
+	
+	public User getUserUsingEmail(String appId, String email) {
+		return userModel.getUserUsingEmail(appId, email);
 	}
 
 	// *** EXISTS *** //
