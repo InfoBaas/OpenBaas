@@ -92,6 +92,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			Boolean refresh = sessionMid.refreshSession(sessionToken, location, userAgent);
 
 			if (validation && refresh) {
+				outUser.setUserFile(userFile);
 				outUser.setUserID(userId);
 				outUser.setReturnToken(sessionToken);
 				outUser.setUserEmail(email);
@@ -101,6 +102,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			boolean emailConfirmed = false;
 			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt,hash, userFile, emailConfirmed, uriInfo);
 			outUser.setUserID(userId);
+			outUser.setUserFile(userFile);
 			outUser.setUserEmail(email);
 			outUser.setUserName(userName);
 		}

@@ -32,6 +32,7 @@ public class User {
 	private String updatedDate;
 	private String alive;
 	private String returnToken;
+	private String userFile;
 	/**
 	 * Provides the user creation mechanism.
 	 * 
@@ -182,6 +183,12 @@ public class User {
 	}
 	public void setReturnToken(String returnToken) {
 		this.returnToken = returnToken;
+	}
+	public String getUserFile() {
+		return userFile;
+	}
+	public void setUserFile(String userFile) {
+		this.userFile = userFile;
 	}
 	
 }

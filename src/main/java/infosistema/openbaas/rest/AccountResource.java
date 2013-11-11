@@ -162,6 +162,7 @@ public class AccountResource {
 						outUser.setReturnToken(sessionToken);
 						outUser.setUserEmail(email);
 						outUser.setUserName(outUser.getUserName());
+						outUser.setUserFile(outUser.getUserFile());
 						response = Response.status(Status.OK).entity(outUser).build();
 					}
 				} else {
@@ -179,6 +180,7 @@ public class AccountResource {
 						outUser.setReturnToken(sessionToken);
 						outUser.setUserEmail(email);
 						outUser.setUserName(outUser.getUserName());
+						outUser.setUserFile(outUser.getUserFile());
 						response = Response.status(Status.OK).entity(outUser).build();
 					}
 				}else

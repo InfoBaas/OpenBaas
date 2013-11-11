@@ -53,7 +53,7 @@ public class UserModel {
 				jedis.hset("users:" + userId, "creationDate", creationDate);
 				jedis.sadd("app:" + appId + ":users", userId);
 				jedis.sadd("app:" + appId + ":users:emails", email);
-				if (flag != null) jedis.hset(("users:" + userId), "flag", flag);
+				jedis.hset(("users:" + userId), "userFile", flag);
 				if (emailConfirmed != null) jedis.hset("users:"+userId, "emailConfirmed", "" + emailConfirmed);
 				sucess = true;
 			}
@@ -313,6 +313,7 @@ public class UserModel {
 				if (userFields.get("email").equalsIgnoreCase(email)){
 					res.setUserID(userFields.get("userId"));
 					res.setUserName(userFields.get("userName"));
+					res.setUserFile(userFields.get("userFile"));
 				}
 			} 
 		} finally {
