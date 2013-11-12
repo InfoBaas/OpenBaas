@@ -46,9 +46,7 @@ public class UsersResource {
 		this.uriInfo = uriInfo;
 	}
 
-	// *** CREATE *** //
-
-	
+		
 	// *** UPDATE *** //
 	
 	/**
