@@ -126,7 +126,7 @@ public class SessionModel {
 			
 			if (location != null && !"".equals(location)) {
 				String previousLocation = jedis.hget("sessions:" + sessionToken, Const.LOCATION);
-				String userId = this.getUserUsingSessionToken(sessionToken);
+				String userId = this.getUserIdUsingSessionToken(sessionToken);
 				String appId = this.getAppUsingSessionToken(sessionToken);
 				if (previousLocation == null) { // No previous Location, we simply add it.
 					addLocationToSession(location, sessionToken, userAgent, appId, userId);
@@ -413,7 +413,7 @@ public class SessionModel {
 		return jedis.hget("sessions:" + sessionToken, "appId");
 	}
 
-	public String getUserUsingSessionToken(String sessionToken) {
+	public String getUserIdUsingSessionToken(String sessionToken) {
 		return jedis.hget("sessions:" + sessionToken, "userId");
 	}
 }

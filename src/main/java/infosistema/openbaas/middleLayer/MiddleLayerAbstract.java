@@ -1,7 +1,6 @@
 package infosistema.openbaas.middleLayer;
 
-import com.drew.metadata.Metadata;
-
+import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.enums.FileMode;
 import infosistema.openbaas.dataaccess.files.AwsModel;
 import infosistema.openbaas.dataaccess.files.FileInterface;
@@ -39,8 +38,20 @@ public abstract class MiddleLayerAbstract {
 	
 	// *** METADATA *** //
 	
-	public Metadata getMetadata() {
+	public Metadata getMetadata(String key) {
 		return new Metadata();
+	}
+	
+	public Metadata createMetadata(String key, String userId, String location) {
+		return new Metadata();
+	}
+	
+	public Metadata updateMetadata(String key, String userId, String location) {
+		return new Metadata();
+	}
+	
+	public Boolean deleteMetadata(String key) {
+		return null;
 	}
 
 }

@@ -3,6 +3,9 @@ package infosistema.openbaas.rest;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
+import infosistema.openbaas.data.ErrorSet;
+import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.ResultSet;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
@@ -40,6 +43,7 @@ public class AccountResource {
 	private UsersMiddleLayer usersMid;
 	private SessionMiddleLayer sessionMid;
 	private String appId;
+	
 
 	@Context
 	UriInfo uriInfo;
@@ -73,6 +77,14 @@ public class AccountResource {
 			String userFile = null;
 			String userId = null;
 			Boolean readOk = false;
+			String location = null;
+			List<String> locationList = null;
+			for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+				if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
+					locationList = entry.getValue();
+			}
+			if (locationList != null)
+				location = locationList.get(0);
 			try {
 				userName = (String) inputJsonObj.opt("userName");
 				userFile = (String) inputJsonObj.opt("userFile");
@@ -91,13 +103,16 @@ public class AccountResource {
 				if (!usersMid.userExistsInApp(appId, userId, email)) {
 					if (uriInfo == null) 
 						uriInfo=ui;
+					String metaKey = "apps"+appId+"users"+userId;
+					Metadata meta = usersMid.createMetadata(metaKey, userId, location);
 					User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile);
-					response = Response.status(Status.CREATED).entity(outUser).build();
+					ResultSet res = new ResultSet(outUser, meta);
+					response = Response.status(Status.CREATED).entity(res).build();
 				} else {
-					response = Response.status(Status.FORBIDDEN).entity("{\"email exists\": "+email+"}").build();
+					response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("{\"email exists\": "+email+"}")).build();
 				}
 			} else {
-				response = Response.status(Status.BAD_REQUEST).entity("").build();
+				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("")).build();
 			}
 		return response;
 	}
@@ -162,10 +177,13 @@ public class AccountResource {
 						outUser.setUserEmail(email);
 						outUser.setUserName(outUser.getUserName());
 						outUser.setUserFile(outUser.getUserFile());
-						response = Response.status(Status.OK).entity(outUser).build();
+						String metaKey = "apps"+appId+"users"+outUser.getUserId();
+						Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
+						ResultSet res = new ResultSet(outUser, meta);
+						response = Response.status(Status.OK).entity(res).build();
 					}
 				} else {
-					response = Response.status(Status.FORBIDDEN).entity(Const.getEmailConfirmationError()).build();
+					response = Response.status(Status.FORBIDDEN).entity(new ErrorSet(Const.getEmailConfirmationError())).build();
 				}
 			} else{
 				Log.debug("", this, "createSession", "userId of email: " + email + " is: " + outUser.getUserId());
@@ -180,13 +198,16 @@ public class AccountResource {
 						outUser.setUserEmail(email);
 						outUser.setUserName(outUser.getUserName());
 						outUser.setUserFile(outUser.getUserFile());
-						response = Response.status(Status.OK).entity(outUser).build();
+						String metaKey = "apps"+appId+"users"+outUser.getUserId();
+						Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
+						ResultSet res = new ResultSet(outUser, meta);
+						response = Response.status(Status.OK).entity(res).build();
 					}
 				}else
-					response = Response.status(Status.UNAUTHORIZED).entity("").build();				
+					response = Response.status(Status.UNAUTHORIZED).entity(new ErrorSet("")).build();				
 			}
 		} else
-			response = Response.status(Status.NOT_FOUND).entity("").build();
+			response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("")).build();
 		return response;
 
 	}
@@ -201,18 +222,21 @@ public class AccountResource {
 			@PathParam(Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
-			String userId = sessionMid.getUserUsingSessionToken(sessionToken);
+			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 			if (sessionMid.sessionExistsForUser(userId)) {
 				if (location != null) {
+					String metaKey = "apps"+appId+"users"+userId;
+					Metadata meta = usersMid.updateMetadata(metaKey, userId, location);
+					ResultSet res = new ResultSet("Refresh OK", meta);
 					sessionMid.refreshSession(sessionToken, location, userAgent);
-					response = Response.status(Status.OK).entity("Refresh OK").build();
+					response = Response.status(Status.OK).entity(res).build();
 				} // if the device does not have the gps turned on we should not
 					// refresh the session.
 					// only refresh it when an action is performed.
 			}
-			Response.status(Status.NOT_FOUND).entity(sessionToken).build();
+			Response.status(Status.NOT_FOUND).entity(new ErrorSet("SessionToken: "+sessionToken)).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity("You do not have permission to access.").build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("You do not have permission to access.")).build();
 		return response;
 	}
 
@@ -232,7 +256,7 @@ public class AccountResource {
 	public Response deleteSession(JSONObject inputJsonObj, @PathParam(Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		Boolean flagAll = (Boolean) inputJsonObj.opt("all");
-		String userId = sessionMid.getUserUsingSessionToken(sessionToken);
+		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 		if(userId!=null){
 			if (sessionMid.sessionTokenExists(sessionToken)) {
 				if(!flagAll){
@@ -275,7 +299,7 @@ public class AccountResource {
 			@PathParam(Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
-			String userId = sessionMid.getUserUsingSessionToken(sessionToken);
+			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 			response = Response.status(Status.OK).entity(userId).build();
 		} else
 			response = Response.status(Status.NOT_FOUND).entity(sessionToken).build();

@@ -60,7 +60,7 @@ public class AclResource {
 				sessionToken = entry.getValue();
 		}
 		if (!(sessionToken == null))
-			return MiddleLayerFactory.getSessionMiddleLayer().getUserUsingSessionToken(sessionToken.getValue());
+			return MiddleLayerFactory.getSessionMiddleLayer().getUserIdUsingSessionToken(sessionToken.getValue());
 		else {
 			return null;
 		}

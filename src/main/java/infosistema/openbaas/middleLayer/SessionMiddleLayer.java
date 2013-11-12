@@ -142,8 +142,8 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 		return adminFields;
 	}
 
-	public String getUserUsingSessionToken(String sessionToken) {
-		return sessions.getUserUsingSessionToken(sessionToken);
+	public String getUserIdUsingSessionToken(String sessionToken) {
+		return sessions.getUserIdUsingSessionToken(sessionToken);
 	}
 
 	// *** EXISTS *** //
