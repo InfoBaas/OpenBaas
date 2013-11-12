@@ -3,6 +3,9 @@ package infosistema.openbaas.rest;
 import java.util.List;
 import java.util.Map.Entry;
 
+import infosistema.openbaas.data.ErrorSet;
+import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.ResultSet;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
@@ -87,7 +90,7 @@ public class IntegrationResource {
 			
 		} catch (JSONException e) {
 			Log.error("", this, "createOrLoginFacebookUser", "Error parsing the JSON.", e); 
-			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
+			return Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error reading JSON")).build();
 		}
 		if (userName == null) {
 			userName = email;
@@ -96,11 +99,16 @@ public class IntegrationResource {
 		userSocialId = usersMid.socialUserExistsInApp(appId, socialId, socialNetwork);
 		
 		if(userId!=null && userSocialId==null)
-			response =  Response.status(302).entity("User "+userId+" with email: "+email+" already exists in app.").build();
+			response =  Response.status(302).entity(new ErrorSet("User "+userId+" with email: "+email+" already exists in app.")).build();
 		if (userId==null) {
 			if (uriInfo == null) uriInfo=ui;
 			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
-			response = Response.status(Status.CREATED).entity(outUser).build();
+			
+			String metaKey = "apps"+appId+"users"+userId;
+			Metadata meta = usersMid.createMetadata(metaKey, userId, location);
+			ResultSet res = new ResultSet(outUser, meta);
+			
+			response = Response.status(Status.CREATED).entity(res).build();
 		} else {
 			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
@@ -110,7 +118,10 @@ public class IntegrationResource {
 				outUser.setReturnToken(sessionToken);
 				outUser.setUserEmail(email);
 				outUser.setUserName(userName);
-				response = Response.status(Status.OK).entity(outUser).build();
+				String metaKey = "apps"+appId+"users"+userId;
+				Metadata meta = usersMid.createMetadata(metaKey, userId, location);
+				ResultSet res = new ResultSet(outUser, meta);
+				response = Response.status(Status.OK).entity(res).build();
 			}
 		}
 		return response;
@@ -175,7 +186,10 @@ public class IntegrationResource {
 		if (userId==null) {
 			if (uriInfo == null) uriInfo=ui;
 			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
-			response = Response.status(Status.CREATED).entity(outUser).build();
+			String metaKey = "apps"+appId+"users"+userId;
+			Metadata meta = usersMid.createMetadata(metaKey, userId, location);
+			ResultSet res = new ResultSet(outUser, meta);
+			response = Response.status(Status.CREATED).entity(res).build();
 		} else {
 			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
@@ -185,7 +199,10 @@ public class IntegrationResource {
 				outUser.setReturnToken(sessionToken);
 				outUser.setUserEmail(email);
 				outUser.setUserName(userName);
-				response = Response.status(Status.OK).entity(outUser).build();
+				String metaKey = "apps"+appId+"users"+userId;
+				Metadata meta = usersMid.createMetadata(metaKey, userId, location);
+				ResultSet res = new ResultSet(outUser, meta);
+				response = Response.status(Status.OK).entity(res).build();
 			}
 		}
 		return response;

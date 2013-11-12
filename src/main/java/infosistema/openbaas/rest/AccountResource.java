@@ -103,7 +103,7 @@ public class AccountResource {
 				if (!usersMid.userExistsInApp(appId, userId, email)) {
 					if (uriInfo == null) 
 						uriInfo=ui;
-					String metaKey = "apps"+appId+"users"+userId;
+					String metaKey = "apps."+appId+".users."+userId;
 					Metadata meta = usersMid.createMetadata(metaKey, userId, location);
 					User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile);
 					ResultSet res = new ResultSet(outUser, meta);
@@ -145,7 +145,7 @@ public class AccountResource {
 			attemptedPassword = (String) inputJsonObj.get("password");
 		} catch (JSONException e) {
 			Log.error("", this, "createSession", "Error parsing the JSON.", e); 
-			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
+			return Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error reading JSON")).build();
 		}
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
@@ -177,7 +177,7 @@ public class AccountResource {
 						outUser.setUserEmail(email);
 						outUser.setUserName(outUser.getUserName());
 						outUser.setUserFile(outUser.getUserFile());
-						String metaKey = "apps"+appId+"users"+outUser.getUserId();
+						String metaKey = "apps."+appId+".users."+outUser.getUserId();
 						Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
 						ResultSet res = new ResultSet(outUser, meta);
 						response = Response.status(Status.OK).entity(res).build();
@@ -198,7 +198,7 @@ public class AccountResource {
 						outUser.setUserEmail(email);
 						outUser.setUserName(outUser.getUserName());
 						outUser.setUserFile(outUser.getUserFile());
-						String metaKey = "apps"+appId+"users"+outUser.getUserId();
+						String metaKey = "apps."+appId+".users."+outUser.getUserId();
 						Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
 						ResultSet res = new ResultSet(outUser, meta);
 						response = Response.status(Status.OK).entity(res).build();
@@ -225,10 +225,10 @@ public class AccountResource {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 			if (sessionMid.sessionExistsForUser(userId)) {
 				if (location != null) {
-					String metaKey = "apps"+appId+"users"+userId;
+					String metaKey = "apps."+appId+".users."+userId;
 					Metadata meta = usersMid.updateMetadata(metaKey, userId, location);
 					ResultSet res = new ResultSet("Refresh OK", meta);
-					sessionMid.refreshSession(sessionToken, location, userAgent);
+					sessionMid.refreshSession(sessionToken, location, userAgent);					
 					response = Response.status(Status.OK).entity(res).build();
 				} // if the device does not have the gps turned on we should not
 					// refresh the session.
@@ -261,23 +261,32 @@ public class AccountResource {
 			if (sessionMid.sessionTokenExists(sessionToken)) {
 				if(!flagAll){
 					//deletes the sessions user with the token = sessionToken
-					if (sessionMid.deleteUserSession(sessionToken, userId))
-						response = Response.status(Status.OK).entity(sessionToken).build();
-					else
-						response = Response.status(Status.NOT_FOUND).entity(sessionToken).build();
+					if (sessionMid.deleteUserSession(sessionToken, userId)){
+						String metaKey = "apps"+appId+"users"+userId;
+						Metadata meta = usersMid.updateMetadata(metaKey, userId, null);
+						ResultSet res = new ResultSet("Signout OK", meta);
+						response = Response.status(Status.OK).entity(res).build();
+					}
+					else{
+						response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("Not found")).build();
+					}
 				}else{
 					//deletes all sessions user
 					Log.debug("", this, "deleteSession", "********DELETING ALL SESSIONS FOR THIS USER");
 					boolean sucess = sessionMid.deleteAllUserSessions(userId);
-					if (sucess)
-						response = Response.status(Status.OK).entity(userId).build();
+					if (sucess){
+						String metaKey = "apps."+appId+".users."+userId;
+						Metadata meta = usersMid.updateMetadata(metaKey, userId, null);
+						ResultSet res = new ResultSet("Signout OK", meta);
+						response = Response.status(Status.OK).entity(res).build();
+					}
 					else
-						response = Response.status(Status.NOT_FOUND).entity("No sessions exist").build();
+						response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("No sessions exist")).build();
 					} 
 				}
 			}
 			else 
-				response = Response.status(Status.FORBIDDEN).entity("").build();		
+				response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("FORBIDDEN")).build();		
 		return response;
 	}
 	
@@ -295,14 +304,41 @@ public class AccountResource {
 	 */
 	@GET
 	@Path("/sessions/{sessionToken}")
+	public Response getUserIdWithSession(
+			@PathParam(Const.SESSION_TOKEN) String sessionToken) {
+		Response response = null;
+		if (sessionMid.sessionTokenExists(sessionToken)) {
+			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
+			
+			String metaKey = "apps."+appId+".users."+userId;
+			Metadata meta = usersMid.getMetadata(metaKey);
+			ResultSet res = new ResultSet("OK", meta);
+			response = Response.status(Status.OK).entity(res).build();
+		} else
+			response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(sessionToken)).build();
+		return response;
+	}
+	
+	/**
+	 * Gets the session fields associated with the token.
+	 * 
+	 * @param sessionToken
+	 * @return
+	 */
+	@GET
+	@Path("/sessions")
 	public Response getSessionFields(
 			@PathParam(Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-			response = Response.status(Status.OK).entity(userId).build();
+			User outUser = usersMid.getUserInApp(appId, userId);
+			String metaKey = "apps."+appId+".users."+userId;
+			Metadata meta = usersMid.getMetadata(metaKey);
+			ResultSet res = new ResultSet(outUser, meta);
+			response = Response.status(Status.OK).entity(res).build();
 		} else
-			response = Response.status(Status.NOT_FOUND).entity(sessionToken).build();
+			response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("Token NOT_FOUND")).build();
 		return response;
 	}
 
@@ -335,12 +371,15 @@ public class AccountResource {
 				Log.error("", this, "makeRecoveryRequest", "Invalid Key.", e); 
 			}
 			String userId = usersMid.getUserIdUsingEmail(appId, email);
+			if(userId==null)
+				return Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Wrong email.")).build();
 			boolean opOk = usersMid.recoverUser(appId, userId, email, ui, newPass,hash,salt);
-			
-			if(opOk)
-				response = Response.status(Status.OK).entity("Email sent with recovery details.").build();
+			if(opOk){
+				ResultSet res = new ResultSet("Email sent with recovery details.", null);
+				response = Response.status(Status.OK).entity(res).build();
+			}
 			else
-				response = Response.status(Status.BAD_REQUEST).entity("Wrong email.").build();
+				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Wrong email.")).build();
 		return response;
 		
 	}
@@ -360,7 +399,7 @@ public class AccountResource {
 			return new IntegrationResource(appId);
 		} catch (IllegalArgumentException e) {
 			Log.error("", this, "integration", "Illegal Argument.", e); 
-			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Parse error")).build());
 		}
 	}
 }

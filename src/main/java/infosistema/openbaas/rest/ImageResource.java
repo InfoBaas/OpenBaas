@@ -1,10 +1,14 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.ErrorSet;
 import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.ResultSet;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Image;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
+import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
@@ -12,9 +16,9 @@ import infosistema.openbaas.utils.Utils;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -24,8 +28,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -40,11 +46,13 @@ public class ImageResource {
 
 	private String appId;
 	private MediaMiddleLayer mediaMid;
+	private SessionMiddleLayer sessionsMid;
 
 
 	public ImageResource(String appId) {
 		this.appId = appId;
 		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
+		this.sessionsMid = MiddleLayerFactory.getSessionMiddleLayer();
 	}
 
 	// *** CREATE *** //
@@ -61,18 +69,28 @@ public class ImageResource {
 	public Response uploadImage(@Context HttpHeaders hh, @Context UriInfo ui, @FormDataParam(Const.FILE) InputStream uploadedInputStream,
 			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}		
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String imageId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.image, location);
 			if (imageId == null) { 
-				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
+				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("")).build();
 			} else {
-				response = Response.status(Status.OK).entity(imageId).build();
+				String metaKey = "apps."+appId+".media.images."+imageId;
+				String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
+				ResultSet res = new ResultSet(imageId, meta);
+				response = Response.status(Status.OK).entity(res).build();
 			}
 		} else if(code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		} else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 
@@ -92,17 +110,28 @@ public class ImageResource {
 	@Path("{imageId}")
 	@DELETE
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response deleteImage(@PathParam("imageId") String imageId, @CookieParam(value = Const.SESSION_TOKEN) String sessionToken) {
+	public Response deleteImage(@Context HttpHeaders hh, @PathParam("imageId") String imageId) {
 		Response response = null;
-		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken)) {
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}	
+		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken.getValue())) {
 			Log.debug("", this, "deleteImage", "***********Deleting Image***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.image, imageId)) {
 				this.mediaMid.deleteMedia(appId, ModelEnum.image, imageId);
-				response = Response.status(Status.OK).entity(appId).build();
+				String metaKey = "apps."+appId+".media.images."+imageId;
+				Boolean meta = mediaMid.deleteMetadata(metaKey);
+				if(meta)
+					response = Response.status(Status.OK).entity("").build();
+				else
+					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("Del Meta")).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("Image not found")).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(sessionToken).build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("sessionToken not found")).build();
 		return response;
 	}
 	
@@ -119,7 +148,7 @@ public class ImageResource {
 	public Response findAllImagesIds(@Context UriInfo ui, @Context HttpHeaders hh,
 			@QueryParam("lat") String latitude,	@QueryParam("long") String longitude, @QueryParam("radius") String radius, 
 			@QueryParam(Const.PAGE_NUMBER) Integer pageNumber, @QueryParam(Const.PAGE_SIZE) Integer pageSize, 
-			@QueryParam(Const.ORDER_BY) String orderBy, @QueryParam(Const.ORDER_BY) String orderType ) {
+			@QueryParam(Const.ORDER_BY) String orderBy, @QueryParam(Const.ORDER_TYPE) String orderType ) {
 		if (pageNumber == null) pageNumber = Const.getPageNumber();
 		if (pageSize == null) 	pageSize = Const.getPageSize();
 		if (orderBy == null) 	orderBy = Const.getOrderBy();
@@ -134,7 +163,7 @@ public class ImageResource {
 			ArrayList<String> imagesIds = new ArrayList<String>();
 			if (latitude != null && longitude != null && radius != null) {
 				if(iniIndex>imagesIds.size())
-					return Response.status(Status.BAD_REQUEST).entity("Invalid pagination indexes.").build();
+					return Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Invalid pagination indexes.")).build();
 				imagesIds = mediaMid.getAllImagesIdsInRadius(appId, Double.parseDouble(latitude),Double.parseDouble(longitude), 
 						Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
 				if(finIndex>imagesIds.size())
@@ -152,9 +181,9 @@ public class ImageResource {
 
 			response = Response.status(Status.OK).entity(res).build();
 		} else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 
@@ -178,19 +207,24 @@ public class ImageResource {
 			if(MiddleLayerFactory.getAppsMiddleLayer().appExists(this.appId)){
 				if(mediaMid.mediaExists(appId, ModelEnum.image, imageId)){
 					temp = (Image)(mediaMid.getMedia(appId, ModelEnum.image, imageId));
-					response = Response.status(Status.OK).entity(temp).build();
+					
+					String metaKey = "apps."+appId+".media.images."+imageId;
+					Metadata meta = mediaMid.getMetadata(metaKey);
+					ResultSet res = new ResultSet(temp, meta);
+					
+					response = Response.status(Status.OK).entity(res).build();
 				}
 				else{
-					response = Response.status(Status.NOT_FOUND).entity(temp).build();
+					response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("")).build();
 				}
 			}
 			else{
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
 			}
 		}else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 
@@ -217,9 +251,9 @@ public class ImageResource {
 			} else
 				response = Response.status(Status.NOT_FOUND).entity(imageId).build();
 		}else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 

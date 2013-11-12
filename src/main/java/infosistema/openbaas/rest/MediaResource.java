@@ -1,5 +1,6 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.ErrorSet;
 import infosistema.openbaas.data.ListResultSet;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.utils.Const;
@@ -25,7 +26,7 @@ public class MediaResource {
 	private String appId;
 	private AppsMiddleLayer appsMid;
 
-	static final int idGenerator = 3;
+	//static final int idGenerator = 3;
 
 	public MediaResource(AppsMiddleLayer appsMid, String appId) {
 		this.appId = appId;
@@ -61,14 +62,13 @@ public class MediaResource {
 				ListResultSet res = new ListResultSet(mediaIds,pageNumber);
 				response = Response.status(Status.OK).entity(res).build();
 			}else{
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
 			}
 
 		}else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			.build();
+			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 

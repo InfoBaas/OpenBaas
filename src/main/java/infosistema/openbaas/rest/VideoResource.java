@@ -1,6 +1,9 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.ErrorSet;
 import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.ResultSet;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
@@ -12,6 +15,8 @@ import infosistema.openbaas.utils.Utils;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -24,8 +29,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
@@ -41,11 +48,12 @@ public class VideoResource {
 	private String appId;
 
 	private MediaMiddleLayer mediaMid;
-	private SessionMiddleLayer sessionMid;
+	private SessionMiddleLayer sessionsMid;
 	
 	public VideoResource(String appId) {
 		this.appId = appId;
 		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
+		this.sessionsMid = MiddleLayerFactory.getSessionMiddleLayer();
 	}
 
 	// *** CREATE *** //
@@ -66,18 +74,28 @@ public class VideoResource {
 			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @HeaderParam(value = Const.LOCATION) String location) {
 
 		Response response = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}	
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String videoId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.video, location);
 			if (videoId == null) { 
-				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
+				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(appId)).build();
 			} else {
-				response = Response.status(Status.OK).entity(videoId).build();
+				String metaKey = "apps."+appId+".media.video."+videoId;
+				String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
+				ResultSet res = new ResultSet(videoId, meta);	
+				response = Response.status(Status.OK).entity(res).build();
 			}
 		} else if(code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		} else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.") .build();
+			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 	
@@ -100,15 +118,20 @@ public class VideoResource {
 	public Response deleteVideo(@PathParam("videoId") String videoId,
 			@CookieParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
-		if (sessionMid.sessionTokenExists(sessionToken)) {
+		if (sessionsMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "deleteVideo", "***********Deleting Video***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 				mediaMid.deleteMedia(appId, ModelEnum.video, videoId);
-				response = Response.status(Status.OK).entity(appId).build();
+				String metaKey = "apps."+appId+".media.video."+videoId;
+				Boolean meta = mediaMid.deleteMetadata(metaKey);
+				if(meta)
+					response = Response.status(Status.OK).entity("").build();
+				else
+					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("Del Meta")).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(sessionToken).build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet(sessionToken)).build();
 		return response;
 	}
 
@@ -132,14 +155,14 @@ public class VideoResource {
 		if (orderBy == null) 	orderBy = Const.getOrderBy();
 		if (orderType == null) 	orderType = Const.getOrderType();
 		Response response = null;
-		if (sessionMid.sessionTokenExists(sessionToken)) {
+		if (sessionsMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "findAllvideos", "********Finding all Video**********");
 			ArrayList<String> videoIds = mediaMid.getAllMediaIds(appId, ModelEnum.video, pageNumber, pageSize,
 					orderBy, orderType);
 			ListResultSet res = new ListResultSet(videoIds,pageNumber);
 			response = Response.status(Status.OK).entity(res).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(sessionToken).build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet(sessionToken)).build();
 		return response;
 	}
 
@@ -158,18 +181,22 @@ public class VideoResource {
 	public Response findById(@PathParam("videoId") String videoId,
 			@CookieParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
-		if (sessionMid.sessionTokenExists(sessionToken)) {
+		if (sessionsMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "findById", "********Finding Video Meta**********");
 			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
 				if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 					Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId));
-					response = Response.status(Status.OK).entity(video).build();
+					String metaKey = "apps."+appId+".media.video."+videoId;
+					Metadata meta = mediaMid.getMetadata(metaKey);
+					ResultSet res = new ResultSet(video, meta);
+					
+					response = Response.status(Status.OK).entity(res).build();
 				} else
-					response = Response.status(Status.NOT_FOUND).entity(videoId).build();
+					response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(videoId)).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(sessionToken).build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet(sessionToken)).build();
 		return response;
 	}
 
@@ -189,7 +216,7 @@ public class VideoResource {
 			@CookieParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		byte[] sucess = null;
-		if (sessionMid.sessionTokenExists(sessionToken)) {
+		if (sessionsMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "updateUser", "*********Downloading Video**********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 				Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId));
@@ -198,9 +225,9 @@ public class VideoResource {
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
 							.header("content-disposition","attachment; filename = "+video.getFileName()+"."+video.getFileExtension()).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(videoId).build();
+				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(videoId)).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(sessionToken).build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet(sessionToken)).build();
 		return response;
 	}
 

@@ -1,11 +1,15 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.ErrorSet;
 import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.ResultSet;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Audio;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
+import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
@@ -16,8 +20,10 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import com.sun.jersey.core.header.FormDataContentDisposition;
@@ -25,7 +31,10 @@ import com.sun.jersey.multipart.FormDataParam;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -41,10 +50,12 @@ public class AudioResource {
 	static final int idGenerator = 3;
 	private MediaMiddleLayer mediaMid;
 	private AppsMiddleLayer appsMid;
+	private SessionMiddleLayer sessionsMid;
 
 	public AudioResource(String appId) {
 		this.appId = appId;
 		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
+		this.sessionsMid = MiddleLayerFactory.getSessionMiddleLayer();
 	}
 
 	
@@ -69,18 +80,30 @@ public class AudioResource {
 			@FormDataParam(Const.FILE) InputStream uploadedInputStream, @FormDataParam(Const.FILE) FormDataContentDisposition fileDetail,
 			@PathParam("appId") String appId, @HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}		
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String audioId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.audio, location);
 			if (audioId == null) { 
-				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
+				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(appId)).build();
 			} else {
-				response = Response.status(Status.OK).entity(audioId).build();
+				
+				String metaKey = "apps."+appId+".media.audio."+audioId;
+				String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
+				ResultSet res = new ResultSet(audioId, meta);
+				
+				response = Response.status(Status.OK).entity(res).build();
 			}
 		} else if(code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		} else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 
@@ -107,16 +130,21 @@ public class AudioResource {
 			Log.debug("", this, "deleteAudio", "***********Deleting Audio***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.audio, audioId)) {
 				this.mediaMid.deleteMedia(appId, ModelEnum.audio, audioId);
-				response = Response.status(Status.OK).entity(appId).build();
+				
+				String metaKey = "apps."+appId+".media.audio."+audioId;
+				
+				Boolean meta = mediaMid.deleteMetadata(metaKey);
+				if(meta)
+					response = Response.status(Status.OK).entity("").build();
+				else
+					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("Del Meta")).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
 			}
 		}else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-					.build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			.build();
+			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 
@@ -147,11 +175,9 @@ public class AudioResource {
 			ListResultSet res = new ListResultSet(audioIds,pageNumber);
 			response = Response.status(Status.OK).entity(res).build();
 		} else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-					.build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			.build();
+			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 
@@ -177,20 +203,22 @@ public class AudioResource {
 			if (appsMid.appExists(this.appId)) {
 				if (mediaMid.mediaExists(this.appId, ModelEnum.audio, audioId)) {
 					temp = (Audio)(mediaMid.getMedia(appId, ModelEnum.audio, audioId));
-					response = Response.status(Status.OK).entity(temp).build();
+					
+					String metaKey = "apps."+appId+".media.audio."+audioId;
+					Metadata meta = mediaMid.getMetadata(metaKey);
+					ResultSet res = new ResultSet(temp, meta);
+					
+					response = Response.status(Status.OK).entity(res).build();
 				} else {
-					response = Response.status(Status.NOT_FOUND).entity(temp)
-							.build();
+					response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("")).build();
 				}
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
 			}
 		}else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-					.build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			.build();
+			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 

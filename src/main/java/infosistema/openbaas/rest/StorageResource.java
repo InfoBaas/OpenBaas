@@ -1,9 +1,13 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.ErrorSet;
 import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.ResultSet;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
+import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
@@ -15,6 +19,9 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
@@ -26,8 +33,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
@@ -43,6 +52,7 @@ public class StorageResource {
 	
 	private String appId;
 	private MediaMiddleLayer mediaMid;
+	private SessionMiddleLayer sessionsMid;
 
 	public StorageResource() {
 	}
@@ -50,6 +60,7 @@ public class StorageResource {
 	public StorageResource(String appId) {
 		this.appId = appId;
 		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
+		this.sessionsMid = MiddleLayerFactory.getSessionMiddleLayer();
 	}
 
 	// *** CREATE *** //
@@ -71,18 +82,28 @@ public class StorageResource {
 	public Response uploadStorageFile(@Context UriInfo ui, @Context HttpHeaders hh, @FormDataParam(Const.FILE) InputStream uploadedInputStream,
 			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @PathParam("appId") String appId, @HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String storageId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.storage, location);
 			if (storageId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			} else {
-				response = Response.status(Status.OK).entity(storageId).build();
+				String metaKey = "apps."+appId+".media.storage."+storageId;
+				String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
+				ResultSet res = new ResultSet(storageId, meta);
+				response = Response.status(Status.OK).entity(res).build();
 			}
 		} else if(code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		} else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 	
@@ -104,13 +125,17 @@ public class StorageResource {
 		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken)) {
 			if (mediaMid.mediaExists(appId, ModelEnum.storage, storageId)) {
 				this.mediaMid.deleteMedia(appId, ModelEnum.storage, storageId);
-				response = Response.status(Status.OK).entity(appId).build();
+				
+				String metaKey = "apps."+appId+".media.storage."+storageId;
+				Boolean meta = mediaMid.deleteMetadata(metaKey);
+				if(meta)
+					response = Response.status(Status.OK).entity("").build();
+				else
+					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("Del Meta")).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(appId)
-						.build();
+				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(sessionToken)
-					.build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet(sessionToken)).build();
 		return response;
 	}
 
@@ -141,9 +166,9 @@ public class StorageResource {
 			ListResultSet res = new ListResultSet(storageIds,pageNumber);
 			response = Response.status(Status.OK).entity(res).build();
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 	

@@ -1,6 +1,9 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.ErrorSet;
 import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.ResultSet;
 import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
@@ -92,7 +95,7 @@ public class AppResource {
 				readSucess = true;
 			} catch (JSONException e) {
 				Log.error("", this, "createApp", "Error parsing the JSON.", e); 
-				return Response.status(Status.BAD_REQUEST).entity(temp).build();
+				return Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error parsing the JSON.")).build();
 			}
 			if (readSucess) {
 				appId = Utils.getRandomString(IDLENGTH);
@@ -104,7 +107,10 @@ public class AppResource {
 				/*if (awsOkay) {
 					response = Response.status(Status.CREATED).entity(temp).build();
 				}*/
-				response = Response.status(Status.CREATED).entity(temp).build();
+				String metaKey = "apps."+appId;
+				Metadata meta = appsMid.createMetadata(metaKey, "admin", null);
+				ResultSet res = new ResultSet(temp, meta);
+				response = Response.status(Status.CREATED).entity(res).build();
 			} else {
 				// 302 is not implemented in the response status, we can create
 				// it
@@ -112,13 +118,13 @@ public class AppResource {
 				// constructor
 				// and let the browser interpret it.
 				// No time for details = put 302 in the parameter
-				response = Response.status(302).entity(temp).build();
+				response = Response.status(302).entity(new ErrorSet("not created")).build();
 			}
 			Log.debug("", this, "createApp", "TIME TO FULLFILL REQUEST: " + (System.currentTimeMillis() - start));
 		} else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			 response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+			 response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 
@@ -177,16 +183,17 @@ public class AppResource {
 			
 			if (this.appsMid.appExists(appId)) {
 				temp = this.appsMid.updateAllAppFields(appId, newAlive, newAppName,newConfirmUsersEmail,newAWS,newFTP,newFileSystem);
-				response = Response.status(Status.OK).entity(temp).build();
+				String metaKey = "apps."+appId;
+				Metadata meta = appsMid.updateMetadata(metaKey, "admin", null);
+				ResultSet res = new ResultSet(temp, meta);
+				response = Response.status(Status.OK).entity(res).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
 			}
 		}else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
+			 response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
+			 response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 
@@ -210,13 +217,20 @@ public class AppResource {
 			Log.debug("", this, "deleteApp", "*Deleting App (setting as inactive)*");
 			if (this.appsMid.removeApp(appId)) {
 				Log.debug("", this, "deleteApp", "******Deletion OK*******");
+				String metaKey = "apps."+appId;
+				Boolean meta = appsMid.deleteMetadata(metaKey);
+				if(meta)
+					response = Response.status(Status.OK).entity("").build();
+				else
+					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("Del Meta")).build();
+				
 				response = Response.status(Status.OK).entity(appId).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(appId).build();
+				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
 		} else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			 response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+			 response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 
@@ -257,9 +271,9 @@ public class AppResource {
 		ListResultSet res = new ListResultSet(ids,pageNumber);
 		response = Response.status(Status.OK).entity(res).build();
 		 } else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			 response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+			 response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 
@@ -283,14 +297,16 @@ public class AppResource {
 			Log.debug("", this, "findById", "********Finding App info************");
 			Application temp = appsMid.getApp(appId);
 			if (temp == null)
-				return Response.status(Status.NOT_FOUND).entity(temp).build();
-			response = Response.status(Status.OK).entity(temp).build();
+				return Response.status(Status.NOT_FOUND).entity(new ErrorSet("App not exist")).build();
+			
+			String metaKey = "apps."+appId;
+			Metadata meta = appsMid.updateMetadata(metaKey, "admin", null);
+			ResultSet res = new ResultSet(temp, meta);
+			response = Response.status(Status.OK).entity(res).build();
 		} else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
-		 .build();
+			 response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
 		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.")
-			 .build();
+			 response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
 		return response;
 	}
 
