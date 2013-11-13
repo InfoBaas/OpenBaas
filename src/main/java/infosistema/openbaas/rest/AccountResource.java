@@ -27,6 +27,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -93,6 +94,7 @@ public class AccountResource {
 				readOk = true;
 			} catch (JSONException e) {
 				Log.error("", this, "createUserAndLogin", "Error parsing the JSON.", e); 
+				return Response.status(Status.BAD_REQUEST).entity("Error parsing the JSON.").build();
 			}
 			if (userName == null) {
 				userName = email;
@@ -319,7 +321,7 @@ public class AccountResource {
 		return response;
 	}
 	
-	/**
+	/**@HeaderParam(value = Const.LOCATION) String location
 	 * Gets the session fields associated with the token.
 	 * 
 	 * @param sessionToken
@@ -380,6 +382,57 @@ public class AccountResource {
 			}
 			else
 				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Wrong email.")).build();
+		return response;
+		
+	}
+	
+	@POST
+	@Path("/changepassword")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response changePasswordRequest(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh){
+		Response response = null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		String oldPassword = null;
+		String newPassword = null; 
+		List<String> locationList = null;
+		List<String> userAgentList = null;
+		String userAgent = null;
+		String location = null;
+		Cookie sessionToken=null;
+		try {
+			newPassword = (String) inputJsonObj.get("newPassword");
+			oldPassword = (String) inputJsonObj.get("oldPassword");
+		} catch (JSONException e) {
+			Log.error("", this, "createSession", "Error parsing the JSON.", e); 
+			return Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error reading JSON")).build();
+		}
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
+				locationList = entry.getValue();
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+			if (entry.getKey().equalsIgnoreCase("user-agent")){
+				userAgentList = entry.getValue();
+			}
+		}
+		if (userAgentList != null)
+			userAgent = userAgentList.get(0);
+		if (locationList != null)
+			location = locationList.get(0);
+		try{
+			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken.getValue());
+			Boolean auth = sessionMid.authenticateUser(appId, userId, oldPassword);
+			if(auth){
+				usersMid.updateUserPassword(appId, userId, newPassword);
+				if(location!=null)
+					sessionMid.refreshSession(sessionToken.getValue(), location, userAgent);
+				response = Response.status(Status.OK).entity("Passoword correctly changed.").build();
+			}else
+				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Wrong old password.")).build();
+		}catch (Exception e) {
+			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("INTERNAL_SERVER_ERROR")).build();
+		}
 		return response;
 		
 	}

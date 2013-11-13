@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 public class UsersMiddleLayer extends MiddleLayerAbstract {
@@ -215,21 +217,16 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	public boolean updateUserPassword(String appId, String userId, String password) {
 		byte[] salt = null;
 		byte [] hash = null;
-		try {
-			salt = service.generateSalt();
-			hash = service.getEncryptedPassword(password, salt);
-		} catch (NoSuchAlgorithmException e) {
-			Log.error("", this, "updateUserPassword", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
-		} catch (InvalidKeySpecException e) {
-			Log.error("", this, "updateUserPassword", "Invalid Key.", e); 
-		}
+		PasswordEncryptionService service = new PasswordEncryptionService();
 		boolean sucess = false;
 		String email = userModel.getEmailUsingUserId(appId, userId);
 		try {
+			salt = service.generateSalt();
+			hash = service.getEncryptedPassword(password, salt);
 			if (appModel.appExists(appId) && userModel.userExistsInApp(appId, email)) {
 				userModel.updateUserPassword(appId, userId, hash, salt);
 			}
-		} catch (UnsupportedEncodingException e) {
+		} catch (Exception e) {
 			Log.error("", this, "updateUserPassword", "Unsupported Encoding.", e); 
 		}
 

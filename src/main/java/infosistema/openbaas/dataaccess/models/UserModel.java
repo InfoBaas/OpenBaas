@@ -133,8 +133,8 @@ public class UserModel {
 			byte[] salt) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
 		try {
-			jedis.hset(("users:" + userId).getBytes(), "salt".getBytes(), salt);
-			jedis.hset(("users:" + userId).getBytes(), "hash".getBytes(), hash);
+			jedis.hset(("users:" + userId), "hash", new String(hash, "ISO-8859-1"));
+			jedis.hset("users:" + userId, "salt", new String(salt, "ISO-8859-1"));
 			long unixTime = System.currentTimeMillis() / 1000L;
 			jedis.zadd("users:time", unixTime, appId + ":" + userId);
 		} finally {

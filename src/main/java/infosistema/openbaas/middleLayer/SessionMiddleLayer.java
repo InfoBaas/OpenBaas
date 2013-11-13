@@ -88,7 +88,7 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 
 	//private
 	
-	private boolean authenticateUser(String appId, String userId, String attemptedPassword) {
+	public Boolean authenticateUser(String appId, String userId, String attemptedPassword) {
 		try {
 			Map<String, String> userFields = userModel.getUser(appId, userId);
 			PasswordEncryptionService service = new PasswordEncryptionService();
