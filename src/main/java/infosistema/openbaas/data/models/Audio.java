@@ -21,11 +21,9 @@ public class Audio extends Media {
 	@SuppressWarnings("unused")
 	private int defaultBitRate;
 	private int maxBitRate;
-	private String type;
 	
-	
-	public Audio(String audioId, String dir, long size, int defaultBitRate, String type, String location) {
-		super(audioId, dir, size, location);
+	public Audio(String id, String dir, long size, int defaultBitRate, String fileExtension, String location) {
+		super(id, dir, size, fileExtension, location);
 
 		//de 0 até no maximo 15, complexidade temporal desprezavel
 		for(int i = 0; i < allBitRates.length; i++){
@@ -33,8 +31,8 @@ public class Audio extends Media {
 				accessibleBitRates.add(allBitRates[i]);
 			}
 		}
-		if(!type.equals("mp3")){
-			this.convertAudioTypeToDefault(dir, size, defaultBitRate, type);
+		if(!fileExtension.equals("mp3")){
+			this.convertAudioTypeToDefault(dir, size, defaultBitRate, fileExtension);
 		}
 	}
 	//******************************SETS*****************************
@@ -95,28 +93,8 @@ public class Audio extends Media {
 		return false;
 	}
 
-	 
-	public boolean setAudioType(String type) {
-		this.type = type;
-		return true;
-	}
-	
-	public String validateType(JSONObject json){
-		return this.type;
-	}
-	
 	public void setMaxBitRate(String maxBitRate){
 		this.maxBitRate = Integer.parseInt(maxBitRate);
 	}
-
-	public void setType(String type) {
-		this.type=type;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-
 
 }

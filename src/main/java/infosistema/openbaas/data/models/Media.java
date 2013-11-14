@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
@@ -30,14 +29,13 @@ import org.codehaus.jettison.json.JSONObject;
 public abstract class Media {
 
 	public final static String ID = "id";
-	public final static String TYPE = "type";
-	public final static String DIR = "dir";
-	public final static String SIZE = "size";
+	public final static String PATH = "dir";
 	public final static String FILENAME = "fileName";
-	public final static String CREATIONDATE = "creationDate";
+	public final static String FILEEXTENSION = "fileExtension";
+	public final static String SIZE = "size";
 
 	private String id;
-	private String creationDate;
+	private String fileExtension;
 	private long size;
 	private String dir;
 	private String fileName;
@@ -46,11 +44,11 @@ public abstract class Media {
 	 * Constructor
 	 * 
 	 */
-	public Media(String id, String dir, long size, String location){
+	public Media(String id, String dir, long size, String fileExtension, String location){
 		this.id = id;
 		this.dir = dir;
 		this.size = size;
-		creationDate = new Date().toString();
+		this.fileExtension = fileExtension;
 		this.location = location;
 	}
 
@@ -90,8 +88,8 @@ public abstract class Media {
 	 * Returns the time of creation for the image.
 	 * @return Date Time
 	 */
-	public String getTimeOfCreation() {
-		return creationDate;
+	public String getFileExtension() {
+		return fileExtension;
 	}
 	
 	public Response download(String appId, String id, String dir){
@@ -129,9 +127,7 @@ public abstract class Media {
 		}
 		return Response.ok("file path null").build();
 	}
-	public String validateType(JSONObject json){
-		return null;
-	}
+
 	public String upload(List<FileItem> items){
 		String resultStatus = "";
         for (FileItem item : items) {
@@ -155,8 +151,8 @@ public abstract class Media {
 	public void setSize(long size){
 		this.size = size;
 	}
-	public void setCreationDate(String creationDate){
-		this.creationDate = creationDate;
+	public void setFileExtension(String fileExtension){
+		this.fileExtension = fileExtension;
 	}
 	public void setFileName(String fileName){
 		this.fileName = fileName;

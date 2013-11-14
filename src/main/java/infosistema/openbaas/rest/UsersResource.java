@@ -1,6 +1,6 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.IdsResultSet;
+import infosistema.openbaas.data.ListResultSet;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
@@ -188,7 +188,7 @@ public class UsersResource {
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();
 			else {
 				ArrayList<String> temp = usersMid.getAllUserIdsForApp(appId, latitude, longitude, radius, pageNumber, pageSize, orderBy, orderType);
-				IdsResultSet res = new IdsResultSet(temp, pageNumber);
+				ListResultSet res = new ListResultSet(temp, pageNumber);
 				response = Response.status(Status.OK).entity(res).build();
 			}
 		} else if (code == -2) {

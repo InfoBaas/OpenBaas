@@ -1,6 +1,6 @@
 package infosistema.openbaas.dataaccess.models;
 
-import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.utils.Const;
 
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.IdsResultSet;
-import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.utils.Const;
@@ -73,7 +73,7 @@ public class StorageResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			String storageId = mediaMid.uploadMedia(uploadedInputStream, fileDetail, appId, ModelEnum.storage, location);
+			String storageId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.storage, location);
 			if (storageId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			} else {
@@ -138,7 +138,7 @@ public class StorageResource {
 			Log.debug("", this, "findAllStorageIds", "********Finding all Storage********");
 			ArrayList<String> storageIds = mediaMid.getAllMediaIds(appId, ModelEnum.storage, pageNumber,
 					pageSize,orderBy,orderType);
-			IdsResultSet res = new IdsResultSet(storageIds,pageNumber);
+			ListResultSet res = new ListResultSet(storageIds,pageNumber);
 			response = Response.status(Status.OK).entity(res).build();
 		} else if (code == -2) {
 			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();

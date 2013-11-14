@@ -1,6 +1,6 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.IdsResultSet;
+import infosistema.openbaas.data.ListResultSet;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
@@ -58,7 +58,7 @@ public class MediaResource {
 		if (code == 1) {
 			if(appsMid.appExists(appId)){
 				ArrayList<String> mediaIds = appsMid.getAllMediaIds(appId,pageNumber,pageSize,orderBy,orderType);
-				IdsResultSet res = new IdsResultSet(mediaIds,pageNumber);
+				ListResultSet res = new ListResultSet(mediaIds,pageNumber);
 				response = Response.status(Status.OK).entity(res).build();
 			}else{
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();

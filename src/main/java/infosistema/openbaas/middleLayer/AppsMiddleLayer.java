@@ -2,17 +2,15 @@ package infosistema.openbaas.middleLayer;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
-import java.util.Map.Entry;
 
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.identitymanagement.model.EntityAlreadyExistsException;
 
 import infosistema.openbaas.data.models.Application;
+import infosistema.openbaas.data.models.files.FileInterface;
 import infosistema.openbaas.dataaccess.models.AppModel;
 import infosistema.openbaas.dataaccess.models.MediaModel;
-import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 
 public class AppsMiddleLayer extends MiddleLayerAbstract {
@@ -47,18 +45,16 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 		return appModel.createApp(appId, appName, new Date().toString(), userEmailConfirmation,AWS,FTP,FileSystem);		
 	}
 
-	public boolean createAppAWS(String appId) {
-		if (Const.AWS.equalsIgnoreCase(Const.getFileSystem()))
-			try{
-			return this.aws.createApp(appId);
-			}catch(EntityAlreadyExistsException e){
-				Log.error("", this, "createAppAWS", "Entity Already Exists.", e); 
-			}catch(AmazonServiceException e){
-				Log.error("", this, "createAppAWS", "Amazon Service error.", e); 
-			}
-		else{
-			Log.warning("", this, "createAppAWS", "FileSystem not yet implemented.");
-			return true;
+	public boolean createAppFileSystem(String appId) {
+		FileInterface fileModel = getAppFileInterface(appId);
+		try{
+			return fileModel.createApp(appId);
+		} catch(EntityAlreadyExistsException e) {
+			Log.error("", this, "createAppFileSystem", "Entity Already Exists.", e); 
+		} catch(AmazonServiceException e) {
+			Log.error("", this, "createAppFileSystem", "Amazon Service error.", e); 
+		}catch(Exception e) {
+			Log.error("", this, "createAppFileSystem", "An error ocorred.", e); 
 		}
 		return false;
 	}

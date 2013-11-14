@@ -1,7 +1,8 @@
 package infosistema.openbaas.middleLayer;
 
-import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.User;
+import infosistema.openbaas.data.models.files.FileInterface;
 import infosistema.openbaas.dataaccess.email.Email;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.dataaccess.models.SessionModel;
@@ -92,7 +93,6 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			Boolean refresh = sessionMid.refreshSession(sessionToken, location, userAgent);
 
 			if (validation && refresh) {
-				outUser.setUserFile(userFile);
 				outUser.setUserID(userId);
 				outUser.setReturnToken(sessionToken);
 				outUser.setUserEmail(email);
@@ -102,7 +102,6 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			boolean emailConfirmed = false;
 			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt,hash, userFile, emailConfirmed, uriInfo);
 			outUser.setUserID(userId);
-			outUser.setUserFile(userFile);
 			outUser.setUserEmail(email);
 			outUser.setUserName(userName);
 		}
@@ -240,11 +239,10 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	// *** DELETE *** //
 	
 	public boolean deleteUserInApp(String appId, String userId) {
-		if (Const.AWS.equalsIgnoreCase(Const.getFileSystem()))
-			this.aws.deleteUser(appId, userId);
-		else {
-			Log.error("", this, "deleteUserInApp", "FileSystem not yet implemented.");
-		}
+		FileInterface fileModel = getAppFileInterface(appId);
+		try {
+			fileModel.deleteUser(appId, userId);
+		} catch(Exception e) { }
 		boolean operationOk = false;
 		String email = userModel.getEmailUsingUserId(appId, userId);
 		if (userModel.userExistsInApp(appId, email)) {

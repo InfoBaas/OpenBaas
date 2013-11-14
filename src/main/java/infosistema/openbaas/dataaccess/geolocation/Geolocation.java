@@ -10,7 +10,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.ValueComparator;

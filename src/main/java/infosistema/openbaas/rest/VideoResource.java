@@ -1,7 +1,7 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.IdsResultSet;
-import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
@@ -68,7 +68,7 @@ public class VideoResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			String videoId = mediaMid.uploadMedia(uploadedInputStream, fileDetail, appId, ModelEnum.video, location);
+			String videoId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.video, location);
 			if (videoId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			} else {
@@ -136,7 +136,7 @@ public class VideoResource {
 			Log.debug("", this, "findAllvideos", "********Finding all Video**********");
 			ArrayList<String> videoIds = mediaMid.getAllMediaIds(appId, ModelEnum.video, pageNumber, pageSize,
 					orderBy, orderType);
-			IdsResultSet res = new IdsResultSet(videoIds,pageNumber);
+			ListResultSet res = new ListResultSet(videoIds,pageNumber);
 			response = Response.status(Status.OK).entity(res).build();
 		} else
 			response = Response.status(Status.FORBIDDEN).entity(sessionToken).build();
@@ -193,10 +193,10 @@ public class VideoResource {
 			Log.debug("", this, "updateUser", "*********Downloading Video**********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 				Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId));
-				sucess = mediaMid.download(appId, ModelEnum.video, videoId,video.getType());
+				sucess = mediaMid.download(appId, ModelEnum.video, videoId, video.getFileExtension());
 				if (sucess!=null)
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
-							.header("content-disposition","attachment; filename = "+video.getFileName()+"."+video.getType()).build();
+							.header("content-disposition","attachment; filename = "+video.getFileName()+"."+video.getFileExtension()).build();
 			} else
 				response = Response.status(Status.NOT_FOUND).entity(videoId).build();
 		} else

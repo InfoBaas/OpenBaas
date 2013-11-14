@@ -1,7 +1,7 @@
 package infosistema.openbaas.middleLayer;
 
 
-import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.utils.Log;
 

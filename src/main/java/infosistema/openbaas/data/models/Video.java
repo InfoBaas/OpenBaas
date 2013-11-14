@@ -13,10 +13,10 @@ public class Video extends Media {
 
 	public final static String RESOLUTION = "resolution";
 
-	private String type;
 	private String resolution;
-	public Video(String id, String dir, long size, String location) {
-		super(id, dir, size, location);
+
+	public Video(String id, String dir, long size, String fileExtension, String location) {
+		super(id, dir, size, fileExtension, location);
 	}
 
 	public Video() {
@@ -39,28 +39,6 @@ public class Video extends Media {
 		return null;
 	}
 
-	public String validateType(JSONObject json) {
-		return this.type;
-	}
-	public void setFileName(String fileName){
-		super.setFileName(fileName);
-	}
-
-	public void setType(String type) {
-		this.type = type;
-		
-	}
-
-	public void setId(String id) {
-		super.setId(id);
-	}
-	public void setSize(long size) {
-		super.setSize(size);
-	}
-	public void setCreationDate(String date){
-		super.setCreationDate(date);
-	}
-
 	public void setResolution(String resolution) {
 		this.resolution = resolution;
 	}
@@ -68,7 +46,4 @@ public class Video extends Media {
 		return this.resolution;
 	}
 
-	public String getType() {
-		return type;
-	}
 }

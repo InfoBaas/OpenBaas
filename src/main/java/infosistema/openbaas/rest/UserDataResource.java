@@ -1,6 +1,6 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.IdsResultSet;
+import infosistema.openbaas.data.ListResultSet;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.DocumentMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
@@ -188,7 +188,7 @@ public class UserDataResource {
 				ArrayList<String> all = null; 
 						//docMid.getAllUserDocsInRadius(appId, userId, Double.parseDouble(latitude), 
 						//Double.parseDouble(longitude), Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
-				IdsResultSet res = new IdsResultSet(all,pageNumber);
+				ListResultSet res = new ListResultSet(all,pageNumber);
 				response = Response.status(Status.OK).entity(res).build();
 			//no query parameters return all docs
 			} else {

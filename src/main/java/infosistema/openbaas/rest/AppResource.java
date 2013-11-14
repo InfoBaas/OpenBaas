@@ -1,6 +1,6 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.IdsResultSet;
+import infosistema.openbaas.data.ListResultSet;
 import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
@@ -96,7 +96,7 @@ public class AppResource {
 			}
 			if (readSucess) {
 				appId = Utils.getRandomString(IDLENGTH);
-				created = appsMid.createApp(appId, appName, confirmUsersEmail,AWS,FTP,FileSystem);
+				created = appsMid.createApp(appId, appName, confirmUsersEmail, AWS, FTP, FileSystem);
 			}
 			if (created) {
 				temp = this.appsMid.getApp(appId);
@@ -254,7 +254,7 @@ public class AppResource {
 		} catch (JSONException e) {
 			Log.error("", this, "findAllApplicationIds", "Error parsing the JSON.", e); 
 		}
-		IdsResultSet res = new IdsResultSet(ids,pageNumber);
+		ListResultSet res = new ListResultSet(ids,pageNumber);
 		response = Response.status(Status.OK).entity(res).build();
 		 } else if(code == -2){
 			 response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();

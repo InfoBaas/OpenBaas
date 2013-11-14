@@ -1,7 +1,7 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.IdsResultSet;
-import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Audio;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
@@ -71,7 +71,7 @@ public class AudioResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			String audioId = mediaMid.uploadMedia(uploadedInputStream, fileDetail, appId, ModelEnum.audio, location);
+			String audioId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.audio, location);
 			if (audioId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			} else {
@@ -144,7 +144,7 @@ public class AudioResource {
 						Double.parseDouble(longitude), Double.parseDouble(radius));
 			}else
 				audioIds = mediaMid.getAllMediaIds(appId, ModelEnum.audio, pageNumber, pageSize, orderBy, orderType);
-			IdsResultSet res = new IdsResultSet(audioIds,pageNumber);
+			ListResultSet res = new ListResultSet(audioIds,pageNumber);
 			response = Response.status(Status.OK).entity(res).build();
 		} else if(code == -2){
 			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.")
@@ -213,10 +213,10 @@ public class AudioResource {
 			Log.debug("", this, "downloadAudio", "*********Downloading Audio**********");
 			if (this.mediaMid.mediaExists(appId, ModelEnum.audio, audioId)) {
 				Audio audio = (Audio)(mediaMid.getMedia(appId, ModelEnum.audio, audioId));
-				sucess = mediaMid.download(appId, ModelEnum.audio, audioId,audio.getType());
+				sucess = mediaMid.download(appId, ModelEnum.audio, audioId,audio.getFileExtension());
 				if (sucess!=null)
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
-							.header("content-disposition","attachment; filename = "+audio.getFileName()+"."+audio.getType()).build();
+							.header("content-disposition","attachment; filename = "+audio.getFileName()+"."+audio.getFileExtension()).build();
 			} else
 				response = Response.status(Status.NOT_FOUND).entity(audioId)
 				.build();

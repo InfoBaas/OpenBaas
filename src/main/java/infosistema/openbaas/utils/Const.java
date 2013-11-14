@@ -8,7 +8,6 @@ public class Const {
 
 	//CONSTANTS
 	
-	public static final String AWS = "aws";
 	public static final String SESSION_TOKEN = "sessionToken";	
 	public static final String FILE = "file";	
 	public static final String LOCATION = "location";	
@@ -64,7 +63,7 @@ public class Const {
 	private static String IMAGE_DEFAULT_SIZE = "300x300";
 	private static String AUDIO_DEFAULT_BITRATE = "32";
 
-	private static String FILESYSTEM = "aws";
+	private static String LOCAL_STORAGE_PATH = "";
 
 	static {
 		loadConstants();
@@ -187,9 +186,12 @@ public class Const {
 			stmp = props.getProperty("AUDIO_DEFAULT_BITRATE");
 			if (stmp != null) AUDIO_DEFAULT_BITRATE = stmp;
 
-			stmp = props.getProperty("FILESYSTEM");
-			if (stmp != null) FILESYSTEM = stmp;
-
+			stmp = props.getProperty("LOCAL_STORAGE_PATH");
+			if (stmp != null) {
+				if (!stmp.endsWith("/")) stmp += "/";
+				LOCAL_STORAGE_PATH = stmp;
+			}
+			
 		} catch (Throwable t) {
 			Log.error("", "Const", "updateConstants", t.getMessage());
 		}
@@ -326,8 +328,8 @@ public class Const {
 		return AUDIO_DEFAULT_BITRATE;
 	}
 
-	public static String getFileSystem() {
-		return FILESYSTEM;
+	public static String getLocalStoragePath() {
+		return LOCAL_STORAGE_PATH;
 	}
 
 }

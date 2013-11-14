@@ -1,5 +1,6 @@
 package infosistema.openbaas.dataaccess.models;
 
+import infosistema.openbaas.data.enums.FileMode;
 import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.utils.Const;
 
@@ -51,11 +52,9 @@ public class AppModel {
 				jedis.hset("apps:" + appId, "alive", "true");
 				jedis.hset("apps:" + appId, "appName", appName);
 				jedis.hset("apps:" + appId, "confirmUsersEmail", ""+confirmUsersEmail);
-				jedis.hset("apps:" + appId, "AWS", ""+AWS);
-				jedis.hset("apps:" + appId, "FTP", ""+FTP);
-				jedis.hset("apps:" + appId, "FileSystem", ""+FileSystem);
-				long unixTime = System.currentTimeMillis() / 1000L;
-				jedis.zadd("apps:time", unixTime, appId);
+				jedis.hset("apps:" + appId, FileMode.aws.toString(), "" + AWS);
+				jedis.hset("apps:" + appId, FileMode.ftp.toString(), "" + FTP);
+				jedis.hset("apps:" + appId, FileMode.filesystem.toString(), "" + FileSystem);
 				sucess = true;
 			}
 		} finally {
@@ -79,11 +78,7 @@ public class AppModel {
 		Boolean sucess = false;
 		try {
 			if (jedis.exists("apps:" + currentId)) {
-				jedis.zrem("apps:time", currentId);
-				long unixTime = System.currentTimeMillis() / 1000L;
-				jedis.zadd("apps:time", unixTime, newId);
-				Map<String, String> tempValues = jedis.hgetAll("apps:"
-						+ currentId);
+				Map<String, String> tempValues = jedis.hgetAll("apps:" + currentId);
 				for (Map.Entry<String, String> entry : tempValues.entrySet()) {
 					jedis.hset("apps:" + newId, entry.getKey(),
 							entry.getValue());
@@ -106,8 +101,6 @@ public class AppModel {
 	public Boolean updateAppName(String appId, String newAppName) {
 		Jedis jedis = pool.getResource();
 		try {
-			long unixTime = System.currentTimeMillis() / 1000L;
-			jedis.zadd("apps:time", unixTime, appId);
 			jedis.hset("apps:" + appId, "appName", newAppName);
 		} finally {
 			pool.returnResource(jedis);
@@ -119,15 +112,13 @@ public class AppModel {
 			String newAppName, Boolean confirmUsersEmail,boolean AWS,boolean FTP,boolean FileSystem) {
 		Jedis jedis = pool.getResource();
 		try {
-			long unixTime = System.currentTimeMillis() / 1000L;
-			jedis.zadd("apps:time", unixTime, appId);
 			jedis.hset("apps:" + appId, "appName", newAppName);
 			jedis.hset("apps:" + appId, "alive", alive);
 			jedis.hset("apps:" + appId, "appName", newAppName);
 			jedis.hset("apps:" + appId, "confirmUsersEmail", ""+confirmUsersEmail);
-			jedis.hset("apps:" + appId, "AWS", ""+AWS);
-			jedis.hset("apps:" + appId, "FTP", ""+FTP);
-			jedis.hset("apps:" + appId, "FileSystem", ""+FileSystem);
+			jedis.hset("apps:" + appId, FileMode.aws.toString(), ""+AWS);
+			jedis.hset("apps:" + appId, FileMode.ftp.toString(), ""+FTP);
+			jedis.hset("apps:" + appId, FileMode.filesystem.toString(), ""+FileSystem);
 			jedis.hset("apps:" + appId, "updateDate", new Date().toString());
 		} finally {
 			pool.returnResource(jedis);
@@ -174,25 +165,11 @@ public class AppModel {
 		return null;
 	}
 
-
 	// *** GET *** //
 
 	/**
 	 * Returns the fields of the corresponding application
-	 *//*
-	public Map<String, String> getApplication(String appId) {
-		Jedis jedis = pool.getResource();
-		Map<String, String> appFields = null;
-		try {
-			if (jedis.exists("apps:" + appId)) {
-				appFields = jedis.hgetAll("apps:" + appId);
-			}
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return appFields;
-	}*/
-	
+	 */
 	public Application getApplication(String appId) {
 		Jedis jedis = pool.getResource();
 		Application res = new Application();
@@ -211,11 +188,11 @@ public class AppModel {
 						res.setAppName(entry.getValue());
 					else if (entry.getKey().equalsIgnoreCase("confirmUsersEmail"))
 						res.setConfirmUsersEmail(Boolean.parseBoolean(entry.getValue()));
-					else if (entry.getKey().equalsIgnoreCase("AWS"))
+					else if (entry.getKey().equalsIgnoreCase(FileMode.aws.toString()))
 						res.setAWS(Boolean.parseBoolean(entry.getValue()));
-					else if (entry.getKey().equalsIgnoreCase("FTP"))
+					else if (entry.getKey().equalsIgnoreCase(FileMode.ftp.toString()))
 						res.setFTP(Boolean.parseBoolean(entry.getValue()));
-					else if (entry.getKey().equalsIgnoreCase("FileSystem"))
+					else if (entry.getKey().equalsIgnoreCase(FileMode.filesystem.toString()))
 						res.setFileSystem(Boolean.parseBoolean(entry.getValue()));
 					else if (entry.getKey().equalsIgnoreCase("updateDate"))
 						res.setUpdateDate(entry.getValue());
@@ -239,7 +216,22 @@ public class AppModel {
 		return confirmUsersEmail;
 	}
 
-
+	public FileMode getApplicationFileMode(String appId) {
+		Jedis jedis = pool.getResource();
+		boolean aws = false;
+		boolean ftp = false;
+		try {
+			aws =  Boolean.parseBoolean(jedis.hget("apps:" + appId, FileMode.aws.toString()));
+		} catch (Exception e) { }
+		try {
+			ftp = Boolean.parseBoolean(jedis.hget("apps:" + appId, FileMode.ftp.toString()));
+		} catch (Exception e) { }
+		
+		if (aws) return FileMode.aws;
+		else if (ftp) return FileMode.ftp;
+		else return FileMode.filesystem;
+	}
+	
 	// *** DELETE *** //
 
 	/**
@@ -252,8 +244,6 @@ public class AppModel {
 		Boolean sucess = false;
 		try {
 			if (jedis.exists("apps:" + appId)) {
-				//long unixTime = System.currentTimeMillis() / 1000L;
-				jedis.zrem("apps:time", appId);
 				Set<String> inactiveApps = jedis.smembers("apps:inactive");
 				Iterator<String> it = inactiveApps.iterator();
 				Boolean inactive = false;
@@ -290,8 +280,6 @@ public class AppModel {
 	public void reviveApp(String appId) {
 		Jedis jedis = pool.getResource();
 		try {
-			long unixTime = System.currentTimeMillis() / 1000L;
-			jedis.zadd("apps:time", unixTime, appId);
 			jedis.hset("apps:" + appId, "alive", "true");
 		} finally {
 			pool.returnResource(jedis);

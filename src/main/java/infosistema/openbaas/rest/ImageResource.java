@@ -1,7 +1,7 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.IdsResultSet;
-import infosistema.openbaas.data.ModelEnum;
+import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Image;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
@@ -63,7 +63,7 @@ public class ImageResource {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			String imageId = mediaMid.uploadMedia(uploadedInputStream, fileDetail, appId, ModelEnum.image, location);
+			String imageId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.image, location);
 			if (imageId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			} else {
@@ -148,7 +148,7 @@ public class ImageResource {
 				totalNumberPages = mediaMid.countAllMedia(appId, ModelEnum.image) / pageSize;
 			}
 
-			IdsResultSet res = new IdsResultSet(listRes,pageNumber,totalNumberPages);
+			ListResultSet res = new ListResultSet(listRes,pageNumber,totalNumberPages);
 
 			response = Response.status(Status.OK).entity(res).build();
 		} else if(code == -2){
@@ -208,10 +208,10 @@ public class ImageResource {
 			Log.debug("", this, "downloadImage", "*********Downloading Image**********");
 			if (mediaMid.mediaExists(appId, ModelEnum.image, imageId)) {
 				Image image = (Image)(mediaMid.getMedia(appId, ModelEnum.image, imageId));
-				sucess = mediaMid.download(appId, ModelEnum.image, imageId,image.getType());
+				sucess = mediaMid.download(appId, ModelEnum.image, imageId,image.getFileExtension());
 				if (sucess!=null){ 
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
-							.header("content-disposition","attachment; filename = "+image.getFileName()+"."+image.getType()).build();
+							.header("content-disposition","attachment; filename = "+image.getFileName()+"."+image.getFileExtension()).build();
 					//response = Response.status(Status.OK).entity(image).build();
 				}
 			} else
