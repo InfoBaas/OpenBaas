@@ -8,7 +8,7 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.identitymanagement.model.EntityAlreadyExistsException;
 
 import infosistema.openbaas.data.models.Application;
-import infosistema.openbaas.data.models.files.FileInterface;
+import infosistema.openbaas.dataaccess.files.FileInterface;
 import infosistema.openbaas.dataaccess.models.AppModel;
 import infosistema.openbaas.dataaccess.models.MediaModel;
 import infosistema.openbaas.utils.Log;

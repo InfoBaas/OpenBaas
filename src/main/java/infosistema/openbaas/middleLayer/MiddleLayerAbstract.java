@@ -3,10 +3,10 @@ package infosistema.openbaas.middleLayer;
 import com.drew.metadata.Metadata;
 
 import infosistema.openbaas.data.enums.FileMode;
-import infosistema.openbaas.data.models.files.AwsModel;
-import infosistema.openbaas.data.models.files.FileInterface;
-import infosistema.openbaas.data.models.files.FileSystemModel;
-import infosistema.openbaas.data.models.files.FtpModel;
+import infosistema.openbaas.dataaccess.files.AwsModel;
+import infosistema.openbaas.dataaccess.files.FileInterface;
+import infosistema.openbaas.dataaccess.files.FileSystemModel;
+import infosistema.openbaas.dataaccess.files.FtpModel;
 import infosistema.openbaas.dataaccess.models.AppModel;
 import infosistema.openbaas.dataaccess.models.DocumentModel;
 import infosistema.openbaas.dataaccess.models.UserModel;

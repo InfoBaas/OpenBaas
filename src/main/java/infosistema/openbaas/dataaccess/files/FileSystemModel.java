@@ -1,4 +1,4 @@
-package infosistema.openbaas.data.models.files;
+package infosistema.openbaas.dataaccess.files;
 
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.utils.Const;

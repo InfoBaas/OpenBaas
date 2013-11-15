@@ -20,7 +20,7 @@ import infosistema.openbaas.data.models.Image;
 import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.data.models.Storage;
 import infosistema.openbaas.data.models.Video;
-import infosistema.openbaas.data.models.files.FileInterface;
+import infosistema.openbaas.dataaccess.files.FileInterface;
 import infosistema.openbaas.dataaccess.models.MediaModel;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;

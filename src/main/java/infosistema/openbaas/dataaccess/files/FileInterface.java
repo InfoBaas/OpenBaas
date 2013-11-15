@@ -1,4 +1,4 @@
-package infosistema.openbaas.data.models.files;
+package infosistema.openbaas.dataaccess.files;
 
 import java.io.File;
 import java.io.IOException;

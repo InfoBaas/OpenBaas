@@ -2,8 +2,8 @@ package infosistema.openbaas.middleLayer;
 
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.User;
-import infosistema.openbaas.data.models.files.FileInterface;
 import infosistema.openbaas.dataaccess.email.Email;
+import infosistema.openbaas.dataaccess.files.FileInterface;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.dataaccess.models.SessionModel;
 import infosistema.openbaas.utils.Const;
