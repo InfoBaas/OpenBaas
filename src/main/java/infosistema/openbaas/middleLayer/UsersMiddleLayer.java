@@ -354,7 +354,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	public boolean updateConfirmUsersEmailOption(String appId, Boolean confirmUsersEmail) {
 		boolean sucess = false;
 		if (appModel.appExists(appId)) {
-			appModel.updateConfirmUsersEmailOption(appId, confirmUsersEmail);
+			appModel.updateAppFields(appId, null, null, confirmUsersEmail, null, null, null);
 			sucess = true;
 		}
 		return sucess;

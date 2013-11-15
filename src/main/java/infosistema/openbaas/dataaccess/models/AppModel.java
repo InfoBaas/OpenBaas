@@ -32,8 +32,8 @@ public class AppModel {
 	// *** *** APPS *** *** //
 	
 	// *** PRIVATE *** //
+	
 	// *** CREATE *** //
-
 	
 	/**
 	 * Return codes: 1 = Created application -1 = Application exists;
@@ -67,69 +67,30 @@ public class AppModel {
 
 	// *** UPDATE *** //
 	
-	/**
-	 * Return codes 1 = Updated application successfully; -1 = Application with
-	 * currentId does not exist.
-	 * 
-	 * @return
-	 */
-	public Boolean updateApp(String currentId, String newId, String alive) {
-		Jedis jedis = pool.getResource();
-		Boolean sucess = false;
-		try {
-			if (jedis.exists("apps:" + currentId)) {
-				Map<String, String> tempValues = jedis.hgetAll("apps:" + currentId);
-				for (Map.Entry<String, String> entry : tempValues.entrySet()) {
-					jedis.hset("apps:" + newId, entry.getKey(),
-							entry.getValue());
-				}
-				jedis.del("apps:" + currentId);
-				sucess = true;
-			}
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return sucess;
-	}
-
-	/**
-	 * Makes an inactive app turn active again.
-	 * 
-	 * @param alive
-	 * @return
-	 */
-	public Boolean updateAppName(String appId, String newAppName) {
+	public Boolean updateAppFields(String appId, String alive, String newAppName, Boolean confirmUsersEmail,
+			Boolean aws, Boolean ftp, Boolean fileSystem) {
 		Jedis jedis = pool.getResource();
 		try {
-			jedis.hset("apps:" + appId, "appName", newAppName);
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return true;
-	}
-
-	public Boolean updateAllAppFields(String appId, String alive,
-			String newAppName, Boolean confirmUsersEmail,boolean AWS,boolean FTP,boolean FileSystem) {
-		Jedis jedis = pool.getResource();
-		try {
-			jedis.hset("apps:" + appId, "appName", newAppName);
-			jedis.hset("apps:" + appId, "alive", alive);
-			jedis.hset("apps:" + appId, "appName", newAppName);
-			jedis.hset("apps:" + appId, "confirmUsersEmail", ""+confirmUsersEmail);
-			jedis.hset("apps:" + appId, FileMode.aws.toString(), ""+AWS);
-			jedis.hset("apps:" + appId, FileMode.ftp.toString(), ""+FTP);
-			jedis.hset("apps:" + appId, FileMode.filesystem.toString(), ""+FileSystem);
-			jedis.hset("apps:" + appId, "updateDate", new Date().toString());
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return true;
-	}
-
-	public Boolean updateConfirmUsersEmailOption(String appId, Boolean confirmUsersEmail) {
-		Jedis jedis = pool.getResource();
-		try {
-			jedis.hset("apps:" + appId, "confirmUsersEmail", ""+confirmUsersEmail);
+			if (newAppName != null)
+				jedis.hset("apps:" + appId, "appName", newAppName);
+			if (alive != null)
+				jedis.hset("apps:" + appId, "alive", alive);
+			if (newAppName != null)
+				jedis.hset("apps:" + appId, "appName", newAppName);
+			if (confirmUsersEmail != null)
+				jedis.hset("apps:" + appId, "confirmUsersEmail", ""+confirmUsersEmail);
+			if (fileSystem != null && fileSystem)
+				aws = ftp = false;
+			if (aws != null && aws)
+				fileSystem = ftp = false;
+			if (ftp != null && ftp)
+				fileSystem = aws = false;
+			if (aws != null)
+				jedis.hset("apps:" + appId, FileMode.aws.toString(), ""+aws);
+			if (ftp != null)
+				jedis.hset("apps:" + appId, FileMode.ftp.toString(), ""+ftp);
+			if (fileSystem != null)
+				jedis.hset("apps:" + appId, FileMode.filesystem.toString(), ""+fileSystem);
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -139,32 +100,12 @@ public class AppModel {
 
 	// *** GET LIST *** //
 
-	/*
-	public Set<String> getAllAppIds() {
-		Jedis jedis = pool.getResource();
-		Set<String> result;
-		try {
-			Set<String> allApps = jedis.keys("apps:");
-			Set<String> inactiveApps = jedis.smembers("apps:inactive");
-			result = new HashSet<String>(allApps.size());
-			Iterator<String> i = allApps.iterator();
-			while (i.hasNext()) {
-				String element = i.next();
-				if (!inactiveApps.contains(element))
-					result.add(element);
-			}
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return result;
-	}
-	*/
-
 	public ArrayList<String> getAllAppIds(Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	
 	// *** GET *** //
 
 	/**
@@ -232,6 +173,7 @@ public class AppModel {
 		else return FileMode.filesystem;
 	}
 	
+	
 	// *** DELETE *** //
 
 	/**
@@ -277,6 +219,9 @@ public class AppModel {
 		return op;
 	}
 
+
+	// *** OTHERS *** //
+
 	public void reviveApp(String appId) {
 		Jedis jedis = pool.getResource();
 		try {
@@ -285,8 +230,5 @@ public class AppModel {
 			pool.returnResource(jedis);
 		}
 	}
-
-
-	// *** OTHERS *** //
 
 }

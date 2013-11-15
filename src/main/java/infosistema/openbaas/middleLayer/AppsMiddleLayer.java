@@ -64,7 +64,7 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	
 	public Application updateAllAppFields(String appId, String alive, String newAppName, boolean confirmUsersEmail,boolean AWS,boolean FTP,boolean FILESYSTEM) {
 		if (appModel.appExists(appId)) {
-			appModel.updateAllAppFields(appId, alive, newAppName, confirmUsersEmail,AWS,FTP,FILESYSTEM);
+			appModel.updateAppFields(appId, alive, newAppName, confirmUsersEmail,AWS,FTP,FILESYSTEM);
 			return appModel.getApplication(appId);
 		}
 		return null;
@@ -72,7 +72,7 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 
 	public void updateAppName(String appId, String newAppName) {
 		if (appModel.appExists(appId)) {
-			appModel.updateAppName(appId, newAppName);
+			appModel.updateAppFields(appId, null, newAppName, null, null, null, null);
 		}
 	}
 
