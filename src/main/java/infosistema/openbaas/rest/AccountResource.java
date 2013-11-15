@@ -94,7 +94,6 @@ public class AccountResource {
 					User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile);
 					response = Response.status(Status.CREATED).entity(outUser).build();
 				} else {
-					//String foundUserId = usersMid.getUserIdUsingUserName(appId,userName);
 					response = Response.status(Status.FORBIDDEN).entity("{\"email exists\": "+email+"}").build();
 				}
 			} else {

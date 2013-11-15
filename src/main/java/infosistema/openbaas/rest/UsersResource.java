@@ -46,7 +46,9 @@ public class UsersResource {
 		this.uriInfo = uriInfo;
 	}
 
-		
+	// *** CREATE *** //
+
+	
 	// *** UPDATE *** //
 	
 	/**
@@ -59,9 +61,7 @@ public class UsersResource {
 	@Path("{userId}")
 	@PATCH
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateUser(@PathParam("userId") String userId,
-			JSONObject inputJsonObj, @Context UriInfo ui,
-			@Context HttpHeaders hh) {
+	public Response updateUser(@PathParam("userId") String userId, JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -85,17 +85,13 @@ public class UsersResource {
 					Log.error("", this, "updateUser", "Invalid Key.", e); 
 				}
 			}
-			//boolean sucess;
 			if (usersMid.identifierInUseByUserInApp(this.appId, userId)) {
 				if (email != null && password != null && alive != null) {
 					usersMid.updateUser(appId, userId, email, hash, salt, alive);
-					//sucess = true;
 				} else if (email != null && password != null) {
 					usersMid.updateUser(appId, userId, email, hash, salt);
-					//sucess = true;
 				} else if (email != null) {
 					usersMid.updateUser(appId, userId, email);
-					//sucess = true;
 				}
 				response = Response.status(Status.OK).entity(usersMid.getUserInApp(appId, userId)).build();
 			} else {
