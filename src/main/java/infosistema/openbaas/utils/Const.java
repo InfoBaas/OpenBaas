@@ -32,6 +32,9 @@ public class Const {
 	private static String REDIS_GEO_SERVER = "localhost";
 	private static Integer REDIS_GEO_PORT = 6381;
 
+	private static Integer REDIS_METADATA_PORT = 6380;
+	private static String REDIS_METADATA_SERVER = "localhost";
+
 	private static String MONGO_SERVER = "localhost";
 	private static Integer MONGO_PORT = 27017;
 	private static String MONGO_DB = "openbaas";
@@ -109,6 +112,13 @@ public class Const {
 
 			try {
 				REDIS_GEO_PORT = Integer.parseInt(props.getProperty("REDIS_GEO_PORT"));
+			} catch (Exception e) {}
+
+			stmp = props.getProperty("REDIS_METADATA_SERVER");
+			if (stmp != null) REDIS_METADATA_SERVER = stmp;
+
+			try {
+				REDIS_METADATA_PORT = Integer.parseInt(props.getProperty("REDIS_METADATA_PORT"));
 			} catch (Exception e) {}
 
 			stmp = props.getProperty("MONGO_SERVER");
@@ -235,6 +245,15 @@ public class Const {
 	public static Integer getRedisGeoPort() {
 		return REDIS_GEO_PORT;
 	}
+
+	public static String getRedisMetadataServer() {
+		return REDIS_METADATA_SERVER;
+	}
+
+	public static Integer getRedisMetadataPort() {
+		return REDIS_METADATA_PORT;
+	}
+
 
 	public static String getMongoServer() {
 		return MONGO_SERVER;

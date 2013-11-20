@@ -1,9 +1,9 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.ErrorSet;
-import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.Error;
+import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.Metadata;
-import infosistema.openbaas.data.ResultSet;
+import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Image;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
@@ -79,18 +79,18 @@ public class ImageResource {
 		if (code == 1) {
 			String imageId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.image, location);
 			if (imageId == null) { 
-				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("")).build();
+				response = Response.status(Status.BAD_REQUEST).entity(new Error("")).build();
 			} else {
 				String metaKey = "apps."+appId+".media.images."+imageId;
 				String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
 				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
-				ResultSet res = new ResultSet(imageId, meta);
+				Result res = new Result(imageId, meta);
 				response = Response.status(Status.OK).entity(res).build();
 			}
 		} else if(code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
@@ -127,11 +127,11 @@ public class ImageResource {
 				if(meta)
 					response = Response.status(Status.OK).entity("").build();
 				else
-					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("Del Meta")).build();
+					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("Del Meta")).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("Image not found")).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error("Image not found")).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("sessionToken not found")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("sessionToken not found")).build();
 		return response;
 	}
 	
@@ -163,7 +163,7 @@ public class ImageResource {
 			ArrayList<String> imagesIds = new ArrayList<String>();
 			if (latitude != null && longitude != null && radius != null) {
 				if(iniIndex>imagesIds.size())
-					return Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Invalid pagination indexes.")).build();
+					return Response.status(Status.BAD_REQUEST).entity(new Error("Invalid pagination indexes.")).build();
 				imagesIds = mediaMid.getAllImagesIdsInRadius(appId, Double.parseDouble(latitude),Double.parseDouble(longitude), 
 						Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
 				if(finIndex>imagesIds.size())
@@ -177,13 +177,13 @@ public class ImageResource {
 				totalNumberPages = mediaMid.countAllMedia(appId, ModelEnum.image) / pageSize;
 			}
 
-			ListResultSet res = new ListResultSet(listRes,pageNumber,totalNumberPages);
+			ListResult res = new ListResult(listRes,pageNumber,totalNumberPages);
 
 			response = Response.status(Status.OK).entity(res).build();
 		} else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
@@ -210,21 +210,21 @@ public class ImageResource {
 					
 					String metaKey = "apps."+appId+".media.images."+imageId;
 					Metadata meta = mediaMid.getMetadata(metaKey);
-					ResultSet res = new ResultSet(temp, meta);
+					Result res = new Result(temp, meta);
 					
 					response = Response.status(Status.OK).entity(res).build();
 				}
 				else{
-					response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("")).build();
+					response = Response.status(Status.NOT_FOUND).entity(new Error("")).build();
 				}
 			}
 			else{
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
 		}else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
@@ -251,9 +251,9 @@ public class ImageResource {
 			} else
 				response = Response.status(Status.NOT_FOUND).entity(imageId).build();
 		}else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 

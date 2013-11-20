@@ -1,5 +1,9 @@
 package infosistema.openbaas.middleLayer;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.enums.FileMode;
 import infosistema.openbaas.dataaccess.files.AwsModel;
@@ -8,6 +12,7 @@ import infosistema.openbaas.dataaccess.files.FileSystemModel;
 import infosistema.openbaas.dataaccess.files.FtpModel;
 import infosistema.openbaas.dataaccess.models.AppModel;
 import infosistema.openbaas.dataaccess.models.DocumentModel;
+import infosistema.openbaas.dataaccess.models.MetadataModel;
 import infosistema.openbaas.dataaccess.models.UserModel;
 
 public abstract class MiddleLayerAbstract {
@@ -17,6 +22,7 @@ public abstract class MiddleLayerAbstract {
 	protected AppModel appModel;
 	protected UserModel userModel;
 	protected DocumentModel docModel;
+	protected MetadataModel metadataModel;
 
 	
 	// *** INIT *** //
@@ -25,6 +31,7 @@ public abstract class MiddleLayerAbstract {
 		docModel = new DocumentModel();
 		appModel = new AppModel();;
 		userModel = new UserModel();
+		metadataModel = new MetadataModel(); 
 	}
 
 	// *** FILESYSTEM *** //
@@ -39,19 +46,47 @@ public abstract class MiddleLayerAbstract {
 	// *** METADATA *** //
 	
 	public Metadata getMetadata(String key) {
-		return new Metadata();
+		Metadata retObj = new Metadata();
+		Map<String, String> fields = metadataModel.getMetadata(key);
+		try {
+			retObj.setCreateDate(new Date(fields.get(Metadata.CREATE_DATE)));
+		} catch (Exception e) {}
+		retObj.setCreateUser(fields.get(Metadata.CREATE_USER));
+		try {
+			retObj.setLastUpdateDate(new Date(fields.get(Metadata.LAST_UPDATE_DATE)));
+		} catch (Exception e) {}
+		retObj.setLastUpdateUser(fields.get(Metadata.LAST_UPDATE_USER));
+		retObj.setLocation(fields.get(Metadata.LOCATION));
+		return retObj;
 	}
 	
 	public Metadata createMetadata(String key, String userId, String location) {
-		return new Metadata();
+		Map<String, String> fields = new HashMap<String, String>();
+		fields.put(Metadata.CREATE_DATE, (new Date()).toString());
+		fields.put(Metadata.CREATE_USER, userId);
+		fields.put(Metadata.LAST_UPDATE_DATE, (new Date()).toString());
+		fields.put(Metadata.LAST_UPDATE_USER, userId);
+		fields.put(Metadata.LOCATION, location);
+		if (metadataModel.createUpdateMetadata(key, fields))
+			return getMetadata(key);
+		else
+			return null;
 	}
 	
 	public Metadata updateMetadata(String key, String userId, String location) {
-		return new Metadata();
+		Map<String, String> fields = new HashMap<String, String>();
+		fields.put(Metadata.LAST_UPDATE_DATE, (new Date()).toString());
+		fields.put(Metadata.LAST_UPDATE_USER, userId);
+		if (location != null && !"".equals(location))
+			fields.put(Metadata.LOCATION, location);
+		if (metadataModel.createUpdateMetadata(key, fields))
+			return getMetadata(key);
+		else
+			return null;
 	}
 	
 	public Boolean deleteMetadata(String key) {
-		return null;
+		return metadataModel.deleteMetadata(key, true);
 	}
 
 }

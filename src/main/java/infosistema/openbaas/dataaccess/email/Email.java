@@ -19,10 +19,7 @@ import redis.clients.jedis.JedisPoolConfig;
 
 public class Email {
 
-	//Email Properties
-	//private static final int RedisSessionsAndEmailPORT = 6380;
 	Jedis jedis;
-	//private final static String server = "localhost";
 
 	public Email() {
 		jedis = new Jedis(Const.getRedisSessionServer(), Const.getRedisSessionPort());

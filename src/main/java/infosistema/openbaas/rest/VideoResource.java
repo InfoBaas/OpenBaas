@@ -1,9 +1,9 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.ErrorSet;
-import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.Error;
+import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.Metadata;
-import infosistema.openbaas.data.ResultSet;
+import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
@@ -84,18 +84,18 @@ public class VideoResource {
 		if (code == 1) {
 			String videoId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.video, location);
 			if (videoId == null) { 
-				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 			} else {
 				String metaKey = "apps."+appId+".media.video."+videoId;
 				String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
 				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
-				ResultSet res = new ResultSet(videoId, meta);	
+				Result res = new Result(videoId, meta);	
 				response = Response.status(Status.OK).entity(res).build();
 			}
 		} else if(code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 	
@@ -127,11 +127,11 @@ public class VideoResource {
 				if(meta)
 					response = Response.status(Status.OK).entity("").build();
 				else
-					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("Del Meta")).build();
+					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("Del Meta")).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet(sessionToken)).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error(sessionToken)).build();
 		return response;
 	}
 
@@ -159,10 +159,10 @@ public class VideoResource {
 			Log.debug("", this, "findAllvideos", "********Finding all Video**********");
 			ArrayList<String> videoIds = mediaMid.getAllMediaIds(appId, ModelEnum.video, pageNumber, pageSize,
 					orderBy, orderType);
-			ListResultSet res = new ListResultSet(videoIds,pageNumber);
+			ListResult res = new ListResult(videoIds,pageNumber);
 			response = Response.status(Status.OK).entity(res).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet(sessionToken)).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error(sessionToken)).build();
 		return response;
 	}
 
@@ -188,15 +188,15 @@ public class VideoResource {
 					Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId));
 					String metaKey = "apps."+appId+".media.video."+videoId;
 					Metadata meta = mediaMid.getMetadata(metaKey);
-					ResultSet res = new ResultSet(video, meta);
+					Result res = new Result(video, meta);
 					
 					response = Response.status(Status.OK).entity(res).build();
 				} else
-					response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(videoId)).build();
+					response = Response.status(Status.NOT_FOUND).entity(new Error(videoId)).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet(sessionToken)).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error(sessionToken)).build();
 		return response;
 	}
 
@@ -225,9 +225,9 @@ public class VideoResource {
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
 							.header("content-disposition","attachment; filename = "+video.getFileName()+"."+video.getFileExtension()).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(videoId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(videoId)).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet(sessionToken)).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error(sessionToken)).build();
 		return response;
 	}
 

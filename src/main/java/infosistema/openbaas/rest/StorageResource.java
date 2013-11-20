@@ -1,9 +1,9 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.ErrorSet;
-import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.Error;
+import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.Metadata;
-import infosistema.openbaas.data.ResultSet;
+import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
@@ -97,13 +97,13 @@ public class StorageResource {
 				String metaKey = "apps."+appId+".media.storage."+storageId;
 				String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
 				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
-				ResultSet res = new ResultSet(storageId, meta);
+				Result res = new Result(storageId, meta);
 				response = Response.status(Status.OK).entity(res).build();
 			}
 		} else if(code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 	
@@ -131,11 +131,11 @@ public class StorageResource {
 				if(meta)
 					response = Response.status(Status.OK).entity("").build();
 				else
-					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("Del Meta")).build();
+					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("Del Meta")).build();
 			} else
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet(sessionToken)).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error(sessionToken)).build();
 		return response;
 	}
 
@@ -163,12 +163,12 @@ public class StorageResource {
 			Log.debug("", this, "findAllStorageIds", "********Finding all Storage********");
 			ArrayList<String> storageIds = mediaMid.getAllMediaIds(appId, ModelEnum.storage, pageNumber,
 					pageSize,orderBy,orderType);
-			ListResultSet res = new ListResultSet(storageIds,pageNumber);
+			ListResult res = new ListResult(storageIds,pageNumber);
 			response = Response.status(Status.OK).entity(res).build();
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 	

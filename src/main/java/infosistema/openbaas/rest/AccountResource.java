@@ -3,9 +3,9 @@ package infosistema.openbaas.rest;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
-import infosistema.openbaas.data.ErrorSet;
+import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.Metadata;
-import infosistema.openbaas.data.ResultSet;
+import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
@@ -108,13 +108,13 @@ public class AccountResource {
 					String metaKey = "apps."+appId+".users."+userId;
 					Metadata meta = usersMid.createMetadata(metaKey, userId, location);
 					User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile);
-					ResultSet res = new ResultSet(outUser, meta);
+					Result res = new Result(outUser, meta);
 					response = Response.status(Status.CREATED).entity(res).build();
 				} else {
-					response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("{\"email exists\": "+email+"}")).build();
+					response = Response.status(Status.FORBIDDEN).entity(new Error("{\"email exists\": "+email+"}")).build();
 				}
 			} else {
-				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("")).build();
+				response = Response.status(Status.BAD_REQUEST).entity(new Error("")).build();
 			}
 		return response;
 	}
@@ -147,7 +147,7 @@ public class AccountResource {
 			attemptedPassword = (String) inputJsonObj.get("password");
 		} catch (JSONException e) {
 			Log.error("", this, "createSession", "Error parsing the JSON.", e); 
-			return Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error reading JSON")).build();
+			return Response.status(Status.BAD_REQUEST).entity(new Error("Error reading JSON")).build();
 		}
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
@@ -181,11 +181,11 @@ public class AccountResource {
 						outUser.setUserFile(outUser.getUserFile());
 						String metaKey = "apps."+appId+".users."+outUser.getUserId();
 						Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
-						ResultSet res = new ResultSet(outUser, meta);
+						Result res = new Result(outUser, meta);
 						response = Response.status(Status.OK).entity(res).build();
 					}
 				} else {
-					response = Response.status(Status.FORBIDDEN).entity(new ErrorSet(Const.getEmailConfirmationError())).build();
+					response = Response.status(Status.FORBIDDEN).entity(new Error(Const.getEmailConfirmationError())).build();
 				}
 			} else{
 				Log.debug("", this, "createSession", "userId of email: " + email + " is: " + outUser.getUserId());
@@ -202,14 +202,14 @@ public class AccountResource {
 						outUser.setUserFile(outUser.getUserFile());
 						String metaKey = "apps."+appId+".users."+outUser.getUserId();
 						Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
-						ResultSet res = new ResultSet(outUser, meta);
+						Result res = new Result(outUser, meta);
 						response = Response.status(Status.OK).entity(res).build();
 					}
 				}else
-					response = Response.status(Status.UNAUTHORIZED).entity(new ErrorSet("")).build();				
+					response = Response.status(Status.UNAUTHORIZED).entity(new Error("")).build();				
 			}
 		} else
-			response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("")).build();
+			response = Response.status(Status.NOT_FOUND).entity(new Error("")).build();
 		return response;
 
 	}
@@ -229,16 +229,16 @@ public class AccountResource {
 				if (location != null) {
 					String metaKey = "apps."+appId+".users."+userId;
 					Metadata meta = usersMid.updateMetadata(metaKey, userId, location);
-					ResultSet res = new ResultSet("Refresh OK", meta);
+					Result res = new Result("Refresh OK", meta);
 					sessionMid.refreshSession(sessionToken, location, userAgent);					
 					response = Response.status(Status.OK).entity(res).build();
 				} // if the device does not have the gps turned on we should not
 					// refresh the session.
 					// only refresh it when an action is performed.
 			}
-			Response.status(Status.NOT_FOUND).entity(new ErrorSet("SessionToken: "+sessionToken)).build();
+			Response.status(Status.NOT_FOUND).entity(new Error("SessionToken: "+sessionToken)).build();
 		} else
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("You do not have permission to access.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("You do not have permission to access.")).build();
 		return response;
 	}
 
@@ -266,11 +266,11 @@ public class AccountResource {
 					if (sessionMid.deleteUserSession(sessionToken, userId)){
 						String metaKey = "apps"+appId+"users"+userId;
 						Metadata meta = usersMid.updateMetadata(metaKey, userId, null);
-						ResultSet res = new ResultSet("Signout OK", meta);
+						Result res = new Result("Signout OK", meta);
 						response = Response.status(Status.OK).entity(res).build();
 					}
 					else{
-						response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("Not found")).build();
+						response = Response.status(Status.NOT_FOUND).entity(new Error("Not found")).build();
 					}
 				}else{
 					//deletes all sessions user
@@ -279,16 +279,16 @@ public class AccountResource {
 					if (sucess){
 						String metaKey = "apps."+appId+".users."+userId;
 						Metadata meta = usersMid.updateMetadata(metaKey, userId, null);
-						ResultSet res = new ResultSet("Signout OK", meta);
+						Result res = new Result("Signout OK", meta);
 						response = Response.status(Status.OK).entity(res).build();
 					}
 					else
-						response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("No sessions exist")).build();
+						response = Response.status(Status.NOT_FOUND).entity(new Error("No sessions exist")).build();
 					} 
 				}
 			}
 			else 
-				response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("FORBIDDEN")).build();		
+				response = Response.status(Status.FORBIDDEN).entity(new Error("FORBIDDEN")).build();		
 		return response;
 	}
 	
@@ -314,10 +314,10 @@ public class AccountResource {
 			
 			String metaKey = "apps."+appId+".users."+userId;
 			Metadata meta = usersMid.getMetadata(metaKey);
-			ResultSet res = new ResultSet("OK", meta);
+			Result res = new Result("OK", meta);
 			response = Response.status(Status.OK).entity(res).build();
 		} else
-			response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(sessionToken)).build();
+			response = Response.status(Status.NOT_FOUND).entity(new Error(sessionToken)).build();
 		return response;
 	}
 	
@@ -337,10 +337,10 @@ public class AccountResource {
 			User outUser = usersMid.getUserInApp(appId, userId);
 			String metaKey = "apps."+appId+".users."+userId;
 			Metadata meta = usersMid.getMetadata(metaKey);
-			ResultSet res = new ResultSet(outUser, meta);
+			Result res = new Result(outUser, meta);
 			response = Response.status(Status.OK).entity(res).build();
 		} else
-			response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("Token NOT_FOUND")).build();
+			response = Response.status(Status.NOT_FOUND).entity(new Error("Token NOT_FOUND")).build();
 		return response;
 	}
 
@@ -374,14 +374,14 @@ public class AccountResource {
 			}
 			String userId = usersMid.getUserIdUsingEmail(appId, email);
 			if(userId==null)
-				return Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Wrong email.")).build();
+				return Response.status(Status.BAD_REQUEST).entity(new Error("Wrong email.")).build();
 			boolean opOk = usersMid.recoverUser(appId, userId, email, ui, newPass,hash,salt);
 			if(opOk){
-				ResultSet res = new ResultSet("Email sent with recovery details.", null);
+				Result res = new Result("Email sent with recovery details.", null);
 				response = Response.status(Status.OK).entity(res).build();
 			}
 			else
-				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Wrong email.")).build();
+				response = Response.status(Status.BAD_REQUEST).entity(new Error("Wrong email.")).build();
 		return response;
 		
 	}
@@ -405,7 +405,7 @@ public class AccountResource {
 			oldPassword = (String) inputJsonObj.get("oldPassword");
 		} catch (JSONException e) {
 			Log.error("", this, "createSession", "Error parsing the JSON.", e); 
-			return Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error reading JSON")).build();
+			return Response.status(Status.BAD_REQUEST).entity(new Error("Error reading JSON")).build();
 		}
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
@@ -429,9 +429,9 @@ public class AccountResource {
 					sessionMid.refreshSession(sessionToken.getValue(), location, userAgent);
 				response = Response.status(Status.OK).entity("Passoword correctly changed.").build();
 			}else
-				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Wrong old password.")).build();
+				response = Response.status(Status.BAD_REQUEST).entity(new Error("Wrong old password.")).build();
 		}catch (Exception e) {
-			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("INTERNAL_SERVER_ERROR")).build();
+			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("INTERNAL_SERVER_ERROR")).build();
 		}
 		return response;
 		
@@ -452,7 +452,7 @@ public class AccountResource {
 			return new IntegrationResource(appId);
 		} catch (IllegalArgumentException e) {
 			Log.error("", this, "integration", "Illegal Argument.", e); 
-			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Parse error")).build());
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity(new Error("Parse error")).build());
 		}
 	}
 }

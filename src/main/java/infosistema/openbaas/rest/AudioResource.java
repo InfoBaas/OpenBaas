@@ -1,9 +1,9 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.ErrorSet;
-import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.Error;
+import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.Metadata;
-import infosistema.openbaas.data.ResultSet;
+import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Audio;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
@@ -90,20 +90,20 @@ public class AudioResource {
 		if (code == 1) {
 			String audioId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.audio, location);
 			if (audioId == null) { 
-				response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 			} else {
 				
 				String metaKey = "apps."+appId+".media.audio."+audioId;
 				String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
 				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
-				ResultSet res = new ResultSet(audioId, meta);
+				Result res = new Result(audioId, meta);
 				
 				response = Response.status(Status.OK).entity(res).build();
 			}
 		} else if(code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
@@ -137,14 +137,14 @@ public class AudioResource {
 				if(meta)
 					response = Response.status(Status.OK).entity("").build();
 				else
-					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("Del Meta")).build();
+					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("Del Meta")).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
 		}else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
@@ -172,12 +172,12 @@ public class AudioResource {
 						Double.parseDouble(longitude), Double.parseDouble(radius));
 			}else
 				audioIds = mediaMid.getAllMediaIds(appId, ModelEnum.audio, pageNumber, pageSize, orderBy, orderType);
-			ListResultSet res = new ListResultSet(audioIds,pageNumber);
+			ListResult res = new ListResult(audioIds,pageNumber);
 			response = Response.status(Status.OK).entity(res).build();
 		} else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
@@ -206,19 +206,19 @@ public class AudioResource {
 					
 					String metaKey = "apps."+appId+".media.audio."+audioId;
 					Metadata meta = mediaMid.getMetadata(metaKey);
-					ResultSet res = new ResultSet(temp, meta);
+					Result res = new Result(temp, meta);
 					
 					response = Response.status(Status.OK).entity(res).build();
 				} else {
-					response = Response.status(Status.NOT_FOUND).entity(new ErrorSet("")).build();
+					response = Response.status(Status.NOT_FOUND).entity(new Error("")).build();
 				}
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
 		}else if(code == -2){
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		}else if(code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 

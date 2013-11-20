@@ -1,8 +1,8 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.ErrorSet;
+import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.Metadata;
-import infosistema.openbaas.data.ResultSet;
+import infosistema.openbaas.data.Result;
 import infosistema.openbaas.middleLayer.DocumentMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
@@ -78,26 +78,25 @@ public class AppDataResource {
 				if (docMid.insertDocumentInPath(appId, null, null, inputJsonObj, location)) {
 					String metaKey = "apps."+appId+".data";
 					String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
-					Metadata meta = docMid.createMetadata(metaKey, userId, location);
-					ResultSet res = new ResultSet(inputJsonObj, meta);					
+					Metadata meta = docMid.createMetadata(metaKey, userId, location, inputJsonObj);
+					Result res = new Result(inputJsonObj, meta);					
 					response = Response.status(Status.OK).entity(res).build();
 				} else {
-					response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(inputJsonObj.toString())).build();
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(inputJsonObj.toString())).build();
 				}
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 	
 
 	// *** UPDATE *** //
 	
-	//TODO: LOCATION
 	/**
 	 * Create or replace existing elements.
 	 * 
@@ -124,23 +123,22 @@ public class AppDataResource {
 				if (docMid.insertDocumentInPath(appId, null, path, inputJsonObj, location)){
 					String metaKey = "apps."+appId+".data."+path;
 					String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
-					Metadata meta = docMid.createMetadata(metaKey, userId, location);
-					ResultSet res = new ResultSet(inputJsonObj, meta);
+					Metadata meta = docMid.createMetadata(metaKey, userId, location, inputJsonObj);
+					Result res = new Result(inputJsonObj, meta);
 					response = Response.status(Status.CREATED).entity(res).build();
 				}
 				else
-					response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(inputJsonObj.toString())).build();
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(inputJsonObj.toString())).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
-	//TODO: LOCATION
 	/**
 	 * Partial updates, adds non existing fields and edits existing ones.
 	 * 
@@ -168,26 +166,25 @@ public class AppDataResource {
 					
 					String metaKey = "apps."+appId+".data."+path;
 					String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
-					Metadata meta = docMid.updateMetadata(metaKey, userId, location);
-					ResultSet res = new ResultSet(inputJson, meta);
+					Metadata meta = docMid.updateMetadata(metaKey, userId, location, inputJson);
+					Result res = new Result(inputJson, meta);
 					response = Response.status(Status.OK).entity(res).build();
 				}
 				else
-					response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(appId)).build();
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
 	
 	// *** DELETE *** //
 	
-	//TODO: LOCATION
 	/**
 	 * Removes an element and the childs of that element if they exist.
 	 * 
@@ -209,25 +206,23 @@ public class AppDataResource {
 					if(meta)
 						response = Response.status(Status.OK).entity("").build();
 					else
-						response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("Del Meta")).build();
+						response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("Del Meta")).build();
 				}
 				else
-					response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(path.toString())).build();
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(path.toString())).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
 	
 	// *** GET LIST *** //
 	
-	//XPTO: Refazer isto tudo
-	//TODO: LOCATION
 	/**
 	 * Retrieves all the data contained in this application.
 	 * 
@@ -256,16 +251,15 @@ public class AppDataResource {
 				response = Response.status(Status.OK).entity(all).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
 	
 	// *** GET *** //
 	
-	//TODO: LOCATION
 	/**
 	 * Retrieves the data contained in a key.
 	 * 
@@ -285,22 +279,22 @@ public class AppDataResource {
 				if (docMid.existsDocumentInPath(appId, null, path)) {
 					String data = docMid.getDocumentInPath(appId, null, path);
 					if (data == null)
-						response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(appId)).build();
+						response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 					else{
 						String metaKey = "apps."+appId+".data."+path;
 						Metadata meta = docMid.getMetadata(metaKey);
-						ResultSet res = new ResultSet(data, meta);
+						Result res = new Result(data, meta);
 						response = Response.status(Status.OK).entity(res).build();
 					}
 				} else {
-					response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+					response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 				}
 			}
 			
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 

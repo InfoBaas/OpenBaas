@@ -1,11 +1,16 @@
 package infosistema.openbaas.middleLayer;
 
 
+import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.utils.Log;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.ws.rs.core.PathSegment;
 
 import org.codehaus.jettison.json.JSONException;
@@ -170,6 +175,61 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		}
 	}
 
+	// *** METADATA *** //
+	public Metadata createMetadata(String key, String userId, String location, JSONObject input) {
+		Map<String, String> fields = new HashMap<String, String>();
+		fields.put(Metadata.CREATE_DATE, (new Date()).toString());
+		fields.put(Metadata.CREATE_USER, userId);
+		fields.put(Metadata.LAST_UPDATE_DATE, (new Date()).toString());
+		fields.put(Metadata.LAST_UPDATE_USER, userId);
+		fields.put(Metadata.LOCATION, location);
+		deleteMetadata(key);
+		if (propagateMetadata(key, input, fields))
+			return getMetadata(key);
+		else
+			return null;
+	}
+	
+	public Metadata updateMetadata(String key, String userId, String location, JSONObject input) {
+		Map<String, String> fields = new HashMap<String, String>();
+		fields.put(Metadata.LAST_UPDATE_DATE, (new Date()).toString());
+		fields.put(Metadata.LAST_UPDATE_USER, userId);
+		if (location != null && !"".equals(location))
+			fields.put(Metadata.LOCATION, location);
+		if (propagateMetadata(key, input, fields))
+			return getMetadata(key);
+		else
+			return null;
+	}
+
+	private boolean propagateMetadata(String key, JSONObject input, Map<String, String> fields) {
+		if (metadataModel.existsMetadata(key)) {
+			fields.remove(Metadata.CREATE_DATE);
+			fields.remove(Metadata.CREATE_USER);
+		} else {
+			fields.put(Metadata.CREATE_DATE, fields.get(Metadata.LAST_UPDATE_DATE));
+			fields.put(Metadata.CREATE_USER, fields.get(Metadata.LAST_UPDATE_USER));
+		}
+		metadataModel.createUpdateMetadata(key, fields);
+		fields.remove(Metadata.LOCATION);
+		while (input.keys().hasNext()) { 
+			String k = input.keys().next().toString();
+			try {
+				Object obj = input.get(k);
+				if (obj instanceof JSONObject) {
+					propagateMetadata(key + "." + k, (JSONObject)obj, fields);
+				}
+			} catch (Exception e) { }
+		}
+		return true;
+	}
+	
+	@Override
+	public Boolean deleteMetadata(String key) {
+		return metadataModel.deleteMetadata(key, true);
+	}
+
+	
 	// *** OTHERS *** //
 	
 }

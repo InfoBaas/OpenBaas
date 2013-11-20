@@ -1,9 +1,9 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.data.ErrorSet;
-import infosistema.openbaas.data.ListResultSet;
+import infosistema.openbaas.data.Error;
+import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.Metadata;
-import infosistema.openbaas.data.ResultSet;
+import infosistema.openbaas.data.Result;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.DocumentMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
@@ -63,7 +63,6 @@ public class UserDataResource {
 
 	// *** CREATE *** //
 	
-	//TODO: LOCATION (documents)
 	/**
 	 * Creates the document root, this is treated differently than PUT to
 	 * 
@@ -96,27 +95,27 @@ public class UserDataResource {
 					
 					String metaKey = "apps."+appId+".users."+userId;
 					String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
-					Metadata meta = docMid.createMetadata(metaKey, userId, location);
-					ResultSet res = new ResultSet(inputJsonObj, meta);		
+					Metadata meta = docMid.createMetadata(metaKey, userId, location, inputJsonObj);
+					
+					Result res = new Result(inputJsonObj, meta);		
 					
 					response = Response.status(Status.CREATED).entity(res).build();
 				} else {
-					response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(data.toString())).build();
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(data.toString())).build();
 				}
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
 	
 	// *** UPDATE *** //
 	
-	//TODO: LOCATION (location de defeito???)
 	/**
 	 * Create or replace existing elements.
 	 * 
@@ -149,20 +148,20 @@ public class UserDataResource {
 				if (docMid.updateDocumentInPath(appId, userId, path, data, location)){
 					String metaKey = "apps."+appId+".users."+userId+path;
 					String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
-					Metadata meta = docMid.updateMetadata(metaKey, userId, location);
-					ResultSet res = new ResultSet(inputJsonObj, meta);		
+					Metadata meta = docMid.updateMetadata(metaKey, userId, location, inputJsonObj);
+					Result res = new Result(inputJsonObj, meta);		
 					
 					response = Response.status(Status.CREATED).entity(res).build();
 				}
 				else
-					response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(data.toString())).build();
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(data.toString())).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
@@ -189,25 +188,23 @@ public class UserDataResource {
 					if(meta)
 						response = Response.status(Status.OK).entity("").build();
 					else
-						response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorSet("Del Meta")).build();
+						response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("Del Meta")).build();
 				}
 				else
-					response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(path.toString())).build();
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(path.toString())).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
 
 	// *** GET LIST *** //
 	
-	//XPTO: Refazer isto tudo
-	//TODO: LOCATION (documents)
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAllUserData(@Context UriInfo ui, @Context HttpHeaders hh, 
@@ -226,7 +223,7 @@ public class UserDataResource {
 				ArrayList<String> all = null; 
 						//docMid.getAllUserDocsInRadius(appId, userId, Double.parseDouble(latitude), 
 						//Double.parseDouble(longitude), Double.parseDouble(radius),pageNumber,pageSize,orderBy,orderType);
-				ListResultSet res = new ListResultSet(all,pageNumber);
+				ListResult res = new ListResult(all,pageNumber);
 				response = Response.status(Status.OK).entity(res).build();
 			//no query parameters return all docs
 			} else {
@@ -234,9 +231,9 @@ public class UserDataResource {
 				response = Response.status(Status.OK).entity(all).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
@@ -258,20 +255,20 @@ public class UserDataResource {
 			if (docMid.existsDocumentInPath(appId, userId, path)) {
 				String data = docMid.getDocumentInPath(appId, userId, path);
 				if (data == null)
-					response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet(appId)).build();
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 				else{
 					String metaKey = "apps."+appId+".users."+userId+path;
 					Metadata meta = docMid.getMetadata(metaKey);
-					ResultSet res = new ResultSet(data, meta);
+					Result res = new Result(data, meta);
 					response = Response.status(Status.OK).entity(res).build();
 				}
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new ErrorSet(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new ErrorSet("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new ErrorSet("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
