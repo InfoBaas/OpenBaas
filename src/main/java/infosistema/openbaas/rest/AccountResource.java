@@ -1,5 +1,6 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
@@ -43,6 +44,7 @@ public class AccountResource {
 	
 	private UsersMiddleLayer usersMid;
 	private SessionMiddleLayer sessionMid;
+	private AppsMiddleLayer appsMid;
 	private String appId;
 	
 
@@ -54,6 +56,7 @@ public class AccountResource {
 		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
 		this.appId = appId;
 		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+		this.appsMid = MiddleLayerFactory.getAppsMiddleLayer();
 	}
 	
 	// *** CREATE *** //
@@ -89,7 +92,7 @@ public class AccountResource {
 			}
 			if(appKey==null)
 				return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
-			if(!Utils.authenticateApp(appId,appKey))
+			if(!appsMid.authenticateApp(appId,appKey))
 				return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
 			if (locationList != null)
 				location = locationList.get(0);
@@ -112,9 +115,9 @@ public class AccountResource {
 				if (!usersMid.userExistsInApp(appId, userId, email)) {
 					if (uriInfo == null) 
 						uriInfo=ui;
-					String metaKey = "apps."+appId+".users."+userId;
-					Metadata meta = usersMid.createMetadata(metaKey, userId, location);
 					User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile);
+					String metaKey = "apps."+appId+".users."+outUser.getUserId();
+					Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
 					Result res = new Result(outUser, meta);
 					response = Response.status(Status.CREATED).entity(res).build();
 				} else {
@@ -168,7 +171,7 @@ public class AccountResource {
 		}
 		if(appKey==null)
 			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
-		if(!Utils.authenticateApp(appId,appKey))
+		if(!appsMid.authenticateApp(appId,appKey))
 			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
 		if (locationList != null)
 			location = locationList.get(0);
@@ -239,17 +242,18 @@ public class AccountResource {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-			if (sessionMid.sessionExistsForUser(userId)) {
-				if (location != null) {
-					String metaKey = "apps."+appId+".users."+userId;
-					Metadata meta = usersMid.updateMetadata(metaKey, userId, location);
-					Result res = new Result("Refresh OK", meta);
-					sessionMid.refreshSession(sessionToken, location, userAgent);					
-					response = Response.status(Status.OK).entity(res).build();
-				} // if the device does not have the gps turned on we should not
-					// refresh the session.
-					// only refresh it when an action is performed.
-			}
+			if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
+			if (location != null) {
+				String metaKey = "apps."+appId+".users."+userId;
+				Metadata meta = usersMid.updateMetadata(metaKey, userId, location);
+				Result res = new Result("Refresh OK", meta);
+				sessionMid.refreshSession(sessionToken, location, userAgent);					
+				response = Response.status(Status.OK).entity(res).build();
+			} // if the device does not have the gps turned on we should not
+				// refresh the session.
+				// only refresh it when an action is performed.
+			
 			Response.status(Status.NOT_FOUND).entity(new Error("SessionToken: "+sessionToken)).build();
 		} else
 			response = Response.status(Status.FORBIDDEN).entity(new Error("You do not have permission to access.")).build();
@@ -276,6 +280,8 @@ public class AccountResource {
 		if(userId!=null){
 			if (sessionMid.sessionTokenExists(sessionToken)) {
 				if(!flagAll){
+					if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+						return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 					//deletes the sessions user with the token = sessionToken
 					if (sessionMid.deleteUserSession(sessionToken, userId)){
 						String metaKey = "apps"+appId+"users"+userId;
@@ -287,6 +293,8 @@ public class AccountResource {
 						response = Response.status(Status.NOT_FOUND).entity(new Error("Not found")).build();
 					}
 				}else{
+					if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+						return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 					//deletes all sessions user
 					Log.debug("", this, "deleteSession", "********DELETING ALL SESSIONS FOR THIS USER");
 					boolean sucess = sessionMid.deleteAllUserSessions(userId);
@@ -313,7 +321,8 @@ public class AccountResource {
 	// *** GET *** //
 	
 	/**
-	 * Gets the session fields associated with the token.
+	 * Gets the session fields associated with thif(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();e token.
 	 * 
 	 * @param sessionToken
 	 * @return
@@ -325,7 +334,8 @@ public class AccountResource {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-			
+			if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			String metaKey = "apps."+appId+".users."+userId;
 			Metadata meta = usersMid.getMetadata(metaKey);
 			Result res = new Result("OK", meta);
@@ -348,6 +358,8 @@ public class AccountResource {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
+			if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			User outUser = usersMid.getUserInApp(appId, userId);
 			String metaKey = "apps."+appId+".users."+userId;
 			Metadata meta = usersMid.getMetadata(metaKey);
@@ -366,7 +378,7 @@ public class AccountResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response makeRecoveryRequest(JSONObject inputJson, @Context UriInfo ui, @Context HttpHeaders hh,
-			@HeaderParam(value = Const.LOCATION) String location){
+			@HeaderParam(value = Const.LOCATION) String location, @HeaderParam(value = Const.APP_KEY) String appKey){
 		Response response = null;
 		String email = null;
 		String newPass = Utils.getRandomString(Const.getPasswordLength());
@@ -389,6 +401,10 @@ public class AccountResource {
 			String userId = usersMid.getUserIdUsingEmail(appId, email);
 			if(userId==null)
 				return Response.status(Status.BAD_REQUEST).entity(new Error("Wrong email.")).build();
+			if(appKey==null)
+				return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
+			if(!appsMid.authenticateApp(appId,appKey))
+				return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
 			boolean opOk = usersMid.recoverUser(appId, userId, email, ui, newPass,hash,salt);
 			if(opOk){
 				Result res = new Result("Email sent with recovery details.", null);
@@ -430,12 +446,15 @@ public class AccountResource {
 				userAgentList = entry.getValue();
 			}
 		}
+		
 		if (userAgentList != null)
 			userAgent = userAgentList.get(0);
 		if (locationList != null)
 			location = locationList.get(0);
 		try{
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken.getValue());
+			if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			Boolean auth = sessionMid.authenticateUser(appId, userId, oldPassword);
 			if(auth){
 				usersMid.updateUserPassword(appId, userId, newPassword);

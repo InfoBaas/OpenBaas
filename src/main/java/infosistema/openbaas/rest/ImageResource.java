@@ -74,7 +74,10 @@ public class ImageResource {
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
 				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
-		}		
+		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String imageId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.image, location);
@@ -82,7 +85,6 @@ public class ImageResource {
 				response = Response.status(Status.BAD_REQUEST).entity(new Error("")).build();
 			} else {
 				String metaKey = "apps."+appId+".media.images."+imageId;
-				String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
 				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
 				Result res = new Result(imageId, meta);
 				response = Response.status(Status.OK).entity(res).build();
@@ -117,7 +119,10 @@ public class ImageResource {
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
 				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
-		}	
+		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken.getValue())) {
 			Log.debug("", this, "deleteImage", "***********Deleting Image***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.image, imageId)) {
@@ -155,6 +160,15 @@ public class ImageResource {
 		if (orderType == null) 	orderType = Const.getOrderType();
 		Response response = null;
 		List<String> listRes = new ArrayList<String>();
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		Integer totalNumberPages=null;
 		Integer iniIndex = (pageNumber-1)*pageSize;
@@ -200,6 +214,15 @@ public class ImageResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response getImageMetadata(@PathParam("imageId") String imageId,@Context UriInfo ui, @Context HttpHeaders hh){
 		Response response = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "getImageMetadata", "********Finding Image Meta**********");
@@ -237,6 +260,15 @@ public class ImageResource {
 	public Response downloadImage(@PathParam("imageId") String imageId,	@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
 		byte[] sucess = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "downloadImage", "*********Downloading Image**********");

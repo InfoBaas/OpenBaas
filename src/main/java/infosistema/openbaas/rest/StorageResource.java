@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -88,6 +87,9 @@ public class StorageResource {
 			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
 				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
 		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String storageId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.storage, location);
@@ -95,7 +97,6 @@ public class StorageResource {
 				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			} else {
 				String metaKey = "apps."+appId+".media.storage."+storageId;
-				String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
 				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
 				Result res = new Result(storageId, meta);
 				response = Response.status(Status.OK).entity(res).build();
@@ -120,8 +121,11 @@ public class StorageResource {
 	@DELETE
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response deleteStorageFile(@PathParam("storageId") String storageId,
-			@CookieParam(value = Const.SESSION_TOKEN) String sessionToken) {
+			@HeaderParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken);
+		if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken)) {
 			if (mediaMid.mediaExists(appId, ModelEnum.storage, storageId)) {
 				this.mediaMid.deleteMedia(appId, ModelEnum.storage, storageId);
@@ -158,6 +162,15 @@ public class StorageResource {
 		if (orderBy == null) 	orderBy = Const.getOrderBy();
 		if (orderType == null) 	orderType = Const.getOrderType();
 		Response response = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "findAllStorageIds", "********Finding all Storage********");
@@ -189,6 +202,15 @@ public class StorageResource {
 	public Response downloadStorageUsingId(@PathParam("storageId") final String storageId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		ResponseBuilder builder = Response.status(Status.OK);
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		byte[] found = null;
 		String extension = "";
 		try {

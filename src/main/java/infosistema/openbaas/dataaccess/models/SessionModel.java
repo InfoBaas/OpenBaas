@@ -408,6 +408,18 @@ public class SessionModel {
 		pool.destroy();
 		return exists;
 	}
+	
+	public String getAppIdForSessionToken(String sessionToken) {
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
+		Jedis jedis = pool.getResource();
+		String retApp = null;
+		try {
+			retApp = jedis.hget("session:"+sessionToken, "appId");
+		}finally {
+			pool.returnResource(jedis);
+		}
+		return retApp;
+	}
 
 	private String getAppUsingSessionToken(String sessionToken) {
 		return jedis.hget("sessions:" + sessionToken, "appId");

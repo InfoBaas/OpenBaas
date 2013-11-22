@@ -70,7 +70,7 @@ public class AppResource {
 	public Response createApp(JSONObject inputJsonObj,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
+		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
 			long start = System.currentTimeMillis();
 			Application temp = null;
@@ -147,7 +147,7 @@ public class AppResource {
 	public Response updateApp(@PathParam("appId") String appId,	JSONObject inputJsonObj,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
+		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
 			String newAlive = null;
 			String newAppName = null;
@@ -214,7 +214,7 @@ public class AppResource {
 	public Response deleteApp(@PathParam("appId") String appId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
+		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "deleteApp", "*Deleting App (setting as inactive)*");
 			if (this.appsMid.removeApp(appId)) {
@@ -257,7 +257,7 @@ public class AppResource {
 		if (orderType == null) 	orderType = Const.getOrderType();
 		Response response = null;
 		// Parameters treatment
-		int code = Utils.treatParameters(ui, hh);
+		int code = Utils.treatParametersAdmin(ui, hh);
 		if(code == 1){
 		JSONObject temp = new JSONObject();
 		ArrayList<String> ids = new ArrayList<String>();
@@ -294,7 +294,7 @@ public class AppResource {
 	public Response findById(@PathParam("appId") String appId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
+		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "findById", "********Finding App info************");
 			Application temp = appsMid.getApp(appId);
@@ -349,7 +349,7 @@ public class AppResource {
 	@Path("{appId}/media")
 	public MediaResource media(@PathParam("appId") String appId) {
 		try {
-			return new MediaResource(appsMid, appId);
+			return new MediaResource(appId) ;
 		} catch (IllegalArgumentException e) {
 			Log.error("", this, "media", "Illegal Arguments.", e); 
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Parse error").build());

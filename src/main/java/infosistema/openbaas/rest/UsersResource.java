@@ -1,5 +1,6 @@
 package infosistema.openbaas.rest;
 
+import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
@@ -13,6 +14,8 @@ import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -22,8 +25,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
@@ -124,6 +129,14 @@ public class UsersResource {
 	public Response deleteUser(@PathParam("userId") String userId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "deleteUser", "*Deleting User(setting as inactive)*");
@@ -176,7 +189,7 @@ public class UsersResource {
 			} catch (Exception e) { }
 		}
 		Response response = null;
-		int code = Utils.treatParameters(ui, hh);
+		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
 			if (!MiddleLayerFactory.getAppsMiddleLayer().appExists(appId))
 				response = Response.status(Status.NOT_FOUND).entity(appId).build();
@@ -207,6 +220,14 @@ public class UsersResource {
 	public Response findById(@PathParam("userId") String userId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}		
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "findById", "********Finding User info************");

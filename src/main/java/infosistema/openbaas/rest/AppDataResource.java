@@ -74,10 +74,13 @@ public class AppDataResource {
 		}
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
+			String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+			if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
 				if (docMid.insertDocumentInPath(appId, null, null, inputJsonObj, location)) {
 					String metaKey = "apps."+appId+".data";
-					String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+					
 					Metadata meta = docMid.createMetadata(metaKey, userId, location, inputJsonObj);
 					Result res = new Result(inputJsonObj, meta);					
 					response = Response.status(Status.OK).entity(res).build();
@@ -119,10 +122,13 @@ public class AppDataResource {
 		}
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
+			String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+			if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
 				if (docMid.insertDocumentInPath(appId, null, path, inputJsonObj, location)){
 					String metaKey = "apps."+appId+".data."+path;
-					String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+					
 					Metadata meta = docMid.createMetadata(metaKey, userId, location, inputJsonObj);
 					Result res = new Result(inputJsonObj, meta);
 					response = Response.status(Status.CREATED).entity(res).build();
@@ -161,11 +167,13 @@ public class AppDataResource {
 		}
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
+			String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+			if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (docMid.existsDocumentInPath(appId, null, path)) {
 				if (docMid.updateDocumentInPath(appId, null, path, inputJson, location)){
 					
 					String metaKey = "apps."+appId+".data."+path;
-					String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
 					Metadata meta = docMid.updateMetadata(metaKey, userId, location, inputJson);
 					Result res = new Result(inputJson, meta);
 					response = Response.status(Status.OK).entity(res).build();
@@ -197,7 +205,17 @@ public class AppDataResource {
 			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
 			@Context HttpHeaders hh) {
 		Response response = null;
+		
 		int code = Utils.treatParameters(ui, hh);
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		Cookie sessionToken = null;
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (code == 1) {
 			if (docMid.existsDocumentInPath(appId, null, path)) {
 				if (docMid.deleteDocumentInPath(appId, null, path)){
@@ -241,6 +259,16 @@ public class AppDataResource {
 		if (orderBy == null) 	orderBy = Const.getOrderBy();
 		if (orderType == null) 	orderType = Const.getOrderType();
 		Response response = null;
+		
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		Cookie sessionToken = null;
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}		
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			//query parameters are present, only return the elements 
@@ -272,6 +300,15 @@ public class AppDataResource {
 	public Response getElementInDocument( @PathParam("pathId") List<PathSegment> path, @Context UriInfo ui, @Context HttpHeaders hh,
 			@QueryParam("lat") String latitude, @QueryParam("long") String longitude, @QueryParam("radius") String radius) {
 		Response response = null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		Cookie sessionToken = null;
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}		
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			if (latitude != null && longitude != null && radius != null) {

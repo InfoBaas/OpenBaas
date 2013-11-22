@@ -136,5 +136,25 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	public ArrayList<String> getAllMediaIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		return mediaModel.getAllMediaIds(appId, null, pageNumber, pageSize, orderBy, orderType);
 	}
+	
+	public Boolean authenticateApp(String appId, String appKey) {
+		try {
+			AppsMiddleLayer appsMid = MiddleLayerFactory.getAppsMiddleLayer();
+			HashMap<String, String> fieldsAuth = appsMid.getAuthApp(appId);
+			byte[] salt = null;
+			byte[] hash = null;
+			if(fieldsAuth.containsKey("hash") && fieldsAuth.containsKey("salt")){
+				salt = fieldsAuth.get("salt").getBytes("ISO-8859-1");
+				hash = fieldsAuth.get("hash").getBytes("ISO-8859-1");
+			}
+			PasswordEncryptionService service = new PasswordEncryptionService();
+			Boolean authenticated = false;
+			authenticated = service.authenticate(appKey, hash, salt);
+			return authenticated;
+		} catch (Exception e) {
+			Log.error("", "", "authenticateAPP", "", e); 
+		} 	
+		return false;
+	}
 
 }

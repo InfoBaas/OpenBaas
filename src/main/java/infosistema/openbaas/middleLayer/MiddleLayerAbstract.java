@@ -15,6 +15,7 @@ import infosistema.openbaas.dataaccess.files.FtpModel;
 import infosistema.openbaas.dataaccess.models.AppModel;
 import infosistema.openbaas.dataaccess.models.DocumentModel;
 import infosistema.openbaas.dataaccess.models.MetadataModel;
+import infosistema.openbaas.dataaccess.models.SessionModel;
 import infosistema.openbaas.dataaccess.models.UserModel;
 
 public abstract class MiddleLayerAbstract {
@@ -25,6 +26,7 @@ public abstract class MiddleLayerAbstract {
 	protected UserModel userModel;
 	protected DocumentModel docModel;
 	protected MetadataModel metadataModel;
+	protected SessionModel sessionsModel;
 
 	
 	// *** INIT *** //
@@ -34,6 +36,7 @@ public abstract class MiddleLayerAbstract {
 		appModel = new AppModel();;
 		userModel = new UserModel();
 		metadataModel = new MetadataModel(); 
+		sessionsModel = new SessionModel();
 	}
 
 	// *** FILESYSTEM *** //
@@ -52,7 +55,6 @@ public abstract class MiddleLayerAbstract {
 		Metadata retObj = new Metadata();
 		Map<String, String> fields = metadataModel.getMetadata(key);
 		DateFormat df = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy");
-		//Date result =  df.parse(target);
 		try { 
 			retObj.setCreateDate(df.parse(fields.get(Metadata.CREATE_DATE)));
 		} catch (Exception e) {}
@@ -96,5 +98,7 @@ public abstract class MiddleLayerAbstract {
 		metadataModel = new MetadataModel(); 
 		return metadataModel.deleteMetadata(key, true);
 	}
+	
+	
 
 }

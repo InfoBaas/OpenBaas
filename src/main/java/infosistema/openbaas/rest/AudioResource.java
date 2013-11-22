@@ -47,7 +47,6 @@ import javax.ws.rs.core.Response.Status;
 public class AudioResource {
 	static Map<String, Audio> audio = new HashMap<String, Audio>();
 	String appId;
-	static final int idGenerator = 3;
 	private MediaMiddleLayer mediaMid;
 	private AppsMiddleLayer appsMid;
 	private SessionMiddleLayer sessionsMid;
@@ -86,6 +85,9 @@ public class AudioResource {
 			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
 				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
 		}		
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String audioId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.audio, location);
@@ -94,7 +96,6 @@ public class AudioResource {
 			} else {
 				
 				String metaKey = "apps."+appId+".media.audio."+audioId;
-				String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
 				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
 				Result res = new Result(audioId, meta);
 				
@@ -125,6 +126,16 @@ public class AudioResource {
 	public Response deleteAudio(@PathParam("audioId") String audioId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
+		
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "deleteAudio", "***********Deleting Audio***********");
@@ -163,6 +174,15 @@ public class AudioResource {
 	@QueryParam(Const.PAGE_NUMBER) Integer pageNumber, @QueryParam(Const.PAGE_SIZE) Integer pageSize, 
 	@QueryParam(Const.ORDER_BY) String orderBy, @QueryParam(Const.ORDER_BY) String orderType ) {
 		Response response = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "findAllAudioIds", "********Finding all Audio**********");
@@ -196,6 +216,15 @@ public class AudioResource {
 			@Context UriInfo ui, @Context HttpHeaders hh
 			) {
 		Response response = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "findAudioById", "********Finding Audio Meta**********");
@@ -236,6 +265,15 @@ public class AudioResource {
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
 		byte[] sucess = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
+		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "downloadAudio", "*********Downloading Audio**********");

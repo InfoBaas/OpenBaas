@@ -172,7 +172,8 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 	}
 
 	public boolean sessionExistsForUser(String userId) {
-		return sessions.sessionExistsForUser(userId);
+		return sessionsModel.sessionExistsForUser(userId);
 	}
+	
 
 }

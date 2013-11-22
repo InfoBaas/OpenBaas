@@ -7,6 +7,7 @@ import javax.servlet.*;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
+import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
@@ -23,7 +24,7 @@ public class Startup implements ServletContextListener {
 	private String AdminAppId = "~app";
 	private static String AdminId = "~id";
 	private static String AdminEmail = "admin@openbaas.infosistema.com";
-	private static String AdminSessionId ="~session";
+	private static String AdminSessionId =Const.getADMIN_TOKEN();
 
 	public void contextInitialized(ServletContextEvent event) {
 		this.context = event.getServletContext();
@@ -58,7 +59,7 @@ public class Startup implements ServletContextListener {
 					.println("***********************************************");
 		}
 		if(sessionMid.createSession(AdminSessionId, AdminAppId,AdminId, ADMINPASSWORD))
-			Log.debug("", this, "contextInitialized", "Admin Session created. Id: ~session");
+			Log.debug("", this, "contextInitialized", "Admin Session created. Id: ");
 		else{
 			Log.warning("", this, "contextInitialized", "No admin Session created.");
 		}

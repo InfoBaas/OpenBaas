@@ -7,6 +7,7 @@ import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.models.User;
+import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
@@ -35,6 +36,7 @@ public class IntegrationResource {
 	private UsersMiddleLayer usersMid;
 	private String appId;
 	private SessionMiddleLayer sessionMid;
+	private AppsMiddleLayer appsMid;
 
 	@Context
 	UriInfo uriInfo;
@@ -43,6 +45,7 @@ public class IntegrationResource {
 		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
 		this.appId = appId;
 		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+		this.appsMid = MiddleLayerFactory.getAppsMiddleLayer();
 	}
 	
 
@@ -83,7 +86,7 @@ public class IntegrationResource {
 		}
 		if(appKey==null)
 			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
-		if(!Utils.authenticateApp(appId,appKey))
+		if(!appsMid.authenticateApp(appId,appKey))
 			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
 		if (locationList != null)
 			location = locationList.get(0);
@@ -170,7 +173,7 @@ public class IntegrationResource {
 		}
 		if(appKey==null)
 			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
-		if(!Utils.authenticateApp(appId,appKey))
+		if(!appsMid.authenticateApp(appId,appKey))
 			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
 		if (locationList != null)
 			location = locationList.get(0);

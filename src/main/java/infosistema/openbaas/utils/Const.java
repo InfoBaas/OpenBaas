@@ -16,6 +16,7 @@ public class Const {
 	public static final String ORDER_TYPE = "orderType";
 	public static final String APP_KEY = "appKey";
 	
+	
 	//PROPERTIES
 	
 	private static Integer DEFAULT_PAGE_SIZE = 10;
@@ -32,7 +33,7 @@ public class Const {
 	private static String REDIS_GEO_SERVER = "localhost";
 	private static Integer REDIS_GEO_PORT = 6381;
 
-	private static Integer REDIS_METADATA_PORT = 6382;
+	private static Integer REDIS_METADATA_PORT = 6383;
 	private static String REDIS_METADATA_SERVER = "localhost";
 
 	private static String MONGO_SERVER = "localhost";
@@ -67,6 +68,7 @@ public class Const {
 	private static String AUDIO_DEFAULT_BITRATE = "32";
 
 	private static String LOCAL_STORAGE_PATH = "";
+	private static String ADMIN_TOKEN = "~session";
 
 	static {
 		loadConstants();
@@ -201,6 +203,9 @@ public class Const {
 				if (!stmp.endsWith("/")) stmp += "/";
 				LOCAL_STORAGE_PATH = stmp;
 			}
+			
+			stmp = props.getProperty("ADMIN_TOKEN");
+			if (stmp != null) ADMIN_TOKEN = stmp;
 			
 		} catch (Throwable t) {
 			Log.error("", "Const", "updateConstants", t.getMessage());
@@ -349,6 +354,14 @@ public class Const {
 
 	public static String getLocalStoragePath() {
 		return LOCAL_STORAGE_PATH;
+	}
+
+	public static String getADMIN_TOKEN() {
+		return ADMIN_TOKEN;
+	}
+
+	public static void setADMIN_TOKEN(String aDMIN_TOKEN) {
+		ADMIN_TOKEN = aDMIN_TOKEN;
 	}
 
 }

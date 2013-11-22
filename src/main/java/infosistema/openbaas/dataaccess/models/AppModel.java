@@ -44,7 +44,7 @@ public class AppModel {
 	 * @return
 	 * @throws UnsupportedEncodingException 
 	 */
-	public Boolean createApp(String appId, String appKey, byte[] salt, byte[] hash, String appName, String creationDate, 
+	public Boolean createApp(String appId, String appKey, byte[] hash, byte[] salt, String appName, String creationDate, 
 			Boolean confirmUsersEmail, Boolean AWS, Boolean FTP, Boolean FileSystem) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
 		Boolean sucess = false;
