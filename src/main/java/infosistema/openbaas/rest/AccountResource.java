@@ -77,13 +77,20 @@ public class AccountResource {
 			String password = null;
 			String userFile = null;
 			String userId = null;
+			String appKey = null;
 			Boolean readOk = false;
 			String location = null;
 			List<String> locationList = null;
 			for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 				if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
 					locationList = entry.getValue();
+				if (entry.getKey().equalsIgnoreCase(Const.APP_KEY))
+					appKey = entry.getValue().get(0);
 			}
+			if(appKey==null)
+				return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
+			if(!Utils.authenticateApp(appId,appKey))
+				return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
 			if (locationList != null)
 				location = locationList.get(0);
 			try {
@@ -141,7 +148,9 @@ public class AccountResource {
 		List<String> userAgentList = null;
 		String userAgent = null;
 		String location = null;
+		String appKey = null;
 		Boolean refreshCode = false;
+		
 		try {
 			email = (String) inputJsonObj.get("email");
 			attemptedPassword = (String) inputJsonObj.get("password");
@@ -152,10 +161,15 @@ public class AccountResource {
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
 				locationList = entry.getValue();
-			else if (entry.getKey().equalsIgnoreCase("user-agent")){
-				userAgentList = entry.getValue();
-			}	
+			if (entry.getKey().equalsIgnoreCase("user-agent"))
+				userAgentList = entry.getValue();	
+			if (entry.getKey().equalsIgnoreCase(Const.APP_KEY))
+				appKey = entry.getValue().get(0);
 		}
+		if(appKey==null)
+			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
+		if(!Utils.authenticateApp(appId,appKey))
+			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
 		if (locationList != null)
 			location = locationList.get(0);
 		if (userAgentList != null)

@@ -2,7 +2,6 @@ package infosistema.openbaas.utils;
 
 import java.util.Properties;
 
-import javax.ws.rs.QueryParam;
 
 public class Const {
 
@@ -15,6 +14,7 @@ public class Const {
 	public static final String PAGE_SIZE = "pageSize";
 	public static final String ORDER_BY = "orderBy";
 	public static final String ORDER_TYPE = "orderType";
+	public static final String APP_KEY = "appKey";
 	
 	//PROPERTIES
 	
@@ -32,7 +32,7 @@ public class Const {
 	private static String REDIS_GEO_SERVER = "localhost";
 	private static Integer REDIS_GEO_PORT = 6381;
 
-	private static Integer REDIS_METADATA_PORT = 6380;
+	private static Integer REDIS_METADATA_PORT = 6382;
 	private static String REDIS_METADATA_SERVER = "localhost";
 
 	private static String MONGO_SERVER = "localhost";

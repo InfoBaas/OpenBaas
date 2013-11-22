@@ -1,5 +1,7 @@
 package infosistema.openbaas.middleLayer;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,14 +48,17 @@ public abstract class MiddleLayerAbstract {
 	// *** METADATA *** //
 	
 	public Metadata getMetadata(String key) {
+		metadataModel = new MetadataModel(); 
 		Metadata retObj = new Metadata();
 		Map<String, String> fields = metadataModel.getMetadata(key);
-		try {
-			retObj.setCreateDate(new Date(fields.get(Metadata.CREATE_DATE)));
+		DateFormat df = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy");
+		//Date result =  df.parse(target);
+		try { 
+			retObj.setCreateDate(df.parse(fields.get(Metadata.CREATE_DATE)));
 		} catch (Exception e) {}
 		retObj.setCreateUser(fields.get(Metadata.CREATE_USER));
 		try {
-			retObj.setLastUpdateDate(new Date(fields.get(Metadata.LAST_UPDATE_DATE)));
+			retObj.setLastUpdateDate(df.parse(fields.get(Metadata.LAST_UPDATE_DATE)));
 		} catch (Exception e) {}
 		retObj.setLastUpdateUser(fields.get(Metadata.LAST_UPDATE_USER));
 		retObj.setLocation(fields.get(Metadata.LOCATION));
@@ -61,6 +66,7 @@ public abstract class MiddleLayerAbstract {
 	}
 	
 	public Metadata createMetadata(String key, String userId, String location) {
+		metadataModel = new MetadataModel(); 
 		Map<String, String> fields = new HashMap<String, String>();
 		fields.put(Metadata.CREATE_DATE, (new Date()).toString());
 		fields.put(Metadata.CREATE_USER, userId);
@@ -74,6 +80,7 @@ public abstract class MiddleLayerAbstract {
 	}
 	
 	public Metadata updateMetadata(String key, String userId, String location) {
+		metadataModel = new MetadataModel(); 
 		Map<String, String> fields = new HashMap<String, String>();
 		fields.put(Metadata.LAST_UPDATE_DATE, (new Date()).toString());
 		fields.put(Metadata.LAST_UPDATE_USER, userId);
@@ -86,6 +93,7 @@ public abstract class MiddleLayerAbstract {
 	}
 	
 	public Boolean deleteMetadata(String key) {
+		metadataModel = new MetadataModel(); 
 		return metadataModel.deleteMetadata(key, true);
 	}
 

@@ -3,6 +3,7 @@ package infosistema.openbaas.data.models;
 import javax.xml.bind.annotation.XmlRootElement;
 
 
+
 @XmlRootElement
 public class Application {
 
@@ -11,6 +12,7 @@ public class Application {
 	private String appId;
 	private String alive;
 	private String appName;
+	private String appKey;
 	private Boolean confirmationEmail;
 	private Boolean AWS;
 	private Boolean FTP;
@@ -100,5 +102,13 @@ public class Application {
 
 	public void setFileSystem(Boolean fileSystem) {
 		FileSystem = fileSystem;
+	}
+
+	public String getAppKey() {
+		return appKey;
+	}
+
+	public void setAppKey(String appKey) {
+		this.appKey = appKey;
 	}
 }

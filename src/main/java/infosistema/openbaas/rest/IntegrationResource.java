@@ -69,15 +69,22 @@ public class IntegrationResource {
 		List<String> userAgentList = null;
 		String userAgent = null;
 		String location = null;
+		String appKey = null;
 		User outUser = new User();
 		String userId =null;
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
 				locationList = entry.getValue();
-			else if (entry.getKey().equalsIgnoreCase("user-agent")){
+			if (entry.getKey().equalsIgnoreCase("user-agent")){
 				userAgentList = entry.getValue();
 			}	
+			if (entry.getKey().equalsIgnoreCase(Const.APP_KEY))
+				appKey = entry.getValue().get(0);
 		}
+		if(appKey==null)
+			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
+		if(!Utils.authenticateApp(appId,appKey))
+			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
 		if (locationList != null)
 			location = locationList.get(0);
 		if (userAgentList != null)
@@ -151,14 +158,20 @@ public class IntegrationResource {
 		String userAgent = null;
 		String location = null;
 		User outUser = new User();
+		String appKey = null;
 		String userId =null;
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
 				locationList = entry.getValue();
-			else if (entry.getKey().equalsIgnoreCase("user-agent")){
+			if (entry.getKey().equalsIgnoreCase("user-agent"))
 				userAgentList = entry.getValue();
-			}	
+			if (entry.getKey().equalsIgnoreCase(Const.APP_KEY))
+				appKey = entry.getValue().get(0);
 		}
+		if(appKey==null)
+			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
+		if(!Utils.authenticateApp(appId,appKey))
+			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
 		if (locationList != null)
 			location = locationList.get(0);
 		if (userAgentList != null)

@@ -2,6 +2,7 @@ package infosistema.openbaas.middleLayer;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 
 import com.amazonaws.AmazonServiceException;
@@ -12,6 +13,7 @@ import infosistema.openbaas.dataaccess.files.FileInterface;
 import infosistema.openbaas.dataaccess.models.AppModel;
 import infosistema.openbaas.dataaccess.models.MediaModel;
 import infosistema.openbaas.utils.Log;
+import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
 public class AppsMiddleLayer extends MiddleLayerAbstract {
 
@@ -41,8 +43,20 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	 * @param appName
 	 * @return
 	 */
-	public boolean createApp(String appId, String appName, boolean userEmailConfirmation,boolean AWS,boolean FTP,boolean FileSystem) {
-		return appModel.createApp(appId, appName, new Date().toString(), userEmailConfirmation,AWS,FTP,FileSystem);		
+	public boolean createApp(String appId, String appKey, String appName, boolean userEmailConfirmation,
+			boolean AWS,boolean FTP,boolean FileSystem) {
+		byte[] salt = null;
+		byte[] hash = null;
+		Boolean res= false;
+		PasswordEncryptionService service = new PasswordEncryptionService();
+		try {
+			salt = service.generateSalt();
+			hash = service.getEncryptedPassword(appKey, salt);
+			res = appModel.createApp(appId,appKey, hash, salt, appName, new Date().toString(), userEmailConfirmation,AWS,FTP,FileSystem);
+		} catch (Exception e) {
+			Log.error("", this, "createApp Login","", e); 
+		}
+		return res;
 	}
 
 	public boolean createAppFileSystem(String appId) {
@@ -96,6 +110,12 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	public Application getApp(String appId) {	
 		Application temp = new Application(appId);
 		temp = appModel.getApplication(appId);
+		return temp;
+	}
+	
+	public HashMap<String, String> getAuthApp(String appId) {	
+		HashMap<String, String> temp = new HashMap<String, String>();
+		temp = appModel.getApplicationAuth(appId);
 		return temp;
 	}
 

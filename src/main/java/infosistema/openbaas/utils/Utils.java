@@ -1,6 +1,7 @@
 package infosistema.openbaas.utils;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -11,6 +12,9 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
 import infosistema.openbaas.dataaccess.models.SessionModel;
+import infosistema.openbaas.middleLayer.AppsMiddleLayer;
+import infosistema.openbaas.middleLayer.MiddleLayerFactory;
+import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
 public class Utils {
 	
@@ -56,6 +60,26 @@ public class Utils {
 	
 	public static long roundUp(long num, long divisor) {
 	    return (num + divisor - 1) / divisor;
+	}
+
+	public static boolean authenticateApp(String appId, String appKey) {
+		try {
+			AppsMiddleLayer appsMid = MiddleLayerFactory.getAppsMiddleLayer();
+			HashMap<String, String> fieldsAuth = appsMid.getAuthApp(appId);
+			byte[] salt = null;
+			byte[] hash = null;
+			if(fieldsAuth.containsKey("hash") && fieldsAuth.containsKey("salt")){
+				salt = fieldsAuth.get("salt").getBytes("ISO-8859-1");
+				hash = fieldsAuth.get("hash").getBytes("ISO-8859-1");
+			}
+			PasswordEncryptionService service = new PasswordEncryptionService();
+			Boolean authenticated = false;
+			authenticated = service.authenticate(appKey, hash, salt);
+			return authenticated;
+		} catch (Exception e) {
+			Log.error("", "", "authenticateAPP", "", e); 
+		} 	
+		return false;
 	}
 	
 }

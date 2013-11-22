@@ -80,6 +80,7 @@ public class AppResource {
 			boolean FTP;
 			boolean FileSystem;
 			String appId = null;
+			String appKey = null;
 			boolean readSucess = false, created = false;
 			try {
 				appName = (String) inputJsonObj.get("appName");
@@ -99,7 +100,8 @@ public class AppResource {
 			}
 			if (readSucess) {
 				appId = Utils.getRandomString(IDLENGTH);
-				created = appsMid.createApp(appId, appName, confirmUsersEmail, AWS, FTP, FileSystem);
+				appKey = Utils.getRandomString(IDLENGTH);
+				created = appsMid.createApp(appId, appKey, appName, confirmUsersEmail, AWS, FTP, FileSystem);
 			}
 			if (created) {
 				temp = this.appsMid.getApp(appId);

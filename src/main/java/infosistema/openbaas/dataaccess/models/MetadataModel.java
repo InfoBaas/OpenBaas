@@ -19,7 +19,7 @@ public class MetadataModel {
 	// *** CONSTRUCTOR *** //
 	
 	public MetadataModel() {
-		pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
+		pool = new JedisPool(new JedisPoolConfig(), Const.getRedisMetadataServer(), Const.getRedisMetadataPort());
 	}
 	
 	
@@ -31,7 +31,8 @@ public class MetadataModel {
 		Jedis jedis = pool.getResource();
 		try {
 			for (String field: fields.keySet()) {
-				jedis.hset(key, field, fields.get(field));
+				if(fields.get(field) != null)
+					jedis.hset(key, field, fields.get(field));
 			}
 			return true;
 		} finally {

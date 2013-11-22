@@ -4,8 +4,9 @@ import infosistema.openbaas.data.enums.FileMode;
 import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.utils.Const;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -41,8 +42,10 @@ public class AppModel {
 	 * @param appId
 	 * @param creationDate
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	public Boolean createApp(String appId, String appName, String creationDate, Boolean confirmUsersEmail, Boolean AWS, Boolean FTP, Boolean FileSystem) {
+	public Boolean createApp(String appId, String appKey, byte[] salt, byte[] hash, String appName, String creationDate, 
+			Boolean confirmUsersEmail, Boolean AWS, Boolean FTP, Boolean FileSystem) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
 		Boolean sucess = false;
 		try {
@@ -51,6 +54,9 @@ public class AppModel {
 				jedis.hset("apps:" + appId, "updateDate", creationDate);
 				jedis.hset("apps:" + appId, "alive", "true");
 				jedis.hset("apps:" + appId, "appName", appName);
+				jedis.hset("apps:" + appId, "appKey", appKey);
+				jedis.hset("apps:" + appId, "salt", new String(salt, "ISO-8859-1"));
+				jedis.hset("apps:" + appId, "hash", new String(hash, "ISO-8859-1"));
 				jedis.hset("apps:" + appId, "confirmUsersEmail", ""+confirmUsersEmail);
 				jedis.hset("apps:" + appId, FileMode.aws.toString(), "" + AWS);
 				jedis.hset("apps:" + appId, FileMode.ftp.toString(), "" + FTP);
@@ -137,6 +143,8 @@ public class AppModel {
 						res.setFileSystem(Boolean.parseBoolean(entry.getValue()));
 					else if (entry.getKey().equalsIgnoreCase("updateDate"))
 						res.setUpdateDate(entry.getValue());
+					else if (entry.getKey().equalsIgnoreCase("appKey"))
+						res.setAppKey(entry.getValue());
 				}
 				res.setAppId(appId);
 			}
@@ -144,6 +152,23 @@ public class AppModel {
 			pool.returnResource(jedis);
 		}
 		return res;
+	}
+	
+	/**
+	 * Returns the auth fields 
+	 */
+	public HashMap<String, String> getApplicationAuth(String appId) {
+		Jedis jedis = pool.getResource();
+		HashMap<String, String> fieldsAuth = new HashMap<String, String>();
+		try {
+			if (jedis.exists("apps:" + appId)) {
+				fieldsAuth.put("hash", jedis.hget("apps:"+appId, "hash"));// = jedis.hgetAll("apps:" + appId);
+				fieldsAuth.put("salt", jedis.hget("apps:"+appId, "salt"));
+			}
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return fieldsAuth;
 	}
 	
 	public Boolean getConfirmUsersEmail(String appId) {
