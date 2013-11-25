@@ -5,6 +5,7 @@ import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
+import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
@@ -125,7 +126,8 @@ public class VideoResource {
 		if (sessionsMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "deleteVideo", "***********Deleting Video***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
-				mediaMid.deleteMedia(appId, ModelEnum.video, videoId);
+				Media media = mediaMid.getMedia(appId, ModelEnum.video,videoId);
+				mediaMid.deleteMedia(appId, ModelEnum.video, videoId,media.getLocation());
 				String metaKey = "apps."+appId+".media.video."+videoId;
 				Boolean meta = mediaMid.deleteMetadata(metaKey);
 				if(meta)

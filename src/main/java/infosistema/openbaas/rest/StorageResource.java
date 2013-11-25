@@ -5,6 +5,7 @@ import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
+import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
@@ -128,7 +129,8 @@ public class StorageResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken)) {
 			if (mediaMid.mediaExists(appId, ModelEnum.storage, storageId)) {
-				this.mediaMid.deleteMedia(appId, ModelEnum.storage, storageId);
+				Media media = mediaMid.getMedia(appId, ModelEnum.storage,storageId);
+				this.mediaMid.deleteMedia(appId, ModelEnum.storage, storageId,media.getLocation());
 				
 				String metaKey = "apps."+appId+".media.storage."+storageId;
 				Boolean meta = mediaMid.deleteMetadata(metaKey);

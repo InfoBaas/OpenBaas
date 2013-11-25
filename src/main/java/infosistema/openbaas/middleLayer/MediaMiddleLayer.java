@@ -21,6 +21,7 @@ import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.data.models.Storage;
 import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.dataaccess.files.FileInterface;
+import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.dataaccess.models.MediaModel;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
@@ -122,6 +123,12 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 			Log.error("", this, "upload", "An error ocorred.", e); 
 			return null;
 		}
+		if (location != null){
+			String[] splitted = location.split(":");
+			Geolocation geo = Geolocation.getInstance();
+			geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), type, appId, id);
+		}
+
 		
 		if (mediaModel.createMedia(appId, ModelEnum.audio, id, fields))
 			return id;
@@ -134,16 +141,25 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	
 	// *** DELETE *** //
 	
-	public boolean deleteMedia(String appId, ModelEnum type, String id) {
+	public boolean deleteMedia(String appId, ModelEnum type, String id, String location) {
 		String extension = mediaModel.getMediaField(appId, type, id, Media.FILEEXTENSION);
 		FileInterface fileModel = getAppFileInterface(appId);
-		boolean ok = false;
+		Boolean res = false;
 		try{
-			ok = fileModel.deleteFile(appId, type, id, extension);
+			res = fileModel.deleteFile(appId, type, id, extension);
+			
 		}catch(NoSuchEntityException e){
 			Log.error("", this, "deleteFile", "No such element error.", e); 
 		}
-		return mediaModel.deleteMedia(appId, type, id) && ok;
+		res = mediaModel.deleteMedia(appId, type, id);
+				
+		if (location != null){
+			String[] splitted = location.split(":");
+			Geolocation geo = Geolocation.getInstance();
+			geo.deleteObjectFromGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), type, appId, id);
+		}
+		
+		return res ;
 	}
 
 

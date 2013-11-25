@@ -96,12 +96,23 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	// *** DELETE *** //
 
 	public boolean deleteDocumentInPath(String appId, String userId, List<PathSegment> path) {
+		Boolean res = false;
+		
 		try {
-			return docModel.deleteDocumentInPath(appId, getDocumentPath(userId, path));
+			String pathRes = getDocumentPath(userId, path);
+			Metadata meta = getMetadata(pathRes);
+			String location = meta.getLocation();
+			if (location != null){
+				String[] splitted = location.split(":");
+				Geolocation geo = Geolocation.getInstance();
+				geo.deleteObjectFromGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, pathRes);
+			}
+			res = docModel.deleteDocumentInPath(appId, getDocumentPath(userId, path));
 		} catch (Exception e) {
 			Log.error("", this, "deleteDocumentInPath", "An error ocorred.", e); 
 			return false;
 		}
+		return res;
 	}
 	
 	

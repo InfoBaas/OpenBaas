@@ -6,6 +6,7 @@ import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Audio;
+import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
@@ -140,7 +141,8 @@ public class AudioResource {
 		if (code == 1) {
 			Log.debug("", this, "deleteAudio", "***********Deleting Audio***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.audio, audioId)) {
-				this.mediaMid.deleteMedia(appId, ModelEnum.audio, audioId);
+				Media media = mediaMid.getMedia(appId, ModelEnum.audio,audioId);
+				this.mediaMid.deleteMedia(appId, ModelEnum.audio, audioId,media.getLocation());
 				
 				String metaKey = "apps."+appId+".media.audio."+audioId;
 				

@@ -6,6 +6,7 @@ import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Image;
+import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
@@ -126,7 +127,8 @@ public class ImageResource {
 		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken.getValue())) {
 			Log.debug("", this, "deleteImage", "***********Deleting Image***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.image, imageId)) {
-				this.mediaMid.deleteMedia(appId, ModelEnum.image, imageId);
+				Media media = mediaMid.getMedia(appId, ModelEnum.image,imageId);
+				this.mediaMid.deleteMedia(appId, ModelEnum.image, imageId, media.getLocation());
 				String metaKey = "apps."+appId+".media.images."+imageId;
 				Boolean meta = mediaMid.deleteMetadata(metaKey);
 				if(meta)
