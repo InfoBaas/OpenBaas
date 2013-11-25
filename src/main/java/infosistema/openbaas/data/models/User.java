@@ -6,8 +6,6 @@ import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Date;
-
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
@@ -28,11 +26,12 @@ public class User {
 	private byte[] salt;
 	@JsonIgnore
 	private byte[] hash;
-	private String creationDate;
-	private String updatedDate;
 	private String alive;
 	private String returnToken;
 	private String userFile;
+	private Boolean baseLocationOption;
+	private String baseLocation;
+	private String lastLocation;
 	/**
 	 * Provides the user creation mechanism.
 	 * 
@@ -52,21 +51,18 @@ public class User {
 	public User(String userId, String email) {
 		this.userId = userId;
 		this.email = email;
-		this.creationDate = new Date().toString();
 		this.setAlive("true");
 	}
 	public User(String userId){
 		this.userId = userId;
 	}
 	public User() {
-		this.creationDate = new Date().toString();
 		this.setAlive("true");
 	}
 
 	public User(String id, String email, byte[] hash,  byte[] salt) {
-			this.userId = id;
-			this.email = email;
-		this.creationDate = new Date().toString();
+		this.userId = id;
+		this.email = email;
 		this.setAlive("true");
 	}
 
@@ -85,10 +81,7 @@ public class User {
 			return false;
 	}
 
-	public void setUpdatedDate() {
-		this.updatedDate = new Date().toString();
-
-	}
+	
 	public void setUserID(String id) {
 		this.userId = id;
 
@@ -97,13 +90,10 @@ public class User {
 	public void setUserIDAndEmail(String id, String email) {
 		this.userId = id;
 		this.email = email;
-		this.updatedDate = new Date().toString();
-		this.updatedDate = new Date().toString();
 	}
 
 	public void updateAllFields(String id, String email, String password) {
 		try {
-			this.updatedDate = new Date().toString();
 			PasswordEncryptionService service = new PasswordEncryptionService();
 			salt = service.generateSalt();
 			this.email = email;
@@ -118,7 +108,6 @@ public class User {
 	}
 
 	public void setAllFields(String id, String email, String password) {
-		this.updatedDate = new Date().toString();
 		this.userId = id;
 		this.email = email;
 		this.setUserPassword(password);
@@ -132,17 +121,8 @@ public class User {
 		return this.email;
 	}
 
-	public String getDateOfCreation() {
-		return this.creationDate;
-	}
-
-	public String getDateOfUpdate() {
-		return this.updatedDate;
-	}
-
 	public void setUserPassword(String password) {
 		try {
-			this.updatedDate = new Date().toString();
 			PasswordEncryptionService service = new PasswordEncryptionService();
 			salt = service.generateSalt();
 			hash = service.getEncryptedPassword(password, salt);
@@ -159,12 +139,6 @@ public class User {
 	}
 	public void setInactive(){
 		this.setAlive("false");
-	}
-	public void setCreationDate(String creationDate) {
-		this.creationDate = creationDate;
-	}
-	public void setUpdatedDate(String updateDate) {
-		this.updatedDate = updateDate;
 	}
 	public String getUserName() {
 		return this.userName;
@@ -189,6 +163,24 @@ public class User {
 	}
 	public void setUserFile(String userFile) {
 		this.userFile = userFile;
+	}
+	public Boolean getBaseLocationOption() {
+		return baseLocationOption;
+	}
+	public void setBaseLocationOption(Boolean baseLocationOption) {
+		this.baseLocationOption = baseLocationOption;
+	}
+	public String getLastLocation() {
+		return lastLocation;
+	}
+	public void setLastLocation(String lastLocation) {
+		this.lastLocation = lastLocation;
+	}
+	public String getBaseLocation() {
+		return baseLocation;
+	}
+	public void setBaseLocation(String baseLocation) {
+		this.baseLocation = baseLocation;
 	}
 	
 }

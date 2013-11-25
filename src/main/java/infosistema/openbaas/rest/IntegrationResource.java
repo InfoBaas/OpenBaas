@@ -24,11 +24,17 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 public class IntegrationResource {
 
@@ -73,6 +79,7 @@ public class IntegrationResource {
 		String userAgent = null;
 		String location = null;
 		String appKey = null;
+		String fbToken = null;
 		User outUser = new User();
 		String userId =null;
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
@@ -93,17 +100,21 @@ public class IntegrationResource {
 		if (userAgentList != null)
 			userAgent = userAgentList.get(0);
 		try {
-			email = (String) inputJsonObj.get("email");
+			fbToken = (String) inputJsonObj.get("fbToken");
+			JSONObject jsonReqFB = getFBInfo(fbToken);
+			if(jsonReqFB == null)
+				return Response.status(Status.BAD_REQUEST).entity("Bad FB Token!!!").build();
+			email = (String) jsonReqFB.opt("email");
 			socialNetwork = "Facebook";
-			socialId = ((Integer) inputJsonObj.get("socialId")).toString(); 
-			userName = (String) inputJsonObj.opt("userName");
-			
+			socialId = (String) jsonReqFB.get("id"); 
+			userName = (String) jsonReqFB.opt("username");
 		} catch (JSONException e) {
 			Log.error("", this, "createOrLoginFacebookUser", "Error parsing the JSON.", e); 
 			return Response.status(Status.BAD_REQUEST).entity(new Error("Error reading JSON")).build();
-		}
-		if (userName == null) {
-			userName = email;
+		}		
+				
+		if(email == null && userName != null){
+			email = userName+"@facebook.com";
 		}
 		userId = usersMid.getUserIdUsingEmail(appId, email);
 		userSocialId = usersMid.socialUserExistsInApp(appId, socialId, socialNetwork);
@@ -137,6 +148,21 @@ public class IntegrationResource {
 		return response;
 	}
 	
+	private JSONObject getFBInfo(String fbToken) {
+		JSONObject res = null;
+		try{
+			ClientConfig config = new DefaultClientConfig();
+			Client client = Client.create(config);
+			WebResource service = client.resource(UriBuilder.fromUri("https://graph.facebook.com/me?access_token="+fbToken).build());
+			res = new JSONObject(service.accept(MediaType.APPLICATION_JSON).get(String.class));
+		}
+		catch (Exception e) {
+			Log.error("", this, "FB Conn", "FB Conn", e);
+		}
+		return res;
+	}
+
+
 	/**
 	 * Creates a user in the application. Necessary fields: "linkedin id".
 	 * if the user already register only signin. if not signup

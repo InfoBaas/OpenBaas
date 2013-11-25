@@ -2,17 +2,16 @@ package infosistema.openbaas.rest;
 
 import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.ListResult;
+import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
+import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
-import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
-
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -40,6 +39,7 @@ import org.codehaus.jettison.json.JSONObject;
 public class UsersResource {
 
 	private UsersMiddleLayer usersMid;
+	private SessionMiddleLayer sessionMid;
 	private String appId;
 
 	@Context
@@ -47,6 +47,7 @@ public class UsersResource {
 
 	public UsersResource(UriInfo uriInfo, String appId) {
 		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
+		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
 		this.appId = appId;
 		this.uriInfo = uriInfo;
 	}
@@ -68,48 +69,84 @@ public class UsersResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateUser(@PathParam("userId") String userId, JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
+		String appKey = null;
+		String location = null;
+		
+		String newUserName = null;
+		String userAgent = null;
+		List<String> userAgentList = null;
+		String newUserFile = null;
+		String newEmail = null;
+		Boolean newBaseLocationOption = null;
+		String newBaseLocation = null;
+		Boolean userUpdateEmail = false;
+		Boolean userUpdateFields = false;
+		
+		List<String> locationList = null;
+		Cookie sessionToken=null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
+				locationList = entry.getValue();
+			if (entry.getKey().equalsIgnoreCase(Const.APP_KEY))
+				appKey = entry.getValue().get(0);
+			if (entry.getKey().equalsIgnoreCase("user-agent"))
+				userAgentList = entry.getValue();
+			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
+				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
+		}
+		
+		if(appKey==null)
+			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
+		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			String email = null;
-			String password = null;
-			String alive = null;
-			byte[] salt = null;
-			byte[] hash = null;
-			//User temp = null;
-			email = (String) inputJsonObj.opt("email");
-			password = (String) inputJsonObj.opt("password");
-			alive = (String) inputJsonObj.opt("alive");
-			PasswordEncryptionService service = new PasswordEncryptionService();
-			if (password != null) {
-				try {
-					salt = service.generateSalt();
-					hash = service.getEncryptedPassword(password, salt);
-				} catch (NoSuchAlgorithmException e) {
-					Log.error("", this, "updateUser", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
-				} catch (InvalidKeySpecException e) {
-					Log.error("", this, "updateUser", "Invalid Key.", e); 
+			try{
+				if(usersMid.userExistsInApp(appId, userId)){
+					User user = usersMid.getUserInApp(appId, userId);
+												
+					newUserName = (String) inputJsonObj.opt("userName");
+					newUserFile = (String) inputJsonObj.opt("userFile");
+					newEmail = (String) inputJsonObj.opt("email");
+					newBaseLocationOption = (Boolean) inputJsonObj.opt("baseLocationOption");
+					newBaseLocation = (String) inputJsonObj.opt("baseLocation");
+					
+					if(newUserName.equals(""))
+						newUserName = user.getUserName();
+					if(newUserFile.equals(""))
+						newUserFile = user.getUserFile();		
+					if(newBaseLocationOption==null)
+						newBaseLocationOption = user.getBaseLocationOption();		
+					if(newBaseLocation.equals(""))
+						newBaseLocation = user.getBaseLocation();	
+					if (locationList != null)
+						location = locationList.get(0);
+					if (userAgentList != null)
+						userAgent = userAgentList.get(0);
+					if(newEmail.equals(""))
+						newEmail = user.getEmail();
+					else{
+						String oldEmail = user.getEmail();
+						userUpdateEmail = usersMid.updateUserEmail(appId,userId,newEmail, oldEmail);
+					}
+					userUpdateFields = usersMid.updateUser(appId, userId, newUserName, newEmail, newUserFile, newBaseLocationOption, newBaseLocation, location);
+					if(userUpdateEmail && userUpdateFields){
+						sessionMid.refreshSession(sessionToken.getValue(), location, userAgent);
+						String metaKey = "apps."+appId+".users."+userId;
+						Metadata meta = usersMid.updateMetadata(metaKey, userId, location);
+						Result res = new Result(usersMid.getUserInApp(appId, userId), meta);		
+						return Response.status(Status.OK).entity(res).build();
+					}
 				}
+			}catch(Exception e){
+				Log.error("", this, "Internal Error", "Internal Error", e); 
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("Internal Error.")).build();
 			}
-			if (usersMid.identifierInUseByUserInApp(this.appId, userId)) {
-				if (email != null && password != null && alive != null) {
-					usersMid.updateUser(appId, userId, email, hash, salt, alive);
-				} else if (email != null && password != null) {
-					usersMid.updateUser(appId, userId, email, hash, salt);
-				} else if (email != null) {
-					usersMid.updateUser(appId, userId, email);
-				}
-				response = Response.status(Status.OK).entity(usersMid.getUserInApp(appId, userId)).build();
-			} else {
-				response = Response.status(Status.NOT_FOUND).entity("Invalid Session Token.").build();
-			}
-			Log.debug("", this, "updateUser", "appId: " + appId + "UserId: " + userId);
-			Log.debug("", this, "updateUser", "email: " + email + "alive: " + alive);
-			Log.debug("", this, "updateUser", "hash: " + hash.toString());
-			Log.debug("", this, "updateUser", "salt: " + salt.toString());
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 

@@ -94,7 +94,7 @@ public class SessionModel {
 	}
 
 	private void updateLocationToSession(double previousLatitudeValue, double previousLongitudeValue, double currentLatitudeValue, double currentLongitudeValue,
-			String location, String sessionToken, String userAgent, String appId, String userId) {
+			String location, String sessionToken, String appId, String userId) {
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		try {
@@ -154,10 +154,10 @@ public class SessionModel {
 					if (dist >= 1) {
 						jedis.hset("sessions:" + sessionToken, Const.LOCATION, location);
 						UserModel userModel = new UserModel(); 
-						userModel.updateUserLocationAndDate(userId, appId, sessionToken, location, date);
+						userModel.updateUserLocation(userId, appId, sessionToken, location);
 
 						updateLocationToSession(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue, 
-								location, sessionToken, userAgent, appId, userId);
+								location, sessionToken, appId, userId);
 					}
 				}
 			}

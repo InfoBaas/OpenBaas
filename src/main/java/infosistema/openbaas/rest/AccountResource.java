@@ -78,6 +78,8 @@ public class AccountResource {
 			String email = null;
 			String userName = null;
 			String password = null;
+			Boolean baseLocationOption = null;
+			String baseLocation = null;
 			String userFile = null;
 			String userId = null;
 			String appKey = null;
@@ -101,6 +103,8 @@ public class AccountResource {
 				userFile = (String) inputJsonObj.opt("userFile");
 				email = (String) inputJsonObj.get("email");
 				password = (String) inputJsonObj.get("password");
+				baseLocationOption = (Boolean) inputJsonObj.opt("baseLocationOption");
+				baseLocation = (String) inputJsonObj.opt("baseLocation");
 				readOk = true;
 			} catch (JSONException e) {
 				Log.error("", this, "createUserAndLogin", "Error parsing the JSON.", e); 
@@ -115,7 +119,7 @@ public class AccountResource {
 				if (!usersMid.userExistsInApp(appId, userId, email)) {
 					if (uriInfo == null) 
 						uriInfo=ui;
-					User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile);
+					User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile,baseLocationOption, baseLocation);
 					String metaKey = "apps."+appId+".users."+outUser.getUserId();
 					Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
 					Result res = new Result(outUser, meta);

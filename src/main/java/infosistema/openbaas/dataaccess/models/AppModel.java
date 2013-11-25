@@ -76,6 +76,7 @@ public class AppModel {
 	public Boolean updateAppFields(String appId, String alive, String newAppName, Boolean confirmUsersEmail,
 			Boolean aws, Boolean ftp, Boolean fileSystem) {
 		Jedis jedis = pool.getResource();
+		Boolean res = false;
 		try {
 			if (newAppName != null)
 				jedis.hset("apps:" + appId, "appName", newAppName);
@@ -97,10 +98,11 @@ public class AppModel {
 				jedis.hset("apps:" + appId, FileMode.ftp.toString(), ""+ftp);
 			if (fileSystem != null)
 				jedis.hset("apps:" + appId, FileMode.filesystem.toString(), ""+fileSystem);
+			res = true;
 		} finally {
 			pool.returnResource(jedis);
 		}
-		return true;
+		return res;
 	}
 
 

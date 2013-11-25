@@ -15,7 +15,6 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,7 +48,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	// *** CREATE *** //
 
 	public User createUserAndLogin(MultivaluedMap<String, String> headerParams, UriInfo uriInfo, String appId, String userName, 
-			String email, String password, String userFile) {
+			String email, String password, String userFile, Boolean baseLocationOption, String baseLocation) {
 		User outUser = new User();
 
 		String userId = null;
@@ -57,7 +56,6 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		List<String> locationList = null;
 		String userAgent = null;
 		String location = null;
-		
 		userId = Utils.getRandomString(Const.getIdLength());
 		while (identifierInUseByUserInApp(appId, userId))
 			userId = Utils.getRandomString(Const.getIdLength());
@@ -72,21 +70,26 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		} catch (InvalidKeySpecException e) {
 			Log.error("", this, "createUserAndLogin", "Invalid Key.", e); 
 		}
-
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
+				locationList = entry.getValue();
+			else if (entry.getKey().equalsIgnoreCase("user-agent")){
+				userAgentList = entry.getValue();
+			}	
+		}
+		if (locationList != null)
+			location = locationList.get(0);
+		if(baseLocationOption){
+			if(location!=null)
+				location = baseLocation;
+		}
 		if (!getConfirmUsersEmailOption(appId)) {
 			SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
-			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt, hash, userFile, null, null);
+			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt, hash, userFile, null, null, baseLocationOption, baseLocation, location);
 			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, password);
-			for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-				if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
-					locationList = entry.getValue();
-				else if (entry.getKey().equalsIgnoreCase("user-agent")){
-					userAgentList = entry.getValue();
-				}	
-			}
-			if (locationList != null)
-				location = locationList.get(0);
+			
+			
 			if (userAgentList != null)
 				userAgent = userAgentList.get(0);
 			
@@ -100,7 +103,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			}
 		} else if (getConfirmUsersEmailOption(appId)) {
 			boolean emailConfirmed = false;
-			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt,hash, userFile, emailConfirmed, uriInfo);
+			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt,hash, userFile, emailConfirmed, uriInfo,baseLocationOption,baseLocation,location);
 			outUser.setUserID(userId);
 			outUser.setUserEmail(email);
 			outUser.setUserName(userName);
@@ -134,7 +137,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		}
 
 		SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
-		createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash, null, null, null);
+		createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash, null, null, null, false,null,null);
 		String sessionToken = Utils.getRandomString(Const.getIdLength());
 		boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
@@ -174,11 +177,11 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	 * @return
 	 */
 	public boolean createUser(String appId, String userId, String userName, String socialId, String socialNetwork,
-			String email, byte[] salt, byte[] hash,	String flag, Boolean emailConfirmed, UriInfo uriInfo) {
+			String email, byte[] salt, byte[] hash,	String flag, Boolean emailConfirmed, UriInfo uriInfo, Boolean baseLocationOption, String baseLocation, String location) {
 		boolean sucessModel = false;
 		try {
 			userModel.createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash,
-					(new Date()).toString(), flag, emailConfirmed);
+					flag, emailConfirmed, baseLocationOption, baseLocation, location);
 			String ref = Utils.getRandomString(Const.getIdLength());
 			if (uriInfo != null) {
 				emailOp.sendRegistrationEmailWithRegistrationCode(appId, userId, userName, email, ref, uriInfo.getAbsolutePath().toASCIIString());
@@ -191,26 +194,36 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	}
 
 	// *** UPDATE *** //
+	public Boolean updateUser(String appId, String userId, String userName, String email, String userFile, Boolean baseLocationOption, String baseLocation, String location) {
+		Boolean res = false;
+		try {
+			res = userModel.updateUser(appId, userId, userName, email, userFile, baseLocationOption, baseLocation, location);
+		} catch (Exception e) {
+			Log.error("", this, "updateUser", "updateUser.", e); 
+		}
+		return res;
+	}
 	
-	public void updateUser(String appId, String userId, String email) {
-		userModel.updateUser(appId, userId, email);
+	public Boolean updateUserEmail(String appId, String userId, String oldEmail, String newEmail) {
+		Boolean res = false;
+		try {
+			res = userModel.updateUserEmail(appId, oldEmail, newEmail);
+		} catch (Exception e) {
+			Log.error("", this, "updateUserEmail", "updateUserEmail", e); 
+		}
+		return res;
 	}
 
-	public void updateUser(String appId, String userId, String email, byte[] hash, byte[] salt) {
+
+	public void updateUserRecover(String appId, String userId, String email, byte[] hash, byte[] salt) {
 		try {
-			userModel.updateUser(appId, userId, email, hash, salt);
+			userModel.updateUserRecover(appId, userId, email, hash, salt);
 		} catch (UnsupportedEncodingException e) {
 			Log.error("", this, "updateUser", "Unsupported Encoding.", e); 
 		}
 	}
 
-	public void updateUser(String appId, String userId, String email, byte[] hash, byte[] salt, String alive) {
-		try {
-			userModel.updateUser(appId, userId, email, hash, salt,	alive);
-		} catch (UnsupportedEncodingException e) {
-			Log.error("", this, "updateUser", "Unsupported Encoding.", e); 
-		}
-	}
+	
 
 	public boolean updateUserPassword(String appId, String userId, String password) {
 		byte[] salt = null;
@@ -271,10 +284,6 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		for (Map.Entry<String, String> entry : userFields.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase("email"))
 				temp.setUserEmail(entry.getValue());
-			else if (entry.getKey().equalsIgnoreCase("creationDate"))
-				temp.setCreationDate(entry.getValue());
-			else if (entry.getKey().equalsIgnoreCase("updatedDate"))
-				temp.setUpdatedDate(entry.getValue());
 			else if (entry.getKey().equalsIgnoreCase("alive"))
 				temp.setAlive(entry.getValue());
 		}
@@ -369,7 +378,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 					userName = entry.getValue();
 			}
 			if (email != null && newPass != null) {
-				updateUser(appId, userId, email, hash, salt);
+				updateUserRecover(appId, userId, email, hash, salt);
 			}
 			if(dbEmail.equalsIgnoreCase(email)){
 				boolean emailOk =emailOp.sendRecoveryEmail(appId, userName, userId, email, newPass, 
@@ -392,5 +401,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	private Map<String, String> getUserFields(String appId, String userId)throws UnsupportedEncodingException {
 		return userModel.getUser(appId, userId);
 	}
+
+	
 
 }

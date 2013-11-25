@@ -2,10 +2,10 @@ package infosistema.openbaas.dataaccess.models;
 
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -35,9 +35,9 @@ public class UserModel {
 	// *** CREATE *** //
 
 	public Boolean createUser(String appId, String userId, String userName, String socialId, String socialNetwork,
-			String email, byte[] salt, byte[] hash, String creationDate, String flag, Boolean emailConfirmed) throws UnsupportedEncodingException {
+			String email, byte[] salt, byte[] hash, String flag, Boolean emailConfirmed, Boolean baseLocationOption, String baseLocation, String location) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
-		Boolean sucess = false;
+		Boolean res = false;
 		try {
 			if (!jedis.exists("users:" + userId)) {
 				long unixTime = System.currentTimeMillis() / 1000L;
@@ -47,20 +47,25 @@ public class UserModel {
 				jedis.hset("users:" + userId, socialNetwork+"_id", socialId);
 				jedis.hset("users:" + userId, "email", email);
 				jedis.hset("users:" + userId, "salt", new String(salt, "ISO-8859-1"));
-				jedis.hset(("users:" + userId), "lastActive", new Date().toString());
 				jedis.hset(("users:" + userId), "hash", new String(hash, "ISO-8859-1"));
-				jedis.hset("users:" + userId, "alive", new String("true"));
-				jedis.hset("users:" + userId, "creationDate", creationDate);
+				jedis.hset("users:" + userId, "alive", new String("true"));				
+				jedis.hset("users:" + userId, "baseLocationOption", baseLocationOption.toString());
+				if(baseLocation!=null)
+					jedis.hset("users:" + userId, "baseLocation", baseLocation.toString());
+				if(location!=null)
+					jedis.hset("users:" + userId, Const.LOCATION, location);
 				jedis.sadd("app:" + appId + ":users", userId);
 				jedis.sadd("app:" + appId + ":users:emails", email);
-				jedis.hset(("users:" + userId), "userFile", flag);
-				if (emailConfirmed != null) jedis.hset("users:"+userId, "emailConfirmed", "" + emailConfirmed);
-				sucess = true;
+				if(flag!=null)
+					jedis.hset(("users:" + userId), "userFile", flag);
+				if (emailConfirmed != null) 
+					jedis.hset("users:"+userId, "emailConfirmed", "" + emailConfirmed);
+				res = true;
 			}
 		} finally {
 			pool.returnResource(jedis);
 		}
-		return sucess;
+		return res;
 	}
 
 
@@ -78,33 +83,47 @@ public class UserModel {
 	 * @param alive
 	 * @throws UnsupportedEncodingException 
 	 */
-	public void updateUser(String appId, String userId, String email,
-			byte[] hash, byte[] salt, String alive) throws UnsupportedEncodingException {
+	
+	public Boolean updateUser(String appId, String userId, String userName,	String email, 
+			String userFile, Boolean baseLocationOption, String baseLocation, String location) {
 		Jedis jedis = pool.getResource();
+		Boolean res = false;
 		try {
+			jedis.hset("users:" + userId, "userName", userName);
 			jedis.hset("users:" + userId, "email", email);
-			jedis.hset(("users:" + userId), "salt", new String(salt,"ISO-8859-1"));
-			jedis.hset(("users:" + userId), "hash", new String(hash,"ISO-8859-1"));
-			jedis.hset("users:" + userId, "alive", alive);
-			long unixTime = System.currentTimeMillis() / 1000L;
-			jedis.zadd("users:time", unixTime, appId + ":" + userId);
+			jedis.hset("users:" + userId, "alive", new String("true"));				
+			jedis.hset("users:" + userId, "baseLocationOption", baseLocationOption.toString());
+			if(baseLocation!=null)
+				jedis.hset("users:" + userId, "baseLocation", baseLocation.toString());
+			if(location!=null)
+				jedis.hset("users:" + userId, Const.LOCATION, location);
+			if(userFile!=null)
+				jedis.hset(("users:" + userId), "userFile", userFile);
+			res = true;
 		} finally {
 			pool.returnResource(jedis);
 		}
+		return res;
 	}
-
-	public void updateUser(String appId, String userId, String email) {
+	
+	public Boolean updateUserEmail(String appId, String oldEmail, String newEmail) {
 		Jedis jedis = pool.getResource();
-		try {
-			jedis.hset("users:" + userId, "email", email);
-			long unixTime = System.currentTimeMillis() / 1000L;
-			jedis.zadd("users:time", unixTime, appId + ":" + userId);
+		Boolean res = false;
+		try{
+			//"app:68c:users:emails"
+			jedis.srem("app:"+appId+":users:emails", oldEmail);
+			jedis.sadd("app:"+appId+":users:emails", newEmail);
+			res = true;
+		}catch(Exception e){
+			Log.error("", this, "updateUserEmail", "updateUserEmail", e);
 		} finally {
 			pool.returnResource(jedis);
 		}
+		return res;
 	}
 
-	public void updateUser(String appId, String userId, String email,
+
+	public void updateUserRecover(String appId, String userId, String email,
 			byte[] hash, byte[] salt) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
 		try {
@@ -119,10 +138,9 @@ public class UserModel {
 		}
 	}
 
-	public void updateUserLocationAndDate(String userId, String appId, String sessionToken, String location, String date) {
+	public void updateUserLocation(String userId, String appId, String sessionToken, String location) {
 		Jedis jedis = pool.getResource();
 		try{
-			jedis.hset(("users:" + userId), "lastActive", date);
 			jedis.hset(("users:" + userId), Const.LOCATION, location);
 		}finally{
 			pool.returnResource(jedis);
@@ -405,5 +423,8 @@ public class UserModel {
 		}
 		return isConfirmed;
 	}
+
+	
+	
 
 }

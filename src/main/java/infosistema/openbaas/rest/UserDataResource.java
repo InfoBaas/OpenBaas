@@ -48,7 +48,6 @@ public class UserDataResource {
 	private DocumentMiddleLayer docMid;
 	private UsersMiddleLayer usersMid;
 	private String appId;
-	private String userId;
 	private SessionMiddleLayer sessionsMid;
 
 	public UserDataResource(UriInfo uriInfo, String appId, String userId) {
@@ -58,7 +57,6 @@ public class UserDataResource {
 		this.sessionsMid = MiddleLayerFactory.getSessionMiddleLayer();
 		this.appId = appId;
 		this.uriInfo = uriInfo;
-		this.userId = userId;
 	}
 
 	// *** CREATE *** //
