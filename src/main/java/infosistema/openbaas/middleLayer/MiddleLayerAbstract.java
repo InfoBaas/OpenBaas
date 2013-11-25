@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.enums.FileMode;
 import infosistema.openbaas.data.enums.ModelEnum;
@@ -27,6 +28,7 @@ import infosistema.openbaas.dataaccess.models.MediaModel;
 import infosistema.openbaas.dataaccess.models.MetadataModel;
 import infosistema.openbaas.dataaccess.models.SessionModel;
 import infosistema.openbaas.dataaccess.models.UserModel;
+import infosistema.openbaas.utils.Utils;
 
 public abstract class MiddleLayerAbstract {
 
@@ -111,11 +113,11 @@ public abstract class MiddleLayerAbstract {
 		return metadataModel.deleteMetadata(key, true);
 	}
 	
-	public ArrayList<String> paginate(String appId, List<String> lst, String orderBy, String orderType, 
+	public ListResult paginate(String appId, List<String> lst, String orderBy, String orderType, 
 			Integer pageNumber, Integer pageSize, ModelEnum type) {
 		
-		ArrayList<String> res = new ArrayList<String>();
-
+		ArrayList<String> listIdsSorted = new ArrayList<String>();
+		List<String> listRes = new ArrayList<String>();
 		Map<String, String> hash = new HashMap<String, String>();
 		Iterator<String> it = lst.iterator();
 		while(it.hasNext()){
@@ -137,19 +139,28 @@ public abstract class MiddleLayerAbstract {
 		}
 
 		
-		Map<String, String> sorted = sortByValues(hash);
+		Map<String, String> hashSorted = sortByValues(hash);
 		
-		Iterator entries = sorted.entrySet().iterator();
+		Iterator entries = hashSorted.entrySet().iterator();
 		while (entries.hasNext()) {
 		  Entry<String,String> thisEntry = (Entry<String,String>) entries.next();
 		  String key = thisEntry.getKey();
-		  res.add(key);
+		  listIdsSorted.add(key);
 		}
 		if(orderType.equals("desc")){
-			Collections.reverse(res);
+			Collections.reverse(listIdsSorted);
 		}
 
-		return res;
+		Integer iniIndex = (pageNumber-1)*pageSize;
+		Integer finIndex = (((pageNumber-1)*pageSize)+pageSize);
+		
+		if(finIndex>listIdsSorted.size())
+			listRes  = listIdsSorted.subList(iniIndex, listIdsSorted.size());
+		else
+			listRes = listIdsSorted.subList(iniIndex, finIndex);
+		Integer totalElems = (int) Utils.roundUp(listIdsSorted.size(),pageSize);
+		ListResult listResultRes = new ListResult(listRes, pageNumber, pageSize, totalElems);
+		return listResultRes;
 	}
 	
 	
