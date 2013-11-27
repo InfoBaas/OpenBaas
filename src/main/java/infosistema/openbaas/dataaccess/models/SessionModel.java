@@ -414,7 +414,7 @@ public class SessionModel {
 		Jedis jedis = pool.getResource();
 		String retApp = null;
 		try {
-			retApp = jedis.hget("session:"+sessionToken, "appId");
+			retApp = jedis.hget("sessions:"+sessionToken, "appId");
 		}finally {
 			pool.returnResource(jedis);
 		}

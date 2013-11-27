@@ -175,9 +175,37 @@ public class UserModel {
 
 	// *** GET LIST *** //
 
-	public List<String> getOperation(String appId, OperatorEnum oper, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
+	
+	public List<String> getOperation(String appId, OperatorEnum oper, String attribute, String value) throws Exception {
+		Jedis jedis = pool.getResource();
+		List<String> listRes = new ArrayList<String>();
+		try{
+			Set<String> setUsers = jedis.smembers("app:"+appId+":users:emails");
+			Iterator<String> iter = setUsers.iterator();
+			while(iter.hasNext()){
+				String userId = iter.next();
+				Map<String, String> mapUser = getUser(appId, userId);
+				if(mapUser.containsKey(attribute)){
+					if(mapUser.get(attribute).equals(value))
+						listRes.add(userId);
+				}
+			}
+		}
+		catch (Exception e) {
+			throw e;
+		}
+		return listRes;
+	}
+
+	public Set<String> getAllUserIdsForApp(String appId) {
+		Jedis jedis = pool.getResource();
+		Set<String> res = null;
+		try {
+			 res = jedis.smembers("app:"+appId+":users");	
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
 	}
 
 

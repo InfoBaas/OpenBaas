@@ -7,7 +7,9 @@ import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
+import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.data.models.User;
+import infosistema.openbaas.dataaccess.models.DocumentModel;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
@@ -16,6 +18,7 @@ import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -55,6 +58,25 @@ public class IntegrationResource {
 	}
 	
 
+	@Path("/test")
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response test(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
+		
+		DocumentModel m = new DocumentModel();
+		List<String> contains = m.getOperation(null, OperatorEnum.contains, null, "restaurante.nome", null, "es");
+		List<String> notContains = m.getOperation(null, OperatorEnum.notContains, null, "restaurante.idade", null, "11");
+		List<String> equals = m.getOperation(null, OperatorEnum.equals, null, "restaurante.nome", null, "rest2");
+		List<String> diferent = m.getOperation(null, OperatorEnum.diferent, null, "restaurante.nome", null, "rest1");
+		List<String> greater = m.getOperation(null, OperatorEnum.greater, null, "restaurante.idade", null, "16");
+		List<String> greaterOrEqual = m.getOperation(null, OperatorEnum.greaterOrEqual, null, "restaurante.idade", null, "18");
+		List<String> lesser = m.getOperation(null, OperatorEnum.lesser, null, "restaurante.idade", null, "19");
+		List<String> lesserOrEqual = m.getOperation(null, OperatorEnum.lesserOrEqual, null, "restaurante.idade", null, "11");
+		return Response.status(Status.OK).entity(lesserOrEqual).build();
+	}
+	
+	
+	
 	/**
 	 * Creates a user in the application. Necessary fields: "facebook id"
 	 * and "email". if the user already register only signin. if not signup
@@ -158,7 +180,7 @@ public class IntegrationResource {
 		}
 		return res;
 	}
-
+	
 
 	/**
 	 * Creates a user in the application. Necessary fields: "linkedin id".

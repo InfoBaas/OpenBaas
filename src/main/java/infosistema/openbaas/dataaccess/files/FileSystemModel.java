@@ -19,7 +19,7 @@ import org.apache.commons.io.IOUtils;
 public class FileSystemModel implements FileInterface {
 
 	private static final String DIR_PATH_FORMAT = "%sapps/%s/media/%s";
-	private static final String FILE_PATH_FORMAT = "%/%s.$s";
+	private static final String FILE_PATH_FORMAT = "%s/%s.%s";
 	private static FileSystemModel instance;
 
 	public static FileSystemModel getInstance() {
@@ -68,7 +68,7 @@ public class FileSystemModel implements FileInterface {
 		} catch (FileNotFoundException e) {
 			Log.error("", this, "upload", "File not found.", e); 
 			return null;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			Log.error("", this, "upload", "An error ocorred.", e); 
 			return null;
 		}

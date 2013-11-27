@@ -1,9 +1,9 @@
 package infosistema.openbaas.dataaccess.models;
 
 import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.utils.Const;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -59,9 +59,25 @@ public class MediaModel {
 	
 	// *** GET LIST *** //
 
-	public List<String> getOperation(String appId, OperatorEnum oper, String attribute, String value, ModelEnum type) {
-		//TODO IMPLEMENT
-		return null;
+	public List<String> getOperation(String appId, String attribute, String value, ModelEnum type) throws Exception {
+		Jedis jedis = pool.getResource();
+		List<String> listRes = new ArrayList<String>();
+		try{
+			Set<String> setUsers = jedis.smembers("app:"+type+":"+appId);
+			Iterator<String> iter = setUsers.iterator();
+			while(iter.hasNext()){
+				String userId = iter.next();
+				Map<String, String> mapMedia = getMedia(appId,type, userId);
+				if(mapMedia.containsKey(attribute)){
+					if(mapMedia.get(attribute).equals(value))
+						listRes.add(userId);
+				}
+			}
+		}
+		catch (Exception e) {
+			throw e;
+		}
+		return listRes;
 	}
 
 	//XPTO: PAGINAÇÃO
