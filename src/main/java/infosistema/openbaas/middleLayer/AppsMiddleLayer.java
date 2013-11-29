@@ -3,6 +3,7 @@ package infosistema.openbaas.middleLayer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 
 import com.amazonaws.AmazonServiceException;
@@ -100,8 +101,44 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 
 	// *** GET LIST *** //
 
-	public ArrayList<String> getAllAppIds(Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
-		return appModel.getAllAppIds(pageNumber, pageSize, orderBy, orderType);
+	protected List<String> contains(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> notContains(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> equals(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> diferent(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> greater(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> greaterOrEqual(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> lesser(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> lesserOrEqual(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
 	}
 
 

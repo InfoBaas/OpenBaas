@@ -51,7 +51,6 @@ public class UserRecoveryResource {
 	
 	// *** OTHERS *** //
 
-	//TODO: LOCATION (location de defeito???)
 	/*
 	 * Returns a code corresponding to the sucess or failure Codes: -2 ->
 	 * Forbidden -1 -> Bad request 1 -> sessionExists

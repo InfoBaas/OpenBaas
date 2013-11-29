@@ -3,9 +3,9 @@ package infosistema.openbaas.rest;
 import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.QueryParameters;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
@@ -19,9 +19,6 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -33,16 +30,15 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.io.FilenameUtils;
+import org.codehaus.jettison.json.JSONObject;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
@@ -52,7 +48,7 @@ public class StorageResource {
 	
 	private String appId;
 	private MediaMiddleLayer mediaMid;
-	private SessionMiddleLayer sessionsMid;
+	private SessionMiddleLayer sessionMid;
 
 	public StorageResource() {
 	}
@@ -60,14 +56,13 @@ public class StorageResource {
 	public StorageResource(String appId) {
 		this.appId = appId;
 		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
-		this.sessionsMid = MiddleLayerFactory.getSessionMiddleLayer();
+		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
 	}
 
 	// *** CREATE *** //
 	
 	// *** UPDATE *** //
 	
-	//TODO: LOCATION
 	/**
 	 * Uploads a storage file, storage files are stored in a different folder
 	 * than media files due to the simplicity of these files. Media has advanced
@@ -82,14 +77,9 @@ public class StorageResource {
 	public Response uploadStorageFile(@Context UriInfo ui, @Context HttpHeaders hh, @FormDataParam(Const.FILE) InputStream uploadedInputStream,
 			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @PathParam("appId") String appId, @HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
-		Cookie sessionToken=null;
-		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
-				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
-		}
-		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
-		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+		String sessionToken = Utils.getSessionToken(hh);
+		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
+		if (sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -124,13 +114,11 @@ public class StorageResource {
 	public Response deleteStorageFile(@PathParam("storageId") String storageId,
 			@HeaderParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
-		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken);
-		if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken)) {
 			if (mediaMid.mediaExists(appId, ModelEnum.storage, storageId)) {
-				Media media = mediaMid.getMedia(appId, ModelEnum.storage,storageId);
-				this.mediaMid.deleteMedia(appId, ModelEnum.storage, storageId,media.getLocation());
+				this.mediaMid.deleteMedia(appId, ModelEnum.storage, storageId);
 				
 				String metaKey = "apps."+appId+".media.storage."+storageId;
 				Boolean meta = mediaMid.deleteMetadata(metaKey);
@@ -149,41 +137,36 @@ public class StorageResource {
 	// *** GET LIST *** //
 	
 	/**
-	 * Gets all the storage Identifiers in the application.
+	 * Gets all the users in the application.
 	 * 
 	 * @return
 	 */
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response findAllStorageIds(@Context UriInfo ui,
-			@Context HttpHeaders hh,
-			@QueryParam(Const.PAGE_NUMBER) Integer pageNumber, @QueryParam(Const.PAGE_SIZE) Integer pageSize, 
-			@QueryParam(Const.ORDER_BY) String orderBy, @QueryParam(Const.ORDER_BY) String orderType ) {
-		if (pageNumber == null) pageNumber = Const.getPageNumber();
-		if (pageSize == null) 	pageSize = Const.getPageSize();
-		if (orderBy == null) 	orderBy = Const.getOrderBy();
-		if (orderType == null) 	orderType = Const.getOrderType();
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
+			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
+			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
+			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
+			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
+		QueryParameters qp = QueryParameters.getQueryParameters(appId, query, radiusStr, latitudeStr, longitudeStr, 
+				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.storage);
 		Response response = null;
-		Cookie sessionToken=null;
-		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
-				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
-		}
-		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
-		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+		String sessionToken = Utils.getSessionToken(hh);
+		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
-		int code = Utils.treatParameters(ui, hh);
+
+		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
-			Log.debug("", this, "findAllStorageIds", "********Finding all Storage********");
-			ArrayList<String> storageIds = mediaMid.getAllMediaIds(appId, ModelEnum.storage, pageNumber,
-					pageSize,orderBy,orderType);
-			ListResult res = new ListResult(storageIds,pageNumber);
-			response = Response.status(Status.OK).entity(res).build();
+			try {
+				ListResult res = mediaMid.find(qp);
+				response = Response.status(Status.OK).entity(res).build();
+			} catch (Exception e) {
+				response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
+			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 	
@@ -204,14 +187,7 @@ public class StorageResource {
 	public Response downloadStorageUsingId(@PathParam("storageId") final String storageId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		ResponseBuilder builder = Response.status(Status.OK);
-		Cookie sessionToken=null;
-		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
-				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
-		}
-		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
-		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		byte[] found = null;
 		String extension = "";

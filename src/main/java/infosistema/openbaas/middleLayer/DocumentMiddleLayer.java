@@ -3,7 +3,6 @@ package infosistema.openbaas.middleLayer;
 
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.utils.Log;
 
 import java.util.Date;
@@ -58,7 +57,6 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 			Boolean res =  docModel.insertDocumentInPath(appId, userId, pathRes, data);
 			if (location != null){
 				String[] splitted = location.split(":");
-				Geolocation geo = Geolocation.getInstance();
 				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, pathRes);
 			}
 			return res;
@@ -80,7 +78,6 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 			Boolean res =  docModel.updateDocumentInPath(appId, userId, pathRes, data);
 			if (location != null){
 				String[] splitted = location.split(":");
-				Geolocation geo = Geolocation.getInstance();
 				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, pathRes);
 			}
 			return res;
@@ -104,7 +101,6 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 			String location = meta.getLocation();
 			if (location != null){
 				String[] splitted = location.split(":");
-				Geolocation geo = Geolocation.getInstance();
 				geo.deleteObjectFromGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, pathRes);
 			}
 			res = docModel.deleteDocumentInPath(appId, getDocumentPath(userId, path));
@@ -118,49 +114,45 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	// *** GET LIST *** //
 
-	//XPTO: Refazer isto tudo 
-	/*
-	public String getAllUserDocs(String appId, String userId) {
-		try {
-			return docModel.getAllUserDocs(appId, userId);
-		} catch (Exception e) {
-			Log.error("", this, "getAllUserDocs", "An error ocorred.", e); 
-			return null;
-		}
+	protected List<String> contains(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
 	}
-
-	public ArrayList<String> getAllDocsInRadius(String appId, double latitude, double longitude, double radius) {
-		try {
-			return docModel.getAllDocsInRadius(appId, latitude, longitude, radius);
-		} catch (Exception e) {
-			Log.error("", this, "getAllDocsInRadius", "An error ocorred.", e); 
-			return null;
-		}
+	
+	protected List<String> notContains(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
 	}
-
-	public ArrayList<String> getAllUserDocsInRadius(String appId, String userId, double latitude, double longitude, 
-			double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
-		try {
-			return docModel.getAllUserDocsInRadius(appId, latitude, longitude, radius, pageNumber,pageSize,orderBy,orderType);
-		} catch (Exception e) {
-			Log.error("", this, "getAllUserDocsInRadius", "An error ocorred.", e); 
-			return null;
-		}
+	
+	protected List<String> equals(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
 	}
-
-	public ArrayList<String> getElementInAppInRadius(String appId, List<PathSegment> path, double latitude,
-			double longitude, double radius) {
-		String url = getAppDocPathFromListWithComas(appId, path);
-		try {
-			//return docModel.getDataInDocumentInRadius(appId, url, latitude, longitude,radius);
-			return null;
-		} catch (Exception e) {
-			Log.error("", this, "getElementInAppInRadius", "An error ocorred.", e); 
-			return null;
-		}
+	
+	protected List<String> diferent(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
 	}
-
-	*/
+	
+	protected List<String> greater(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> greaterOrEqual(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> lesser(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> lesserOrEqual(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
 
 	
 	// *** GET *** //

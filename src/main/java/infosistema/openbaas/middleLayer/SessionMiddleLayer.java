@@ -2,13 +2,17 @@ package infosistema.openbaas.middleLayer;
 
 import infosistema.openbaas.dataaccess.email.Email;
 import infosistema.openbaas.dataaccess.models.SessionModel;
+import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+
+import javax.ws.rs.core.MultivaluedMap;
 
 public class SessionMiddleLayer extends MiddleLayerAbstract {
 
@@ -133,6 +137,46 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 
 	// *** GET LIST *** //
 
+	protected List<String> contains(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> notContains(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> equals(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> diferent(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> greater(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> greaterOrEqual(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> lesser(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> lesserOrEqual(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+
 	
 	// *** GET *** //
 	
@@ -147,10 +191,23 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 	}
 
 	// *** EXISTS *** //
-
 	
 	// *** OTHERS *** //
 	
+	public boolean checkAppForToken(String sessionToken, String appId) {
+		try {
+			String userId = getUserIdUsingSessionToken(sessionToken);
+			String sessionAppId = null;
+			SessionModel sessions = new SessionModel();
+			if(sessions.sessionExistsForUser(userId))
+				sessionAppId = sessions.getAppIdForSessionToken(sessionToken);
+			return appId != null && appId.equals(sessionAppId);
+		} catch (Exception e) {
+			Log.error("", this, "checkAppForToken", "Error checking App dor Session.", e);
+			return false;
+		}
+	}
+
 	public boolean sessionTokenExistsForUser(String sessionToken, String userId) {
 		return sessions.sessionTokenExistsForUser(sessionToken, userId);
 	}

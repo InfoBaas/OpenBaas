@@ -31,11 +31,13 @@ public class FtpModel implements FileInterface {
 	
 	@Override
 	public boolean createApp(String appId) throws Exception {
+		//TODO
 		return true;
 	}
 	
 	@Override
 	public boolean createUser(String appId, String userId, String userName) throws Exception {
+		//TODO
 		return false;
 	}
 
@@ -53,6 +55,7 @@ public class FtpModel implements FileInterface {
 	
 	@Override
 	public byte[] download(String appId, ModelEnum type, String id, String extension) throws IOException {
+		//TODO
 		return null;
 	}
 
@@ -61,11 +64,13 @@ public class FtpModel implements FileInterface {
 	
 	@Override
 	public boolean deleteFile(String appId, ModelEnum type, String id, String extension) {
+		//TODO
 		return false;
 	}
 	
 	@Override
 	public void deleteUser(String appId, String userId) throws Exception {
+		//TODO
 	}
 	
 }

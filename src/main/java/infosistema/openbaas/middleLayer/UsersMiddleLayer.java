@@ -1,10 +1,10 @@
 package infosistema.openbaas.middleLayer;
 
+import infosistema.openbaas.data.QueryParameters;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.dataaccess.email.Email;
 import infosistema.openbaas.dataaccess.files.FileInterface;
-import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.dataaccess.models.SessionModel;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
@@ -14,7 +14,6 @@ import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -88,8 +87,6 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt, hash, userFile, null, null, baseLocationOption, baseLocation, location);
 			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, password);
-			
-			
 			if (userAgentList != null)
 				userAgent = userAgentList.get(0);
 			
@@ -223,8 +220,6 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		}
 	}
 
-	
-
 	public boolean updateUserPassword(String appId, String userId, String password) {
 		byte[] salt = null;
 		byte [] hash = null;
@@ -261,18 +256,49 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 
 	// *** GET LIST *** //
 
+	protected List<String> contains(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> notContains(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> equals(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> diferent(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> greater(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> greaterOrEqual(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> lesser(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> lesserOrEqual(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+
 	
 	// *** GET *** //
 	
-	public ArrayList <String> getAllUserIdsForApp(String appId, Double latitude, Double longitude, Double radius, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
-		if (latitude != null && longitude != null && radius != null) {
-			Geolocation geo = Geolocation.getInstance();
-			return geo.getObjectsInDistance(latitude, longitude, radius, appId, ModelEnum.users);
-		} else {
-			return userModel.getAllUserIdsForApp(appId,pageNumber,pageSize,orderBy,orderType);
-		}
-	}
-
 	public User getUserInApp(String appId, String userId) {
 		Map<String, String> userFields = null;
 		try {
@@ -401,7 +427,5 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	private Map<String, String> getUserFields(String appId, String userId)throws UnsupportedEncodingException {
 		return userModel.getUser(appId, userId);
 	}
-
-	
 
 }

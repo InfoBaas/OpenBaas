@@ -33,6 +33,7 @@ public abstract class Media {
 	public final static String FILENAME = "fileName";
 	public final static String FILEEXTENSION = "fileExtension";
 	public final static String SIZE = "size";
+	public final static String LOCATION = "location";
 
 	private String id;
 	private String fileExtension;

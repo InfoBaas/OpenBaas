@@ -87,12 +87,14 @@ public class Utils {
 	    return (num + divisor - 1) / divisor;
 	}
 
-	public static String getAppIdFromToken(String sessionToken, String userId){
-		String appId = null;
-		SessionModel sessions = new SessionModel();
-		if(sessions.sessionExistsForUser(userId))
-			appId = sessions.getAppIdForSessionToken(sessionToken);
-		return appId;
+	public static String getSessionToken(HttpHeaders hh) {
+		String sessionToken = null; 
+		try {
+			sessionToken = hh.getRequestHeaders().getFirst(Const.SESSION_TOKEN);
+		} catch (Exception e) {
+			Log.error("", "infosistema.openbaas.utils.Utils", "getSessionToken", "No session token in request header.", e);
+		}
+		return sessionToken;
 	}
-	
+
 }

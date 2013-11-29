@@ -41,24 +41,24 @@ import org.codehaus.jettison.json.JSONObject;
 
 
 public class AccountResource {
-	
+
 	private UsersMiddleLayer usersMid;
 	private SessionMiddleLayer sessionMid;
 	private AppsMiddleLayer appsMid;
 	private String appId;
-	
+
 
 	@Context
 	UriInfo uriInfo;
 
-	
+
 	public AccountResource(String appId) {
 		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
 		this.appId = appId;
 		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
 		this.appsMid = MiddleLayerFactory.getAppsMiddleLayer();
 	}
-	
+
 	// *** CREATE *** //
 
 	/**
@@ -75,61 +75,61 @@ public class AccountResource {
 	public Response createUserAndLogin(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
-			String email = null;
-			String userName = null;
-			String password = null;
-			Boolean baseLocationOption = null;
-			String baseLocation = null;
-			String userFile = null;
-			String userId = null;
-			String appKey = null;
-			Boolean readOk = false;
-			String location = null;
-			List<String> locationList = null;
-			for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-				if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
-					locationList = entry.getValue();
-				if (entry.getKey().equalsIgnoreCase(Const.APP_KEY))
-					appKey = entry.getValue().get(0);
-			}
-			if(appKey==null)
-				return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
-			if(!appsMid.authenticateApp(appId,appKey))
-				return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
-			if (locationList != null)
-				location = locationList.get(0);
-			try {
-				userName = (String) inputJsonObj.opt("userName");
-				userFile = (String) inputJsonObj.opt("userFile");
-				email = (String) inputJsonObj.get("email");
-				password = (String) inputJsonObj.get("password");
+		String email = null;
+		String userName = null;
+		String password = null;
+		Boolean baseLocationOption = null;
+		String baseLocation = null;
+		String userFile = null;
+		String userId = null;
+		String appKey = null;
+		Boolean readOk = false;
+		String location = null;
+		List<String> locationList = null;
+		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
+				locationList = entry.getValue();
+			if (entry.getKey().equalsIgnoreCase(Const.APP_KEY))
+				appKey = entry.getValue().get(0);
+		}
+		if(appKey==null)
+			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
+		if(!appsMid.authenticateApp(appId,appKey))
+			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
+		if (locationList != null)
+			location = locationList.get(0);
+		try {
+			userName = (String) inputJsonObj.opt("userName");
+			userFile = (String) inputJsonObj.opt("userFile");
+			email = (String) inputJsonObj.get("email");
+			password = (String) inputJsonObj.get("password");
 				baseLocationOption = (Boolean) inputJsonObj.opt("baseLocationOption");
 				baseLocation = (String) inputJsonObj.opt("baseLocation");
-				readOk = true;
-			} catch (JSONException e) {
-				Log.error("", this, "createUserAndLogin", "Error parsing the JSON.", e); 
-				return Response.status(Status.BAD_REQUEST).entity("Error parsing the JSON.").build();
-			}
-			if (userName == null) {
-				userName = email;
-			}
-			if(!MiddleLayerFactory.getAppsMiddleLayer().appExists(appId))
-				return Response.status(Status.NOT_FOUND).entity("{\"App\": "+appId+"}").build();
-			if (readOk) {
-				if (!usersMid.userExistsInApp(appId, userId, email)) {
-					if (uriInfo == null) 
-						uriInfo=ui;
+			readOk = true;
+		} catch (JSONException e) {
+			Log.error("", this, "createUserAndLogin", "Error parsing the JSON.", e); 
+			return Response.status(Status.BAD_REQUEST).entity("Error parsing the JSON.").build();
+		}
+		if (userName == null) {
+			userName = email;
+		}
+		if(!MiddleLayerFactory.getAppsMiddleLayer().appExists(appId))
+			return Response.status(Status.NOT_FOUND).entity("{\"App\": "+appId+"}").build();
+		if (readOk) {
+			if (!usersMid.userExistsInApp(appId, userId, email)) {
+				if (uriInfo == null) 
+					uriInfo=ui;
 					User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile,baseLocationOption, baseLocation);
-					String metaKey = "apps."+appId+".users."+outUser.getUserId();
-					Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
-					Result res = new Result(outUser, meta);
-					response = Response.status(Status.CREATED).entity(res).build();
-				} else {
-					response = Response.status(Status.FORBIDDEN).entity(new Error("{\"email exists\": "+email+"}")).build();
-				}
+				String metaKey = "apps."+appId+".users."+outUser.getUserId();
+				Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
+				Result res = new Result(outUser, meta);
+				response = Response.status(Status.CREATED).entity(res).build();
 			} else {
-				response = Response.status(Status.BAD_REQUEST).entity(new Error("")).build();
+				response = Response.status(Status.FORBIDDEN).entity(new Error("{\"email exists\": "+email+"}")).build();
 			}
+		} else {
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("")).build();
+		}
 		return response;
 	}
 
@@ -157,7 +157,7 @@ public class AccountResource {
 		String location = null;
 		String appKey = null;
 		Boolean refreshCode = false;
-		
+
 		try {
 			email = (String) inputJsonObj.get("email");
 			attemptedPassword = (String) inputJsonObj.get("password");
@@ -235,9 +235,9 @@ public class AccountResource {
 
 	}
 
-	
- 	// *** UPDATE *** //
-	
+
+	// *** UPDATE *** //
+
 	@PATCH
 	@Path("/sessions/{sessionToken}")
 	@Consumes({ MediaType.APPLICATION_JSON })
@@ -246,7 +246,7 @@ public class AccountResource {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-			if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (location != null) {
 				String metaKey = "apps."+appId+".users."+userId;
@@ -255,18 +255,18 @@ public class AccountResource {
 				sessionMid.refreshSession(sessionToken, location, userAgent);					
 				response = Response.status(Status.OK).entity(res).build();
 			} // if the device does not have the gps turned on we should not
-				// refresh the session.
-				// only refresh it when an action is performed.
-			
+			// refresh the session.
+			// only refresh it when an action is performed.
+
 			Response.status(Status.NOT_FOUND).entity(new Error("SessionToken: "+sessionToken)).build();
 		} else
 			response = Response.status(Status.FORBIDDEN).entity(new Error("You do not have permission to access.")).build();
 		return response;
 	}
 
-	
+
 	// *** DELETE *** //
-	
+
 	/**
 	 * Deletes a session (signout).
 	 * 
@@ -284,7 +284,7 @@ public class AccountResource {
 		if(userId!=null){
 			if (sessionMid.sessionTokenExists(sessionToken)) {
 				if(!flagAll){
-					if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+					if (!sessionMid.checkAppForToken(sessionToken, appId))
 						return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 					//deletes the sessions user with the token = sessionToken
 					if (sessionMid.deleteUserSession(sessionToken, userId)){
@@ -297,7 +297,7 @@ public class AccountResource {
 						response = Response.status(Status.NOT_FOUND).entity(new Error("Not found")).build();
 					}
 				}else{
-					if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+					if (!sessionMid.checkAppForToken(sessionToken, appId))
 						return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 					//deletes all sessions user
 					Log.debug("", this, "deleteSession", "********DELETING ALL SESSIONS FOR THIS USER");
@@ -310,22 +310,22 @@ public class AccountResource {
 					}
 					else
 						response = Response.status(Status.NOT_FOUND).entity(new Error("No sessions exist")).build();
-					} 
-				}
+				} 
 			}
-			else 
-				response = Response.status(Status.FORBIDDEN).entity(new Error("FORBIDDEN")).build();		
+		}
+		else 
+			response = Response.status(Status.FORBIDDEN).entity(new Error("FORBIDDEN")).build();		
 		return response;
 	}
-	
-	
+
+
 	// *** GET LIST *** //
-	
-	
+
+
 	// *** GET *** //
-	
+
 	/**
-	 * Gets the session fields associated with thif(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+	 * Gets the session fields associated with thif (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();e token.
 	 * 
 	 * @param sessionToken
@@ -338,7 +338,7 @@ public class AccountResource {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-			if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			String metaKey = "apps."+appId+".users."+userId;
 			Metadata meta = usersMid.getMetadata(metaKey);
@@ -348,7 +348,7 @@ public class AccountResource {
 			response = Response.status(Status.NOT_FOUND).entity(new Error(sessionToken)).build();
 		return response;
 	}
-	
+
 	/**@HeaderParam(value = Const.LOCATION) String location
 	 * Gets the session fields associated with the token.
 	 * 
@@ -362,7 +362,7 @@ public class AccountResource {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-			if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			User outUser = usersMid.getUserInApp(appId, userId);
 			String metaKey = "apps."+appId+".users."+userId;
@@ -374,7 +374,7 @@ public class AccountResource {
 		return response;
 	}
 
-	
+
 	// *** OTHERS *** //
 
 	@POST
@@ -388,38 +388,38 @@ public class AccountResource {
 		String newPass = Utils.getRandomString(Const.getPasswordLength());
 		byte[] salt = null;
 		byte[] hash = null;
-			try {
-				email = (String) inputJson.get("email");
-			} catch (JSONException e) {
-				Log.error("", this, "makeRecoveryRequest", "Error parsing the JSON.", e); 
-			}
-			PasswordEncryptionService service = new PasswordEncryptionService();
-			try {
-				salt = service.generateSalt();
-				hash = service.getEncryptedPassword(newPass, salt);
-			} catch (NoSuchAlgorithmException e) {
-				Log.error("", this, "makeRecoveryRequest", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
-			} catch (InvalidKeySpecException e) {
-				Log.error("", this, "makeRecoveryRequest", "Invalid Key.", e); 
-			}
-			String userId = usersMid.getUserIdUsingEmail(appId, email);
-			if(userId==null)
-				return Response.status(Status.BAD_REQUEST).entity(new Error("Wrong email.")).build();
-			if(appKey==null)
-				return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
-			if(!appsMid.authenticateApp(appId,appKey))
-				return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
-			boolean opOk = usersMid.recoverUser(appId, userId, email, ui, newPass,hash,salt);
-			if(opOk){
-				Result res = new Result("Email sent with recovery details.", null);
-				response = Response.status(Status.OK).entity(res).build();
-			}
-			else
-				response = Response.status(Status.BAD_REQUEST).entity(new Error("Wrong email.")).build();
+		try {
+			email = (String) inputJson.get("email");
+		} catch (JSONException e) {
+			Log.error("", this, "makeRecoveryRequest", "Error parsing the JSON.", e); 
+		}
+		PasswordEncryptionService service = new PasswordEncryptionService();
+		try {
+			salt = service.generateSalt();
+			hash = service.getEncryptedPassword(newPass, salt);
+		} catch (NoSuchAlgorithmException e) {
+			Log.error("", this, "makeRecoveryRequest", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
+		} catch (InvalidKeySpecException e) {
+			Log.error("", this, "makeRecoveryRequest", "Invalid Key.", e); 
+		}
+		String userId = usersMid.getUserIdUsingEmail(appId, email);
+		if(userId==null)
+			return Response.status(Status.BAD_REQUEST).entity(new Error("Wrong email.")).build();
+		if(appKey==null)
+			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
+		if(!appsMid.authenticateApp(appId,appKey))
+			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
+		boolean opOk = usersMid.recoverUser(appId, userId, email, ui, newPass,hash,salt);
+		if(opOk){
+			Result res = new Result("Email sent with recovery details.", null);
+			response = Response.status(Status.OK).entity(res).build();
+		}
+		else
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Wrong email.")).build();
 		return response;
-		
+
 	}
-	
+
 	@POST
 	@Path("/changepassword")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -433,7 +433,6 @@ public class AccountResource {
 		List<String> userAgentList = null;
 		String userAgent = null;
 		String location = null;
-		Cookie sessionToken=null;
 		try {
 			newPassword = (String) inputJsonObj.get("newPassword");
 			oldPassword = (String) inputJsonObj.get("oldPassword");
@@ -444,26 +443,25 @@ public class AccountResource {
 		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
 				locationList = entry.getValue();
-			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
-				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
 			if (entry.getKey().equalsIgnoreCase("user-agent")){
 				userAgentList = entry.getValue();
 			}
 		}
-		
+
 		if (userAgentList != null)
 			userAgent = userAgentList.get(0);
 		if (locationList != null)
 			location = locationList.get(0);
 		try{
-			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken.getValue());
-			if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+			String sessionToken = Utils.getSessionToken(hh);
+			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
+			if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			Boolean auth = sessionMid.authenticateUser(appId, userId, oldPassword);
 			if(auth){
 				usersMid.updateUserPassword(appId, userId, newPassword);
 				if(location!=null)
-					sessionMid.refreshSession(sessionToken.getValue(), location, userAgent);
+					sessionMid.refreshSession(sessionToken, location, userAgent);
 				response = Response.status(Status.OK).entity("Passoword correctly changed.").build();
 			}else
 				response = Response.status(Status.BAD_REQUEST).entity(new Error("Wrong old password.")).build();
@@ -471,10 +469,10 @@ public class AccountResource {
 			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("INTERNAL_SERVER_ERROR")).build();
 		}
 		return response;
-		
+
 	}
 
-	
+
 	// *** RESOURCES *** //
 
 	/**

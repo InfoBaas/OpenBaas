@@ -10,11 +10,15 @@ public class Const {
 	public static final String SESSION_TOKEN = "sessionToken";	
 	public static final String FILE = "file";	
 	public static final String LOCATION = "location";	
+	public static final String LAT = "lat";	
+	public static final String LONG = "long";	
+	public static final String RADIUS = "radius";
 	public static final String PAGE_NUMBER = "pageNumber";
 	public static final String PAGE_SIZE = "pageSize";
 	public static final String ORDER_BY = "orderBy";
 	public static final String ORDER_TYPE = "orderType";
 	public static final String APP_KEY = "appKey";
+	public static final String QUERY = "query";
 	
 	
 	//PROPERTIES

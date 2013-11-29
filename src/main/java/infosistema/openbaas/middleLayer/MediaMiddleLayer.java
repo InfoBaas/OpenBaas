@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
@@ -21,7 +22,6 @@ import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.data.models.Storage;
 import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.dataaccess.files.FileInterface;
-import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.dataaccess.models.MediaModel;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
@@ -60,7 +60,8 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		return id;
 	}
 	
-	private Map<String, String> getFileFields(InputStream stream, FormDataContentDisposition fileDetail, ModelEnum type) {
+	private Map<String, String> getFileFields(InputStream stream, FormDataContentDisposition fileDetail,
+			String location, ModelEnum type) {
 		
 		String fullFileName = fileDetail.getFileName();
 		int idx = fullFileName.lastIndexOf(".");
@@ -76,9 +77,10 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 
 		Map<String, String> fields = new HashMap<String, String>();
 
-		fields.put(Audio.SIZE, fileSize);
-		fields.put(Audio.FILENAME, fileName);
-		fields.put(Audio.FILEEXTENSION, fileExtension);
+		fields.put(Media.SIZE, fileSize);
+		fields.put(Media.FILENAME, fileName);
+		fields.put(Media.FILEEXTENSION, fileExtension);
+		fields.put(Media.LOCATION, location);
 		//TODO: SACAR do STREAM A INFORMAÇÃO AQUI A BAIXO
 		if (type == ModelEnum.audio) {
 			fields.put(Audio.BITRATE, Const.getAudioDegaultBitrate());
@@ -106,7 +108,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		///// OLD /////
 
 		// Get data from file
-		Map<String, String> fields = getFileFields(stream, fileDetail, type);
+		Map<String, String> fields = getFileFields(stream, fileDetail, location, type);
 		
 		//Upload File
 		FileInterface fileModel = getAppFileInterface(appId);
@@ -125,7 +127,6 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		}
 		if (location != null){
 			String[] splitted = location.split(":");
-			Geolocation geo = Geolocation.getInstance();
 			geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), type, appId, id);
 		}
 
@@ -141,8 +142,9 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	
 	// *** DELETE *** //
 	
-	public boolean deleteMedia(String appId, ModelEnum type, String id, String location) {
+	public boolean deleteMedia(String appId, ModelEnum type, String id) {
 		String extension = mediaModel.getMediaField(appId, type, id, Media.FILEEXTENSION);
+		String location = mediaModel.getMediaField(appId, type, id, Media.LOCATION);
 		FileInterface fileModel = getAppFileInterface(appId);
 		Boolean res = false;
 		try{
@@ -155,7 +157,6 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 				
 		if (location != null){
 			String[] splitted = location.split(":");
-			Geolocation geo = Geolocation.getInstance();
 			geo.deleteObjectFromGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), type, appId, id);
 		}
 		
@@ -164,32 +165,48 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 
 
 	// *** GET LIST *** //
+
+	protected List<String> contains(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
 	
-	public ArrayList<String> getAllMediaIds(String appId, ModelEnum type, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
-		return mediaModel.getAllMediaIds(appId, type, pageNumber, pageSize, orderBy, orderType);
+	protected List<String> notContains(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> equals(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> diferent(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> greater(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> greaterOrEqual(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> lesser(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
+	}
+	
+	protected List<String> lesserOrEqual(String appId, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		return null;
 	}
 
-	//XPTO:
-	public ArrayList<String> getAllAudioIdsInRadius(String appId, double latitude, double longitude, double radius) {
-		try {
-			return docModel.getAllAudioIdsInRadius(appId, latitude, longitude, radius);
-		} catch (Exception e) {
-			Log.error("", this, "getAllAudioIdsInRadius", "An error ocorred.", e); 
-			return null;
-		}
-	}
-
-	//XPTO: Not Like this
-	public ArrayList<String> getAllImagesIdsInRadius(String appId, double latitude, double longitude, double radius,
-			Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
-		try{
-			return docModel.getAllImagesIdsInRadius(appId, latitude, longitude, radius,pageNumber,pageSize,orderBy,orderType);
-		} catch (Exception e) {
-			Log.error("", this, "getAllImagesIdsInRadius", "An error ocorred.", e); 
-			return null;
-		}
-	}
-
+	
 	// *** GET *** //
 	
 	public Media getMedia(String appId, ModelEnum type, String id) {
@@ -214,6 +231,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		media.setSize(Long.parseLong(fields.get(Media.SIZE)));
 		media.setDir(fields.get(Media.PATH));
 		media.setFileName(fields.get(Media.FILENAME));
+		media.setLocation(fields.get(Media.LOCATION));
 
 		return media;
 	}

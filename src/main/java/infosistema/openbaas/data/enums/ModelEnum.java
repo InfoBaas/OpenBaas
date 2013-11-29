@@ -6,5 +6,6 @@ public enum ModelEnum {
 	audio,
 	users,
 	storage,
+	media,
 	data
 }

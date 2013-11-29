@@ -3,9 +3,9 @@ package infosistema.openbaas.rest;
 import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.QueryParameters;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
@@ -15,10 +15,6 @@ import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -29,36 +25,30 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
-
-
-
+import org.codehaus.jettison.json.JSONObject;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
-
 
 public class VideoResource {
 
 	private String appId;
 
 	private MediaMiddleLayer mediaMid;
-	private SessionMiddleLayer sessionsMid;
+	private SessionMiddleLayer sessionMid;
 	
 	public VideoResource(String appId) {
 		this.appId = appId;
 		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
-		this.sessionsMid = MiddleLayerFactory.getSessionMiddleLayer();
+		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
 	}
 
 	// *** CREATE *** //
 
-	//TODO: LOCATION
 	/**
 	 * Uploads an video File.
 	 * 
@@ -74,17 +64,11 @@ public class VideoResource {
 			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @HeaderParam(value = Const.LOCATION) String location) {
 
 		Response response = null;
-		Cookie sessionToken=null;
-		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
-				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
-		}	
-		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken.getValue());
-		if(Utils.getAppIdFromToken(sessionToken.getValue(), userId)!=appId)
+		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
+			String userId = sessionMid.getUserIdUsingSessionToken(Utils.getSessionToken(hh));
 			String videoId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.video, location);
 			if (videoId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
@@ -107,7 +91,6 @@ public class VideoResource {
 	
 	// *** DELETE *** //
 	
-	//TODO: LOCATION
 	/**
 	 * Deletes the video (from filesystem and database).
 	 * 
@@ -120,14 +103,12 @@ public class VideoResource {
 	public Response deleteVideo(@PathParam("videoId") String videoId,
 			@HeaderParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
-		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken);
-		if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
-		if (sessionsMid.sessionTokenExists(sessionToken)) {
+		if (sessionMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "deleteVideo", "***********Deleting Video***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
-				Media media = mediaMid.getMedia(appId, ModelEnum.video,videoId);
-				mediaMid.deleteMedia(appId, ModelEnum.video, videoId,media.getLocation());
+				mediaMid.deleteMedia(appId, ModelEnum.video, videoId);
 				String metaKey = "apps."+appId+".media.video."+videoId;
 				Boolean meta = mediaMid.deleteMetadata(metaKey);
 				if(meta)
@@ -144,35 +125,37 @@ public class VideoResource {
 	
 	// *** GET LIST *** //
 	
-	//TODO: LOCATION
 	/**
-	 * Gets all Video Identifiers.
+	 * Gets all the users in the application.
 	 * 
 	 * @return
 	 */
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response findAllVideoIds(
-			@HeaderParam(value = Const.SESSION_TOKEN) String sessionToken,
-			@QueryParam(Const.PAGE_NUMBER) Integer pageNumber, @QueryParam(Const.PAGE_SIZE) Integer pageSize, 
-			@QueryParam(Const.ORDER_BY) String orderBy, @QueryParam(Const.ORDER_BY) String orderType ) {
-		if (pageNumber == null) pageNumber = Const.getPageNumber();
-		if (pageSize == null) 	pageSize = Const.getPageSize();
-		if (orderBy == null) 	orderBy = Const.getOrderBy();
-		if (orderType == null) 	orderType = Const.getOrderType();
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
+			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
+			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
+			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
+			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
+		QueryParameters qp = QueryParameters.getQueryParameters(appId, query, radiusStr, latitudeStr, longitudeStr, 
+				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.video);
 		Response response = null;
-		
-		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken);
-		if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+		String sessionToken = Utils.getSessionToken(hh);
+		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
-		if (sessionsMid.sessionTokenExists(sessionToken)) {
-			Log.debug("", this, "findAllvideos", "********Finding all Video**********");
-			ArrayList<String> videoIds = mediaMid.getAllMediaIds(appId, ModelEnum.video, pageNumber, pageSize,
-					orderBy, orderType);
-			ListResult res = new ListResult(videoIds,pageNumber);
-			response = Response.status(Status.OK).entity(res).build();
-		} else
-			response = Response.status(Status.FORBIDDEN).entity(new Error(sessionToken)).build();
+
+		int code = Utils.treatParametersAdmin(ui, hh);
+		if (code == 1) {
+			try {
+				ListResult res = mediaMid.find(qp);
+				response = Response.status(Status.OK).entity(res).build();
+			} catch (Exception e) {
+				response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
+			}
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
 		return response;
 	}
 
@@ -191,10 +174,9 @@ public class VideoResource {
 	public Response findById(@PathParam("videoId") String videoId,
 			@HeaderParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
-		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken);
-		if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
-		if (sessionsMid.sessionTokenExists(sessionToken)) {
+		if (sessionMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "findById", "********Finding Video Meta**********");
 			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
 				if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
@@ -228,11 +210,10 @@ public class VideoResource {
 	public Response downloadVideo(@PathParam("videoId") String videoId,
 			@HeaderParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
-		String userId = sessionsMid.getUserIdUsingSessionToken(sessionToken);
-		if(Utils.getAppIdFromToken(sessionToken, userId)!=appId)
+		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		byte[] sucess = null;
-		if (sessionsMid.sessionTokenExists(sessionToken)) {
+		if (sessionMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "updateUser", "*********Downloading Video**********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 				Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId));
