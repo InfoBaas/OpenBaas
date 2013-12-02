@@ -7,7 +7,7 @@ import infosistema.openbaas.data.QueryParameters;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Video;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
+import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.utils.Const;
@@ -43,8 +43,8 @@ public class VideoResource {
 	
 	public VideoResource(String appId) {
 		this.appId = appId;
-		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
-		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+		this.mediaMid = MediaMiddleLayer.getInstance();
+		this.sessionMid = SessionMiddleLayer.getInstance();
 	}
 
 	// *** CREATE *** //
@@ -73,8 +73,7 @@ public class VideoResource {
 			if (videoId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 			} else {
-				String metaKey = "apps."+appId+".media.video."+videoId;
-				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
+				Metadata meta = mediaMid.createMetadata(appId, null, videoId, userId, ModelEnum.video, location);
 				Result res = new Result(videoId, meta);	
 				response = Response.status(Status.OK).entity(res).build();
 			}
@@ -109,8 +108,7 @@ public class VideoResource {
 			Log.debug("", this, "deleteVideo", "***********Deleting Video***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 				mediaMid.deleteMedia(appId, ModelEnum.video, videoId);
-				String metaKey = "apps."+appId+".media.video."+videoId;
-				Boolean meta = mediaMid.deleteMetadata(metaKey);
+				Boolean meta = mediaMid.deleteMetadata(appId, null, videoId, ModelEnum.video);
 				if(meta)
 					response = Response.status(Status.OK).entity("").build();
 				else
@@ -131,6 +129,7 @@ public class VideoResource {
 	 * @return
 	 */
 	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
 			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
@@ -178,11 +177,10 @@ public class VideoResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "findById", "********Finding Video Meta**********");
-			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
+			if (AppsMiddleLayer.getInstance().appExists(appId)) {
 				if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 					Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId));
-					String metaKey = "apps."+appId+".media.video."+videoId;
-					Metadata meta = mediaMid.getMetadata(metaKey);
+					Metadata meta = mediaMid.getMetadata(appId, null, videoId, ModelEnum.video);
 					Result res = new Result(video, meta);
 					
 					response = Response.status(Status.OK).entity(res).build();

@@ -21,7 +21,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import infosistema.openbaas.middleLayer.AclMiddleLayer;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
+import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 
@@ -37,8 +37,8 @@ public class AclResource {
 
 	public AclResource(List<PathSegment> path) {
 		this.path = path;
-		aclMid = MiddleLayerFactory.getAclMiddleLayer();
-		appsMid = MiddleLayerFactory.getAppsMiddleLayer();
+		aclMid = AclMiddleLayer.getInstance();
+		appsMid = AppsMiddleLayer.getInstance();
 	}
 
 	// *** CREATE *** //
@@ -60,7 +60,7 @@ public class AclResource {
 				sessionToken = entry.getValue();
 		}
 		if (!(sessionToken == null))
-			return MiddleLayerFactory.getSessionMiddleLayer().getUserIdUsingSessionToken(sessionToken.getValue());
+			return SessionMiddleLayer.getInstance().getUserIdUsingSessionToken(sessionToken.getValue());
 		else {
 			return null;
 		}

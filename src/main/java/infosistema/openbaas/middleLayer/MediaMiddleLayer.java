@@ -3,7 +3,6 @@ package infosistema.openbaas.middleLayer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +15,7 @@ import com.amazonaws.services.identitymanagement.model.NoSuchEntityException;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 
 import infosistema.openbaas.data.enums.ModelEnum;
+import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.data.models.Audio;
 import infosistema.openbaas.data.models.Image;
 import infosistema.openbaas.data.models.Media;
@@ -166,45 +166,11 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 
 	// *** GET LIST *** //
 
-	protected List<String> contains(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
+	@Override
+	protected List<String> getOperation(OperatorEnum oper, String url, String appId, String path, String attribute, String value, ModelEnum type) throws Exception {
+		return mediaModel.getOperation(appId, attribute, value, type);
 	}
 	
-	protected List<String> notContains(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> equals(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> diferent(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> greater(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> greaterOrEqual(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> lesser(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> lesserOrEqual(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
 
 	
 	// *** GET *** //

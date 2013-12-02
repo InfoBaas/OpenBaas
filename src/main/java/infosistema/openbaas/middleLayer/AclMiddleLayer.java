@@ -37,7 +37,7 @@ public class AclMiddleLayer {
 	
 	private static AclMiddleLayer instance = null;
 
-	protected static AclMiddleLayer getInstance() {
+	public static AclMiddleLayer getInstance() {
 		if (instance == null) instance = new AclMiddleLayer();
 		return instance;
 	}

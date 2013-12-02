@@ -5,11 +5,11 @@ import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.QueryParameters;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -35,8 +35,8 @@ public class MediaResource {
 
 	public MediaResource(String appId) {
 		this.appId = appId;
-		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();;
-		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
+		this.sessionMid = SessionMiddleLayer.getInstance();
+		this.mediaMid = MediaMiddleLayer.getInstance();
 	}
 
 	// *** CREATE *** //
@@ -57,6 +57,7 @@ public class MediaResource {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
 			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,

@@ -8,7 +8,6 @@ import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.DocumentMiddleLayer;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.utils.Const;
@@ -48,10 +47,10 @@ public class UserDataResource {
 	private SessionMiddleLayer sessionMid;
 
 	public UserDataResource(UriInfo uriInfo, String appId, String userId) {
-		this.appsMid = MiddleLayerFactory.getAppsMiddleLayer();
-		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
-		this.docMid = MiddleLayerFactory.getDocumentMiddleLayer();
-		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+		this.appsMid = AppsMiddleLayer.getInstance();
+		this.usersMid = UsersMiddleLayer.getInstance();
+		this.docMid = DocumentMiddleLayer.getInstance();
+		this.sessionMid = SessionMiddleLayer.getInstance();
 		this.appId = appId;
 		this.uriInfo = uriInfo;
 	}
@@ -85,10 +84,11 @@ public class UserDataResource {
 			}
 			if (appsMid.appExists(appId) && usersMid.userExistsInApp(appId, userId)) {
 				if (docMid.insertDocumentInPath(appId, userId, null, data, location)) {
-					
-					String metaKey = "apps."+appId+".users."+userId;
-					Metadata meta = docMid.createMetadata(metaKey, userId, location, inputJsonObj);
-					
+					Metadata meta = null;
+					while (inputJsonObj.keys().hasNext()) { 
+						String key = inputJsonObj.keys().next().toString();
+						meta = docMid.createMetadata(appId, userId, key, userId, location, inputJsonObj);
+					}
 					Result res = new Result(inputJsonObj, meta);		
 					
 					response = Response.status(Status.CREATED).entity(res).build();
@@ -136,8 +136,7 @@ public class UserDataResource {
 			}
 			if (appsMid.appExists(appId)) {
 				if (docMid.updateDocumentInPath(appId, userId, path, data, location)){
-					String metaKey = "apps."+appId+".users."+userId+path;
-					Metadata meta = docMid.updateMetadata(metaKey, userId, location, inputJsonObj);
+					Metadata meta = docMid.updateMetadata(appId, userId, docMid.convertPath(path), userId, location, inputJsonObj);
 					Result res = new Result(inputJsonObj, meta);		
 					
 					response = Response.status(Status.CREATED).entity(res).build();
@@ -176,8 +175,7 @@ public class UserDataResource {
 		if (code == 1) {
 			if (docMid.existsDocumentInPath(appId, userId, path)) {
 				if (docMid.deleteDocumentInPath(appId, userId, path)){
-					String metaKey = "apps."+appId+".data."+path;
-					Boolean meta = docMid.deleteMetadata(metaKey);
+					Boolean meta = docMid.deleteMetadata(appId, userId, docMid.convertPath(path), ModelEnum.data);
 					if(meta)
 						response = Response.status(Status.OK).entity("").build();
 					else
@@ -205,30 +203,13 @@ public class UserDataResource {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
 			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
-		QueryParameters qp = QueryParameters.getQueryParameters(appId, query, radiusStr, latitudeStr, longitudeStr, 
-				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.data);
-		Response response = null;
-		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
-			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
-
-		int code = Utils.treatParametersAdmin(ui, hh);
-		if (code == 1) {
-			try {
-				ListResult res = usersMid.find(qp);
-				response = Response.status(Status.OK).entity(res).build();
-			} catch (Exception e) {
-				response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
-			}
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
-		return response;
+		return findDocument(null, ui, hh, query, radiusStr, latitudeStr, longitudeStr, pageNumberStr, pageSizeStr, orderByStr, orderTypeStr);
 	}
 
 	// *** GET *** //
@@ -241,8 +222,14 @@ public class UserDataResource {
 	 */
 	@GET
 	@Path("/{pathId:.+}")
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getElementInDocument(@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui, @Context HttpHeaders hh) {
+	public Response findDocument(@PathParam("pathId") List<PathSegment> path, 
+			@Context UriInfo ui, @Context HttpHeaders hh,
+			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
+			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
+			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
+			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -250,13 +237,23 @@ public class UserDataResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			if (docMid.existsDocumentInPath(appId, userId, path)) {
+			if ((latitudeStr != null && longitudeStr != null && radiusStr != null) || query != null) {
+				String url = docMid.getDocumentPath(userId, path);
+				QueryParameters qp = QueryParameters.getQueryParameters(appId, query, radiusStr, latitudeStr, longitudeStr, 
+						pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, url, ModelEnum.data);
+				try {
+					ListResult res = docMid.find(qp);
+					response = Response.status(Status.OK).entity(res).build();
+				} catch (Exception e) {
+					response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
+				}
+				return response;
+			} else if (docMid.existsDocumentInPath(appId, userId, path)) {
 				String data = docMid.getDocumentInPath(appId, userId, path);
 				if (data == null)
 					response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 				else{
-					String metaKey = "apps."+appId+".users."+userId+path;
-					Metadata meta = docMid.getMetadata(metaKey);
+					Metadata meta = docMid.getMetadata(appId, userId, docMid.convertPath(path), ModelEnum.data);
 					Result res = new Result(data, meta);
 					response = Response.status(Status.OK).entity(res).build();
 				}

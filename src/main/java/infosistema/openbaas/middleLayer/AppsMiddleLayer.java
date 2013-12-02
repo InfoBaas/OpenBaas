@@ -1,10 +1,7 @@
 package infosistema.openbaas.middleLayer;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.identitymanagement.model.EntityAlreadyExistsException;
@@ -26,7 +23,7 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	
 	private static AppsMiddleLayer instance = null;
 
-	protected static AppsMiddleLayer getInstance() {
+	public static AppsMiddleLayer getInstance() {
 		if (instance == null) instance = new AppsMiddleLayer();
 		return instance;
 	}
@@ -85,12 +82,6 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 		return null;
 	}
 
-	public void updateAppName(String appId, String newAppName) {
-		if (appModel.appExists(appId)) {
-			appModel.updateAppFields(appId, null, newAppName, null, null, null, null);
-		}
-	}
-
 
 	// *** DELETE *** //
 	
@@ -100,47 +91,6 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 
 
 	// *** GET LIST *** //
-
-	protected List<String> contains(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> notContains(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> equals(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> diferent(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> greater(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> greaterOrEqual(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> lesser(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> lesserOrEqual(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-
 
 	// *** GET *** //
 	
@@ -170,13 +120,9 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 		appModel.reviveApp(appId);
 	}
 
-	public ArrayList<String> getAllMediaIds(String appId, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
-		return mediaModel.getAllMediaIds(appId, null, pageNumber, pageSize, orderBy, orderType);
-	}
-	
 	public Boolean authenticateApp(String appId, String appKey) {
 		try {
-			AppsMiddleLayer appsMid = MiddleLayerFactory.getAppsMiddleLayer();
+			AppsMiddleLayer appsMid = AppsMiddleLayer.getInstance();
 			HashMap<String, String> fieldsAuth = appsMid.getAuthApp(appId);
 			byte[] salt = null;
 			byte[] hash = null;

@@ -9,10 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
-
-import javax.ws.rs.core.MultivaluedMap;
 
 public class SessionMiddleLayer extends MiddleLayerAbstract {
 
@@ -27,7 +24,7 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 	
 	private static SessionMiddleLayer instance = null;
 
-	protected static SessionMiddleLayer getInstance() {
+	public static SessionMiddleLayer getInstance() {
 		if (instance == null) instance = new SessionMiddleLayer();
 		return instance;
 	}
@@ -137,47 +134,6 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 
 	// *** GET LIST *** //
 
-	protected List<String> contains(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> notContains(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> equals(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> diferent(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> greater(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> greaterOrEqual(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> lesser(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> lesserOrEqual(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-
-	
 	// *** GET *** //
 	
 	public Map<String, String> getAdminFields(String OPENBAASADMIN)

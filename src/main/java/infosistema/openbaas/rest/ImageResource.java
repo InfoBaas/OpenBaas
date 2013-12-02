@@ -8,8 +8,8 @@ import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Image;
 import infosistema.openbaas.data.models.Media;
+import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
@@ -54,8 +54,8 @@ public class ImageResource {
 
 	public ImageResource(String appId) {
 		this.appId = appId;
-		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
-		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+		this.mediaMid = MediaMiddleLayer.getInstance();
+		this.sessionMid = SessionMiddleLayer.getInstance();
 	}
 
 	// *** CREATE *** //
@@ -81,8 +81,7 @@ public class ImageResource {
 			if (imageId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(new Error("")).build();
 			} else {
-				String metaKey = "apps."+appId+".media.images."+imageId;
-				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
+				Metadata meta = mediaMid.createMetadata(appId, null, imageId, userId, ModelEnum.image, location);
 				Result res = new Result(imageId, meta);
 				response = Response.status(Status.OK).entity(res).build();
 			}
@@ -113,12 +112,11 @@ public class ImageResource {
 		String sessionToken = Utils.getSessionToken(hh);
 		if (sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
-		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken)) {
+		if (SessionMiddleLayer.getInstance().sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "deleteImage", "***********Deleting Image***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.image, imageId)) {
 				this.mediaMid.deleteMedia(appId, ModelEnum.image, imageId);
-				String metaKey = "apps."+appId+".media.images."+imageId;
-				Boolean meta = mediaMid.deleteMetadata(metaKey);
+				Boolean meta = mediaMid.deleteMetadata(appId, null, imageId, ModelEnum.image);
 				if(meta)
 					response = Response.status(Status.OK).entity("").build();
 				else
@@ -140,6 +138,7 @@ public class ImageResource {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
 			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
@@ -186,12 +185,10 @@ public class ImageResource {
 		if (code == 1) {
 			Log.debug("", this, "getImageMetadata", "********Finding Image Meta**********");
 			Image temp = null;
-			if(MiddleLayerFactory.getAppsMiddleLayer().appExists(this.appId)){
+			if(AppsMiddleLayer.getInstance().appExists(this.appId)){
 				if(mediaMid.mediaExists(appId, ModelEnum.image, imageId)){
 					temp = (Image)(mediaMid.getMedia(appId, ModelEnum.image, imageId));
-					
-					String metaKey = "apps."+appId+".media.images."+imageId;
-					Metadata meta = mediaMid.getMetadata(metaKey);
+					Metadata meta = mediaMid.getMetadata(appId, null, imageId, ModelEnum.image);
 					Result res = new Result(temp, meta);
 					
 					response = Response.status(Status.OK).entity(res).build();

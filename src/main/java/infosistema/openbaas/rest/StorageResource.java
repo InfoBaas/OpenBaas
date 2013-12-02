@@ -6,7 +6,6 @@ import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.QueryParameters;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.utils.Const;
@@ -55,8 +54,8 @@ public class StorageResource {
 
 	public StorageResource(String appId) {
 		this.appId = appId;
-		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
-		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+		this.mediaMid = MediaMiddleLayer.getInstance();
+		this.sessionMid = SessionMiddleLayer.getInstance();
 	}
 
 	// *** CREATE *** //
@@ -87,8 +86,7 @@ public class StorageResource {
 			if (storageId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			} else {
-				String metaKey = "apps."+appId+".media.storage."+storageId;
-				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
+				Metadata meta = mediaMid.createMetadata(appId, null, storageId, userId, ModelEnum.storage, location);
 				Result res = new Result(storageId, meta);
 				response = Response.status(Status.OK).entity(res).build();
 			}
@@ -116,12 +114,10 @@ public class StorageResource {
 		Response response = null;
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
-		if (MiddleLayerFactory.getSessionMiddleLayer().sessionTokenExists(sessionToken)) {
+		if (SessionMiddleLayer.getInstance().sessionTokenExists(sessionToken)) {
 			if (mediaMid.mediaExists(appId, ModelEnum.storage, storageId)) {
 				this.mediaMid.deleteMedia(appId, ModelEnum.storage, storageId);
-				
-				String metaKey = "apps."+appId+".media.storage."+storageId;
-				Boolean meta = mediaMid.deleteMetadata(metaKey);
+				Boolean meta = mediaMid.deleteMetadata(appId, null, storageId, ModelEnum.storage);
 				if(meta)
 					response = Response.status(Status.OK).entity("").build();
 				else
@@ -143,6 +139,7 @@ public class StorageResource {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
 			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,

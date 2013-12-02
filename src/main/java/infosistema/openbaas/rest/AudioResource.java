@@ -7,10 +7,8 @@ import infosistema.openbaas.data.QueryParameters;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Audio;
-import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
@@ -51,8 +49,8 @@ public class AudioResource {
 
 	public AudioResource(String appId) {
 		this.appId = appId;
-		this.mediaMid = MiddleLayerFactory.getMediaMiddleLayer();
-		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+		this.mediaMid = MediaMiddleLayer.getInstance();
+		this.sessionMid = SessionMiddleLayer.getInstance();
 	}
 
 	
@@ -86,9 +84,7 @@ public class AudioResource {
 			if (audioId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 			} else {
-				
-				String metaKey = "apps."+appId+".media.audio."+audioId;
-				Metadata meta = mediaMid.createMetadata(metaKey, userId, location);
+				Metadata meta = mediaMid.createMetadata(appId, null, audioId, userId, ModelEnum.audio, location);
 				Result res = new Result(audioId, meta);
 				
 				response = Response.status(Status.OK).entity(res).build();
@@ -125,10 +121,7 @@ public class AudioResource {
 			Log.debug("", this, "deleteAudio", "***********Deleting Audio***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.audio, audioId)) {
 				this.mediaMid.deleteMedia(appId, ModelEnum.audio, audioId);
-				
-				String metaKey = "apps."+appId+".media.audio."+audioId;
-				
-				Boolean meta = mediaMid.deleteMetadata(metaKey);
+				Boolean meta = mediaMid.deleteMetadata(appId, null, audioId, ModelEnum.audio);
 				if(meta)
 					response = Response.status(Status.OK).entity("").build();
 				else
@@ -152,6 +145,7 @@ public class AudioResource {
 	 * @return
 	 */
 	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
 			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
@@ -204,9 +198,7 @@ public class AudioResource {
 			if (appsMid.appExists(this.appId)) {
 				if (mediaMid.mediaExists(this.appId, ModelEnum.audio, audioId)) {
 					temp = (Audio)(mediaMid.getMedia(appId, ModelEnum.audio, audioId));
-					
-					String metaKey = "apps."+appId+".media.audio."+audioId;
-					Metadata meta = mediaMid.getMetadata(metaKey);
+					Metadata meta = mediaMid.getMetadata(appId, null, audioId, ModelEnum.audio);
 					Result res = new Result(temp, meta);
 					
 					response = Response.status(Status.OK).entity(res).build();

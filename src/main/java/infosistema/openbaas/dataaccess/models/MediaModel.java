@@ -3,8 +3,8 @@ package infosistema.openbaas.dataaccess.models;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.utils.Const;
 
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,9 +54,17 @@ public class MediaModel {
 	}
 	
 	// *** UPDATE *** //
+
+	
 	// *** GET LIST *** //
 
+	public List<String> getOperation(String appId, String attribute, String value, ModelEnum type) {
+		//TODO IMPLEMENT
+		return null;
+	}
+
 	//XPTO: PAGINAÇÃO
+	/* Lixo apagar depois de consultar
  	public ArrayList<String> getAllMediaIds(String appId, ModelEnum type, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
 		Jedis jedis = pool.getResource();
 		ArrayList<String> mediaIds = new ArrayList<String>();
@@ -83,6 +91,7 @@ public class MediaModel {
 		}
 		return mediaIds;		
 	}
+	 */
 
 	// *** GET *** //
 

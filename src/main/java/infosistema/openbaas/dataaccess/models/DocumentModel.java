@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -162,7 +163,21 @@ public class DocumentModel {
 	}
 	
 	
+	// *** GET LIST *** //
+	
+	public List<String> getOperation(String appId, String url, String path, String attribute, String value) {
+		//TODO IMPLEMENT
+		// Obter todos os paths (que são os ids, que correspondem ao path que vem no pedido
+		// exemplo se o path == "cidade/restaurante" devolver:
+		// "data/cidade/restaurante", "useid1//cidade/restaurante", "userid32/cidade/restaurante"
+		// se path for null é para devolver o path composto só por userid:
+		// "userid1", "userid2", "userid6"
+		return null;
+	}
+	
+
 	// *** GET *** //
+
 	//XPTO: eu acho que isto devia devolver um jason, mas é preciso ver o que fazem as funções que chamam isto
 	public String getDocumentInPath(String appId, String userId, String path) {
 		String[] splitted = path.split("\\.");

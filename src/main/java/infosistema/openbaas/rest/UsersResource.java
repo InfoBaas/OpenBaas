@@ -7,7 +7,7 @@ import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.models.User;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
+import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.rest.AppResource.PATCH;
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import javax.servlet.http.Cookie;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -47,8 +48,8 @@ public class UsersResource {
 	UriInfo uriInfo;
 
 	public UsersResource(UriInfo uriInfo, String appId) {
-		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
-		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+		this.usersMid = UsersMiddleLayer.getInstance();
+		this.sessionMid = SessionMiddleLayer.getInstance();
 		this.appId = appId;
 		this.uriInfo = uriInfo;
 	}
@@ -134,8 +135,7 @@ public class UsersResource {
 					userUpdateFields = usersMid.updateUser(appId, userId, newUserName, newEmail, newUserFile, newBaseLocationOption, newBaseLocation, location);
 					if(userUpdateEmail && userUpdateFields){
 						sessionMid.refreshSession(sessionToken.getValue(), location, userAgent);
-						String metaKey = "apps."+appId+".users."+userId;
-						Metadata meta = usersMid.updateMetadata(metaKey, userId, location);
+						Metadata meta = usersMid.updateMetadata(appId, null, userId, userId, ModelEnum.users, location);
 						Result res = new Result(usersMid.getUserInApp(appId, userId), meta);		
 						return Response.status(Status.OK).entity(res).build();
 			}
@@ -192,6 +192,7 @@ public class UsersResource {
 	 * @return
 	 */
 	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
 			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
@@ -241,7 +242,7 @@ public class UsersResource {
 		if (code == 1) {
 			Log.debug("", this, "findById", "********Finding User info************");
 			User temp = null;
-			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
+			if (AppsMiddleLayer.getInstance().appExists(appId)) {
 				if (usersMid.identifierInUseByUserInApp(appId, userId)) {
 					temp = usersMid.getUserInApp(appId, userId);
 					Log.debug("", this, "findById", "userId: " + temp.getUserId()+ "email: " + temp.getEmail());

@@ -1,6 +1,5 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 
 import javax.ws.rs.GET;
@@ -21,7 +20,7 @@ public class UserConfirmationResource {
 	UriInfo uriInfo;
 
 	public UserConfirmationResource(UriInfo uriInfo, String appId, String userId) {
-		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
+		this.usersMid = UsersMiddleLayer.getInstance();
 		this.appId = appId;
 		this.uriInfo = uriInfo;
 		this.userId = userId;

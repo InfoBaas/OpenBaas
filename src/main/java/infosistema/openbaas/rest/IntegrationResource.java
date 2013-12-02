@@ -6,9 +6,9 @@ import java.util.Map.Entry;
 import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.utils.Const;
@@ -48,10 +48,10 @@ public class IntegrationResource {
 	UriInfo uriInfo;
 	
 	public IntegrationResource(String appId) {
-		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
+		this.usersMid = UsersMiddleLayer.getInstance();
 		this.appId = appId;
-		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
-		this.appsMid = MiddleLayerFactory.getAppsMiddleLayer();
+		this.sessionMid = SessionMiddleLayer.getInstance();
+		this.appsMid = AppsMiddleLayer.getInstance();
 	}
 	
 
@@ -124,9 +124,7 @@ public class IntegrationResource {
 		if (userId==null) {
 			if (uriInfo == null) uriInfo=ui;
 			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
-			
-			String metaKey = "apps"+appId+"users"+userId;
-			Metadata meta = usersMid.createMetadata(metaKey, userId, location);
+			Metadata meta = usersMid.createMetadata(appId, userId, null, userId, ModelEnum.users, location);
 			Result res = new Result(outUser, meta);
 			
 			response = Response.status(Status.CREATED).entity(res).build();
@@ -139,8 +137,7 @@ public class IntegrationResource {
 				outUser.setReturnToken(sessionToken);
 				outUser.setUserEmail(email);
 				outUser.setUserName(userName);
-				String metaKey = "apps"+appId+"users"+userId;
-				Metadata meta = usersMid.createMetadata(metaKey, userId, location);
+				Metadata meta = usersMid.createMetadata(appId, userId, null, userId, ModelEnum.users, location);
 				Result res = new Result(outUser, meta);
 				response = Response.status(Status.OK).entity(res).build();
 			}
@@ -228,8 +225,7 @@ public class IntegrationResource {
 		if (userId==null) {
 			if (uriInfo == null) uriInfo=ui;
 			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
-			String metaKey = "apps"+appId+"users"+userId;
-			Metadata meta = usersMid.createMetadata(metaKey, userId, location);
+			Metadata meta = usersMid.createMetadata(appId, userId, null, userId, ModelEnum.users, location);
 			Result res = new Result(outUser, meta);
 			response = Response.status(Status.CREATED).entity(res).build();
 		} else {
@@ -241,8 +237,7 @@ public class IntegrationResource {
 				outUser.setReturnToken(sessionToken);
 				outUser.setUserEmail(email);
 				outUser.setUserName(userName);
-				String metaKey = "apps"+appId+"users"+userId;
-				Metadata meta = usersMid.createMetadata(metaKey, userId, location);
+				Metadata meta = usersMid.createMetadata(appId, userId, null, userId, ModelEnum.users, location);
 				Result res = new Result(outUser, meta);
 				response = Response.status(Status.OK).entity(res).build();
 			}

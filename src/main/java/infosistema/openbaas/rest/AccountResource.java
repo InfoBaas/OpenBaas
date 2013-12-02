@@ -1,12 +1,12 @@
 package infosistema.openbaas.rest;
 
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
@@ -53,10 +53,10 @@ public class AccountResource {
 
 
 	public AccountResource(String appId) {
-		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
+		this.usersMid = UsersMiddleLayer.getInstance();
 		this.appId = appId;
-		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
-		this.appsMid = MiddleLayerFactory.getAppsMiddleLayer();
+		this.sessionMid = SessionMiddleLayer.getInstance();
+		this.appsMid = AppsMiddleLayer.getInstance();
 	}
 
 	// *** CREATE *** //
@@ -113,15 +113,14 @@ public class AccountResource {
 		if (userName == null) {
 			userName = email;
 		}
-		if(!MiddleLayerFactory.getAppsMiddleLayer().appExists(appId))
+		if(!AppsMiddleLayer.getInstance().appExists(appId))
 			return Response.status(Status.NOT_FOUND).entity("{\"App\": "+appId+"}").build();
 		if (readOk) {
 			if (!usersMid.userExistsInApp(appId, userId, email)) {
 				if (uriInfo == null) 
 					uriInfo=ui;
 					User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile,baseLocationOption, baseLocation);
-				String metaKey = "apps."+appId+".users."+outUser.getUserId();
-				Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
+				Metadata meta = usersMid.createMetadata(appId, outUser.getUserId(), null, outUser.getUserId(), ModelEnum.users, location);
 				Result res = new Result(outUser, meta);
 				response = Response.status(Status.CREATED).entity(res).build();
 			} else {
@@ -200,8 +199,7 @@ public class AccountResource {
 						outUser.setUserEmail(email);
 						outUser.setUserName(outUser.getUserName());
 						outUser.setUserFile(outUser.getUserFile());
-						String metaKey = "apps."+appId+".users."+outUser.getUserId();
-						Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
+						Metadata meta = usersMid.createMetadata(appId, outUser.getUserId(), null, outUser.getUserId(), ModelEnum.users, location);
 						Result res = new Result(outUser, meta);
 						response = Response.status(Status.OK).entity(res).build();
 					}
@@ -221,8 +219,7 @@ public class AccountResource {
 						outUser.setUserEmail(email);
 						outUser.setUserName(outUser.getUserName());
 						outUser.setUserFile(outUser.getUserFile());
-						String metaKey = "apps."+appId+".users."+outUser.getUserId();
-						Metadata meta = usersMid.createMetadata(metaKey, outUser.getUserId(), location);
+						Metadata meta = usersMid.createMetadata(appId, outUser.getUserId(), null, outUser.getUserId(), ModelEnum.users, location);
 						Result res = new Result(outUser, meta);
 						response = Response.status(Status.OK).entity(res).build();
 					}
@@ -249,8 +246,7 @@ public class AccountResource {
 			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (location != null) {
-				String metaKey = "apps."+appId+".users."+userId;
-				Metadata meta = usersMid.updateMetadata(metaKey, userId, location);
+				Metadata meta = usersMid.updateMetadata(appId, userId, null, userId, ModelEnum.users, location);
 				Result res = new Result("Refresh OK", meta);
 				sessionMid.refreshSession(sessionToken, location, userAgent);					
 				response = Response.status(Status.OK).entity(res).build();
@@ -288,8 +284,7 @@ public class AccountResource {
 						return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 					//deletes the sessions user with the token = sessionToken
 					if (sessionMid.deleteUserSession(sessionToken, userId)){
-						String metaKey = "apps"+appId+"users"+userId;
-						Metadata meta = usersMid.updateMetadata(metaKey, userId, null);
+						Metadata meta = usersMid.updateMetadata(appId, userId, null, userId, ModelEnum.users, null);
 						Result res = new Result("Signout OK", meta);
 						response = Response.status(Status.OK).entity(res).build();
 					}
@@ -303,8 +298,7 @@ public class AccountResource {
 					Log.debug("", this, "deleteSession", "********DELETING ALL SESSIONS FOR THIS USER");
 					boolean sucess = sessionMid.deleteAllUserSessions(userId);
 					if (sucess){
-						String metaKey = "apps."+appId+".users."+userId;
-						Metadata meta = usersMid.updateMetadata(metaKey, userId, null);
+						Metadata meta = usersMid.updateMetadata(appId, userId, null, userId, ModelEnum.users, null);
 						Result res = new Result("Signout OK", meta);
 						response = Response.status(Status.OK).entity(res).build();
 					}
@@ -340,8 +334,7 @@ public class AccountResource {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
-			String metaKey = "apps."+appId+".users."+userId;
-			Metadata meta = usersMid.getMetadata(metaKey);
+			Metadata meta = usersMid.getMetadata(appId, userId, null, ModelEnum.users);
 			Result res = new Result("OK", meta);
 			response = Response.status(Status.OK).entity(res).build();
 		} else
@@ -365,8 +358,7 @@ public class AccountResource {
 			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			User outUser = usersMid.getUserInApp(appId, userId);
-			String metaKey = "apps."+appId+".users."+userId;
-			Metadata meta = usersMid.getMetadata(metaKey);
+			Metadata meta = usersMid.getMetadata(appId, userId, null, ModelEnum.users);
 			Result res = new Result(outUser, meta);
 			response = Response.status(Status.OK).entity(res).build();
 		} else

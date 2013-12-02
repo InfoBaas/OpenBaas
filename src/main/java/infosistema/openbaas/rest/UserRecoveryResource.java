@@ -1,6 +1,5 @@
 package infosistema.openbaas.rest;
 
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
@@ -30,7 +29,7 @@ public class UserRecoveryResource {
 	UriInfo uriInfo;
 	
 	public UserRecoveryResource(UriInfo uriInfo, String appId, String userId) {
-		this.usersMid = MiddleLayerFactory.getUsersMiddleLayer();
+		this.usersMid = UsersMiddleLayer.getInstance();
 		this.appId = appId;
 		this.uriInfo = uriInfo;
 		this.userId = userId;

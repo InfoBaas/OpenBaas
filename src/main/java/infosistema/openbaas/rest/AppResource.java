@@ -1,13 +1,10 @@
 package infosistema.openbaas.rest;
 
 import infosistema.openbaas.data.Error;
-import infosistema.openbaas.data.ListResult;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
-import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
@@ -15,10 +12,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -27,7 +20,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -46,7 +38,7 @@ public class AppResource {
 	private static final int IDLENGTH = 3;
 
 	public AppResource() {
-		appsMid = MiddleLayerFactory.getAppsMiddleLayer();
+		appsMid = AppsMiddleLayer.getInstance();
 	}
 
 	@Context
@@ -105,12 +97,7 @@ public class AppResource {
 			}
 			if (created) {
 				temp = this.appsMid.getApp(appId);
-				//boolean awsOkay = this.appsMid.createAppAWS(appId);
-				/*if (awsOkay) {
-					response = Response.status(Status.CREATED).entity(temp).build();
-				}*/
-				String metaKey = "apps."+appId;
-				Metadata meta = appsMid.createMetadata(metaKey, "admin", null);
+				Metadata meta = appsMid.createMetadata(appId, null, null, "admin", null, null);
 				Result res = new Result(temp, meta);
 				response = Response.status(Status.CREATED).entity(res).build();
 			} else {
@@ -185,8 +172,7 @@ public class AppResource {
 			
 			if (this.appsMid.appExists(appId)) {
 				temp = this.appsMid.updateAllAppFields(appId, newAlive, newAppName,newConfirmUsersEmail,newAWS,newFTP,newFileSystem);
-				String metaKey = "apps."+appId;
-				Metadata meta = appsMid.updateMetadata(metaKey, "admin", null);
+				Metadata meta = appsMid.updateMetadata(appId, null, null, "admin", null, null);
 				Result res = new Result(temp, meta);
 				response = Response.status(Status.OK).entity(res).build();
 			} else {
@@ -219,8 +205,7 @@ public class AppResource {
 			Log.debug("", this, "deleteApp", "*Deleting App (setting as inactive)*");
 			if (this.appsMid.removeApp(appId)) {
 				Log.debug("", this, "deleteApp", "******Deletion OK*******");
-				String metaKey = "apps."+appId;
-				Boolean meta = appsMid.deleteMetadata(metaKey);
+				Boolean meta = appsMid.deleteMetadata(appId, null, null, null);
 				if(meta)
 					response = Response.status(Status.OK).entity("").build();
 				else
@@ -302,8 +287,7 @@ public class AppResource {
 			if (temp == null)
 				return Response.status(Status.NOT_FOUND).entity(new Error("App not exist")).build();
 			
-			String metaKey = "apps."+appId;
-			Metadata meta = appsMid.updateMetadata(metaKey, "admin", null);
+			Metadata meta = appsMid.updateMetadata(appId, null, null, "admin", null, null);
 			Result res = new Result(temp, meta);
 			response = Response.status(Status.OK).entity(res).build();
 		} else if(code == -2){

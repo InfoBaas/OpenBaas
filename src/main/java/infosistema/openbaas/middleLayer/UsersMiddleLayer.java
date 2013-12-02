@@ -1,7 +1,7 @@
 package infosistema.openbaas.middleLayer;
 
-import infosistema.openbaas.data.QueryParameters;
 import infosistema.openbaas.data.enums.ModelEnum;
+import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.dataaccess.email.Email;
 import infosistema.openbaas.dataaccess.files.FileInterface;
@@ -14,6 +14,7 @@ import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,7 +34,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 
 	private static UsersMiddleLayer instance = null;
 
-	protected static UsersMiddleLayer getInstance() {
+	public static UsersMiddleLayer getInstance() {
 		if (instance == null) instance = new UsersMiddleLayer();
 		return instance;
 	}
@@ -83,7 +84,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 				location = baseLocation;
 		}
 		if (!getConfirmUsersEmailOption(appId)) {
-			SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+			SessionMiddleLayer sessionMid = SessionMiddleLayer.getInstance();
 			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt, hash, userFile, null, null, baseLocationOption, baseLocation, location);
 			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, password);
@@ -133,7 +134,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			Log.error("", this, "createSocialUserAndLogin", "Invalid Key.", e); 
 		}
 
-		SessionMiddleLayer sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+		SessionMiddleLayer sessionMid = SessionMiddleLayer.getInstance();
 		createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash, null, null, null, false,null,null);
 		String sessionToken = Utils.getRandomString(Const.getIdLength());
 		boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
@@ -256,44 +257,15 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 
 	// *** GET LIST *** //
 
-	protected List<String> contains(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> notContains(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> equals(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> diferent(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> greater(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> greaterOrEqual(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> lesser(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
-	}
-	
-	protected List<String> lesserOrEqual(String appId, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		return null;
+	@Override
+	protected List<String> getOperation(OperatorEnum oper, String appId, String url, String path, String attribute, String value, ModelEnum type) throws Exception {
+		if (path != null) {
+			return docModel.getOperation(appId, null, path, attribute, value);
+		} else if (attribute != null) {
+			return mediaModel.getOperation(appId, attribute, value, type);
+		} else {
+			throw new Exception("Error in query.");
+		}
 	}
 
 	
@@ -334,6 +306,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 
 	// *** EXISTS *** //
 
+	// *** METADATA *** //
 	
 	// *** OTHERS *** //
 	

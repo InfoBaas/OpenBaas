@@ -6,8 +6,8 @@ import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.QueryParameters;
 import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
+import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.DocumentMiddleLayer;
-import infosistema.openbaas.middleLayer.MiddleLayerFactory;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
@@ -43,8 +43,8 @@ public class AppDataResource {
 	UriInfo uriInfo;
 
 	public AppDataResource(@Context UriInfo uriInfo, String appId) {
-		this.docMid = MiddleLayerFactory.getDocumentMiddleLayer();
-		this.sessionMid = MiddleLayerFactory.getSessionMiddleLayer();
+		this.docMid = DocumentMiddleLayer.getInstance();
+		this.sessionMid = SessionMiddleLayer.getInstance();
 		this.appId = appId;
 		this.uriInfo = uriInfo;
 	}
@@ -71,11 +71,13 @@ public class AppDataResource {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 			if (sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
-			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
+			if (AppsMiddleLayer.getInstance().appExists(appId)) {
 				if (docMid.insertDocumentInPath(appId, null, null, inputJsonObj, location)) {
-					String metaKey = "apps."+appId+".data";
-					
-					Metadata meta = docMid.createMetadata(metaKey, userId, location, inputJsonObj);
+					Metadata meta = null;
+					while (inputJsonObj.keys().hasNext()) { 
+						String key = inputJsonObj.keys().next().toString();
+						meta = docMid.createMetadata(appId, null, key, userId, location, inputJsonObj);
+					}
 					Result res = new Result(inputJsonObj, meta);					
 					response = Response.status(Status.OK).entity(res).build();
 				} else {
@@ -105,7 +107,7 @@ public class AppDataResource {
 	@Path("/{pathId:.+}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createOrReplaceDocument(JSONObject inputJsonObj,@PathParam("pathId") List<PathSegment> path, 
+	public Response createOrReplaceDocument(JSONObject inputJsonObj, @PathParam("pathId") List<PathSegment> path, 
 			@Context UriInfo ui,@Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION)String location) {
 		Response response = null;
 		int code = Utils.treatParameters(ui, hh);
@@ -114,11 +116,9 @@ public class AppDataResource {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 			if (sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
-			if (MiddleLayerFactory.getAppsMiddleLayer().appExists(appId)) {
+			if (AppsMiddleLayer.getInstance().appExists(appId)) {
 				if (docMid.insertDocumentInPath(appId, null, path, inputJsonObj, location)){
-					String metaKey = "apps."+appId+".data."+path;
-					
-					Metadata meta = docMid.createMetadata(metaKey, userId, location, inputJsonObj);
+					Metadata meta = docMid.createMetadata(appId, null, docMid.convertPath(path), userId, location, inputJsonObj);
 					Result res = new Result(inputJsonObj, meta);
 					response = Response.status(Status.CREATED).entity(res).build();
 				}
@@ -156,9 +156,7 @@ public class AppDataResource {
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (docMid.existsDocumentInPath(appId, null, path)) {
 				if (docMid.updateDocumentInPath(appId, null, path, inputJson, location)){
-					
-					String metaKey = "apps."+appId+".data."+path;
-					Metadata meta = docMid.updateMetadata(metaKey, userId, location, inputJson);
+					Metadata meta = docMid.updateMetadata(appId, null, docMid.convertPath(path), userId, location, inputJson);
 					Result res = new Result(inputJson, meta);
 					response = Response.status(Status.OK).entity(res).build();
 				}
@@ -185,8 +183,7 @@ public class AppDataResource {
 	 */
 	@DELETE
 	@Path("/{pathId:.+}")
-	public Response deleteDataInElement(
-			@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
+	public Response deleteDataInElement(@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
 			@Context HttpHeaders hh) {
 		Response response = null;
 		
@@ -196,8 +193,7 @@ public class AppDataResource {
 		if (code == 1) {
 			if (docMid.existsDocumentInPath(appId, null, path)) {
 				if (docMid.deleteDocumentInPath(appId, null, path)){
-					String metaKey = "apps."+appId+".data."+path;
-					Boolean meta = docMid.deleteMetadata(metaKey);
+					Boolean meta = docMid.deleteMetadata(appId, null, docMid.convertPath(path), ModelEnum.data);
 					if(meta)
 						response = Response.status(Status.OK).entity("").build();
 					else
@@ -224,36 +220,16 @@ public class AppDataResource {
 	 * @return
 	 */
 	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
 			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
-		QueryParameters qp = QueryParameters.getQueryParameters(appId, query, radiusStr, latitudeStr, longitudeStr, 
-				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.data);
-		Response response = null;
-		String sessionToken = Utils.getSessionToken(hh);
-		if (!sessionMid.checkAppForToken(sessionToken, appId))
-			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
-
-		int code = Utils.treatParametersAdmin(ui, hh);
-		if (code == 1) {
-			try {
-				ListResult res = docMid.find(qp);
-				response = Response.status(Status.OK).entity(res).build();
-			} catch (Exception e) {
-				response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
-			}
-		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
-		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
-		return response;
+		return findDocument(null, ui, hh, query, radiusStr, latitudeStr, longitudeStr, pageNumberStr, pageSizeStr, orderByStr, orderTypeStr);
 	}
 
-	
-	// *** GET *** //
 	
 	/**
 	 * Retrieves the data contained in a key.
@@ -263,29 +239,41 @@ public class AppDataResource {
 	 */
 	@GET
 	@Path("/{pathId:.+}")
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getElementInDocument( @PathParam("pathId") List<PathSegment> path, @Context UriInfo ui, @Context HttpHeaders hh,
-			@QueryParam(Const.LAT) String latitude, @QueryParam(Const.LONG) String longitude, @QueryParam(Const.RADIUS) String radius) {
+	public Response findDocument(@PathParam("pathId") List<PathSegment> path, 
+			@Context UriInfo ui, @Context HttpHeaders hh,
+			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
+			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
+			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
+			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
 		Response response = null;
 		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			if (latitude != null && longitude != null && radius != null) {
-			} else {
-				if (docMid.existsDocumentInPath(appId, null, path)) {
-					String data = docMid.getDocumentInPath(appId, null, path);
-					if (data == null)
-						response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
-					else{
-						String metaKey = "apps."+appId+".data."+path;
-						Metadata meta = docMid.getMetadata(metaKey);
-						Result res = new Result(data, meta);
-						response = Response.status(Status.OK).entity(res).build();
-					}
-				} else {
-					response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
+			if ((latitudeStr != null && longitudeStr != null && radiusStr != null) || query != null) {
+				String url = docMid.getDocumentPath(null, path);
+				QueryParameters qp = QueryParameters.getQueryParameters(appId, query, radiusStr, latitudeStr, longitudeStr, 
+						pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, url, ModelEnum.data);
+				try {
+					ListResult res = docMid.find(qp);
+					response = Response.status(Status.OK).entity(res).build();
+				} catch (Exception e) {
+					response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
 				}
+				return response;
+			} else if (docMid.existsDocumentInPath(appId, null, path)) {
+				String data = docMid.getDocumentInPath(appId, null, path);
+				if (data == null)
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
+				else{
+					Metadata meta = docMid.getMetadata(appId, null, docMid.convertPath(path), ModelEnum.data);
+					Result res = new Result(data, meta);
+					response = Response.status(Status.OK).entity(res).build();
+				}
+			} else {
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
 			
 		} else if (code == -2) {
@@ -296,6 +284,8 @@ public class AppDataResource {
 	}
 
 
+	// *** GET *** //
+	
 	// *** OTHERS *** //
 	
 	// *** RESOURCES *** //

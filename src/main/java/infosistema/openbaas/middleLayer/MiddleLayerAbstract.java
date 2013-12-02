@@ -21,6 +21,7 @@ import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.QueryParameters;
 import infosistema.openbaas.data.enums.FileMode;
 import infosistema.openbaas.data.enums.ModelEnum;
+import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.dataaccess.files.AwsModel;
 import infosistema.openbaas.dataaccess.files.FileInterface;
 import infosistema.openbaas.dataaccess.files.FileSystemModel;
@@ -72,8 +73,7 @@ public abstract class MiddleLayerAbstract {
 	// *** GET LIST *** //
 
 	public ListResult find(QueryParameters qp) throws Exception {
-		//TODO: colocar a query em sessão???
-		List<String> list1 = getAllSearchResults(qp.getAppId(), qp.getQuery(), qp.getOrderType(), qp.getType());
+		List<String> list1 = getAllSearchResults(qp.getAppId(), qp.getUrl(), qp.getQuery(), qp.getOrderType(), qp.getType());
 		List<String> list2 = new ArrayList<String>();
 		if (qp.getLatitude() != null && qp.getLongitude() != null && qp.getRadius()!= null)
 			geo.getObjectsInDistance(qp.getLatitude(), qp.getLongitude(), qp.getRadius(), qp.getAppId(), qp.getType());
@@ -82,35 +82,30 @@ public abstract class MiddleLayerAbstract {
 				qp.getPageSize(), qp.getType());
 	}
 
-	private List<String> getAllSearchResults(String appId, JSONObject query, String orderType, ModelEnum type) throws Exception {
-		String oper = query.getString(QueryParameters.OPER);
+	private List<String> getAllSearchResults(String appId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
+		OperatorEnum oper = OperatorEnum.valueOf(query.getString(OperatorEnum.oper.toString())); 
 		if (oper == null)
 			throw new Exception("Error in query."); 
-		else if (oper.equals(QueryParameters.OPER_AND)) {
-			List<String> listOper1 = getAllSearchResults(appId, (JSONObject)(query.get(QueryParameters.OP1)), orderType, type);
-			List<String> listOper2 = getAllSearchResults(appId, (JSONObject)(query.get(QueryParameters.OP2)), orderType, type);
+		else if (oper.equals(OperatorEnum.and)) {
+			List<String> listOper1 = getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType, type);
+			List<String> listOper2 = getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op2.toString())), orderType, type);
 			return and(listOper1, listOper2);
-		} else if (oper.equals(QueryParameters.OPER_OR)) {
-			List<String> listOper1 = getAllSearchResults(appId, (JSONObject)(query.get(QueryParameters.OP1)), orderType, type);
-			List<String> listOper2 = getAllSearchResults(appId, (JSONObject)(query.get(QueryParameters.OP2)), orderType, type);
+		} else if (oper.equals(OperatorEnum.or)) {
+			List<String> listOper1 = getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType, type);
+			List<String> listOper2 = getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op2.toString())), orderType, type);
 			return or(listOper1, listOper2);
-		} else if (oper.equals(QueryParameters.OPER_NOT)) {
-			return not(appId, query, orderType, type);
+		} else if (oper.equals(OperatorEnum.not)) {
+			return not(appId, url, query, orderType, type);
 		} else {
-			String path = null;
-			try { path = query.getString(QueryParameters.ATTR_PATH); } catch (Exception e) {}
-			String attribute = null; 
-			try { attribute = query.getString(QueryParameters.ATTR_ATTRIBUTE); } catch (Exception e) {}
 			String value = null; 
 			try { value = query.getString(QueryParameters.ATTR_VALUE); } catch (Exception e) {}
-			if (oper.equals(QueryParameters.OPER_CONTAINS)) {
-				return contains(appId, path, attribute, value);
-			} else if (oper.equals(QueryParameters.OPER_EQUALS)) {
-				return equals(appId, path, attribute, value);
-			} else if (oper.equals(QueryParameters.OPER_GREATER)) {
-				return greater(appId, path, attribute, value);
-			} else if (oper.equals(QueryParameters.OPER_LESSER)) {
-				return lesser(appId, path, attribute, value);
+			String attribute = null;
+			try { attribute = query.getString(QueryParameters.ATTR_ATTRIBUTE); } catch (Exception e) {}
+			String path = null;
+			try { path = query.getString(QueryParameters.ATTR_PATH); } catch (Exception e) {}
+			if (oper.equals(OperatorEnum.contains) || oper.equals(OperatorEnum.equals) ||
+					oper.equals(OperatorEnum.greater) || oper.equals(OperatorEnum.lesser)) {
+				return getOperation(oper, appId, url, path, attribute, value, type);
 			} else {
 				throw new Exception("Error in query.");
 				
@@ -139,27 +134,27 @@ public abstract class MiddleLayerAbstract {
 		return lDest;
 	}
 	
-	protected List<String> not(String appId, JSONObject query, String orderType, ModelEnum type) throws Exception {
-		String oper = query.getString(QueryParameters.OPER);
+	protected List<String> not(String appId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
+		OperatorEnum oper = OperatorEnum.valueOf(query.getString(OperatorEnum.oper.toString())); 
 		JSONObject newQuery = new JSONObject(); 
 		if (oper == null)
 			throw new Exception("Error in query."); 
-		else if (oper.equals(QueryParameters.OPER_AND)) {
-			newQuery.append(QueryParameters.OPER, QueryParameters.OPER_NOT);
-			newQuery.append(QueryParameters.OP1, query.get(QueryParameters.OP1));
-			List<String> listOper1 = getAllSearchResults(appId, newQuery, orderType, type);
-			newQuery.put(QueryParameters.OP1, query.get(QueryParameters.OP2));
-			List<String> listOper2 = getAllSearchResults(appId, newQuery, orderType, type);
+		else if (oper.equals(OperatorEnum.and)) {
+			newQuery.append(OperatorEnum.oper.toString(), OperatorEnum.not);
+			newQuery.append(OperatorEnum.op1.toString(), query.get(OperatorEnum.op1.toString()));
+			List<String> listOper1 = getAllSearchResults(appId, url, newQuery, orderType, type);
+			newQuery.put(OperatorEnum.op1.toString(), query.get(OperatorEnum.op2.toString()));
+			List<String> listOper2 = getAllSearchResults(appId, url, newQuery, orderType, type);
 			return or(listOper1, listOper2);
-		} else if (oper.equals(QueryParameters.OPER_OR)) {
-			newQuery.append(QueryParameters.OPER, QueryParameters.OPER_NOT);
-			newQuery.append(QueryParameters.OP1, query.get(QueryParameters.OP1));
-			List<String> listOper1 = getAllSearchResults(appId, newQuery, orderType, type);
-			newQuery.put(QueryParameters.OP1, query.get(QueryParameters.OP2));
-			List<String> listOper2 = getAllSearchResults(appId, newQuery, orderType, type);
+		} else if (oper.equals(OperatorEnum.or)) {
+			newQuery.append(OperatorEnum.oper.toString(), OperatorEnum.not);
+			newQuery.append(OperatorEnum.op1.toString(), query.get(OperatorEnum.op1.toString()));
+			List<String> listOper1 = getAllSearchResults(appId, url, newQuery, orderType, type);
+			newQuery.put(OperatorEnum.op1.toString(), query.get(OperatorEnum.op2.toString()));
+			List<String> listOper2 = getAllSearchResults(appId, url, newQuery, orderType, type);
 			return and(listOper1, listOper2);
-		} else if (oper.equals(QueryParameters.OPER_NOT)) {
-			return getAllSearchResults(appId, (JSONObject)(query.get(QueryParameters.OP1)), orderType, type);
+		} else if (oper.equals(OperatorEnum.not)) {
+			return getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType, type);
 		} else {
 			String path = null;
 			try { path = query.getString(QueryParameters.ATTR_PATH); } catch (Exception e) {}
@@ -167,37 +162,25 @@ public abstract class MiddleLayerAbstract {
 			try { attribute = query.getString(QueryParameters.ATTR_ATTRIBUTE); } catch (Exception e) {}
 			String value = null; 
 			try { value = query.getString(QueryParameters.ATTR_VALUE); } catch (Exception e) {}
-			if (oper.equals(QueryParameters.OPER_CONTAINS)) {
-				return notContains(appId, path, attribute, value);
-			} else if (oper.equals(QueryParameters.OPER_EQUALS)) {
-				return diferent(appId, path, attribute, value);
-			} else if (oper.equals(QueryParameters.OPER_GREATER)) {
-				return lesserOrEqual(appId, path, attribute, value);
-			} else if (oper.equals(QueryParameters.OPER_LESSER)) {
-				return greaterOrEqual(appId, path, attribute, value);
+			if (oper.equals(OperatorEnum.contains)) {
+				oper = OperatorEnum.notContains;
+			} else if (oper.equals(OperatorEnum.equals)) {
+				oper = OperatorEnum.diferent;
+			} else if (oper.equals(OperatorEnum.greater)) {
+				oper = OperatorEnum.lesserOrEqual;
+			} else if (oper.equals(OperatorEnum.lesser)) {
+				oper = OperatorEnum.greaterOrEqual;
 			} else {
 				throw new Exception("Error in query.");
-				
 			}
+			return getOperation(oper, appId, url, path, attribute, value, type);
 		}
 	}
 	
-	protected abstract List<String> contains(String appId, String path, String attribute, String value);
+	protected List<String> getOperation(OperatorEnum oper, String appId, String url, String path, String attribute, String value, ModelEnum type) throws Exception {
+		return new ArrayList<String>();
+	}
 	
-	protected abstract List<String> notContains(String appId, String path, String attribute, String value);
-	
-	protected abstract List<String> equals(String appId, String path, String attribute, String value);
-	
-	protected abstract List<String> diferent(String appId, String path, String attribute, String value);
-	
-	protected abstract List<String> greater(String appId, String path, String attribute, String value);
-	
-	protected abstract List<String> greaterOrEqual(String appId, String path, String attribute, String value);
-	
-	protected abstract List<String> lesser(String appId, String path, String attribute, String value);
-	
-	protected abstract List<String> lesserOrEqual(String appId, String path, String attribute, String value);
-
 	private ListResult paginate(String appId, List<String> lst, String orderBy, String orderType, 
 			Integer pageNumber, Integer pageSize, ModelEnum type) {
 		
@@ -226,9 +209,9 @@ public abstract class MiddleLayerAbstract {
 		
 		Map<String, String> hashSorted = sortByValues(hash);
 		
-		Iterator entries = hashSorted.entrySet().iterator();
+		Iterator<Entry<String,String>> entries = hashSorted.entrySet().iterator();
 		while (entries.hasNext()) {
-		  Entry<String,String> thisEntry = (Entry<String,String>) entries.next();
+		  Entry<String,String> thisEntry = entries.next();
 		  String key = thisEntry.getKey();
 		  listIdsSorted.add(key);
 		}
@@ -248,21 +231,21 @@ public abstract class MiddleLayerAbstract {
 		return listResultRes;
 	}
 	
-	private static <K extends Comparable,V extends Comparable> Map<K,V> sortByValues(Map<K,V> map){
-        List<Map.Entry<K,V>> entries = new LinkedList<Map.Entry<K,V>>(map.entrySet());
+	private static Map<String, String> sortByValues(Map<String, String> map){
+        List<Map.Entry<String, String>> entries = new LinkedList<Map.Entry<String, String>>(map.entrySet());
         
-        Collections.sort(entries, new Comparator<Map.Entry<K,V>>() {
+        Collections.sort(entries, new Comparator<Map.Entry<String, String>>() {
             @Override
-            public int compare(Entry<K, V> o1, Entry<K, V> o2) {
+            public int compare(Entry<String, String> o1, Entry<String, String> o2) {
                 return o1.getValue().compareTo(o2.getValue());
             }
         });
      
         //LinkedHashMap will keep the keys in the order they are inserted
         //which is currently sorted on natural ordering
-        Map<K,V> sortedMap = new LinkedHashMap<K,V>();
+        Map<String, String> sortedMap = new LinkedHashMap<String, String>();
      
-        for(Map.Entry<K,V> entry: entries){
+        for(Map.Entry<String, String> entry: entries){
             sortedMap.put(entry.getKey(), entry.getValue());
         }
      
@@ -271,8 +254,17 @@ public abstract class MiddleLayerAbstract {
 
 
 	// *** METADATA *** //
-	
-	public Metadata getMetadata(String key) {
+
+	public String getMetaKey(String appId, String userId, String id, ModelEnum type) {
+		String appIdStr = "apps." + appId;
+		String userIdStr = (userId == null ? "" : ".users." + userId);
+		String typeStr = ((type == null || userId != null) ? "" : "." + type.toString());
+		String idStr = id != null ? "." + id : "";
+		return appIdStr + userIdStr + typeStr + idStr;
+	}
+
+	public Metadata getMetadata(String appId, String userId, String id, ModelEnum type) {
+		String key = getMetaKey(appId, userId, id, type);
 		metadataModel = new MetadataModel(); 
 		Metadata retObj = new Metadata();
 		Map<String, String> fields = metadataModel.getMetadata(key);
@@ -289,34 +281,37 @@ public abstract class MiddleLayerAbstract {
 		return retObj;
 	}
 	
-	public Metadata createMetadata(String key, String userId, String location) {
+	public Metadata createMetadata(String appId, String userId, String id, String creatorId, ModelEnum type, String location) {
+		String key = getMetaKey(appId, userId, id, type);
 		metadataModel = new MetadataModel(); 
 		Map<String, String> fields = new HashMap<String, String>();
 		fields.put(Metadata.CREATE_DATE, (new Date()).toString());
-		fields.put(Metadata.CREATE_USER, userId);
+		fields.put(Metadata.CREATE_USER, creatorId);
 		fields.put(Metadata.LAST_UPDATE_DATE, (new Date()).toString());
-		fields.put(Metadata.LAST_UPDATE_USER, userId);
+		fields.put(Metadata.LAST_UPDATE_USER, creatorId);
 		fields.put(Metadata.LOCATION, location);
 		if (metadataModel.createUpdateMetadata(key, fields))
-			return getMetadata(key);
+			return getMetadata(appId, userId, id, type);
 		else
 			return null;
 	}
 	
-	public Metadata updateMetadata(String key, String userId, String location) {
+	public Metadata updateMetadata(String appId, String userId, String id, String creatorId, ModelEnum type, String location) {
+		String key = getMetaKey(appId, userId, id, type);
 		metadataModel = new MetadataModel(); 
 		Map<String, String> fields = new HashMap<String, String>();
 		fields.put(Metadata.LAST_UPDATE_DATE, (new Date()).toString());
-		fields.put(Metadata.LAST_UPDATE_USER, userId);
+		fields.put(Metadata.LAST_UPDATE_USER, creatorId);
 		if (location != null && !"".equals(location))
 			fields.put(Metadata.LOCATION, location);
 		if (metadataModel.createUpdateMetadata(key, fields))
-			return getMetadata(key);
+			return getMetadata(appId, userId, id, type);
 		else
 			return null;
 	}
 	
-	public Boolean deleteMetadata(String key) {
+	public Boolean deleteMetadata(String appId, String userId, String id, ModelEnum type) {
+		String key = getMetaKey(appId, userId, id, type);
 		metadataModel = new MetadataModel(); 
 		return metadataModel.deleteMetadata(key, true);
 	}
