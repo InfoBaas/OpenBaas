@@ -1,5 +1,6 @@
 package infosistema.openbaas.dataaccess.models;
 
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
@@ -7,6 +8,7 @@ import infosistema.openbaas.utils.Log;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,7 +33,6 @@ public class UserModel {
 
 	// *** *** USERS *** *** //
 	
-	// *** PRIVATE *** //
 	// *** CREATE *** //
 
 	public Boolean createUser(String appId, String userId, String userName, String socialId, String socialNetwork,
@@ -167,6 +168,14 @@ public class UserModel {
 			Integer pageNumber, Integer pageSize, String orderBy,
 			String orderType) {
 		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	// *** GET LIST *** //
+
+	public List<String> getOperation(String appId, String attribute, String value) {
+		//TODO IMPLEMENT
 		return null;
 	}
 
@@ -340,6 +349,7 @@ public class UserModel {
 		return res;
 	}
 
+	
 	// *** DELETE *** //
 
 	/**

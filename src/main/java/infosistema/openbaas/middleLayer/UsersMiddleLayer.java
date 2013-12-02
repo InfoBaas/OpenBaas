@@ -262,7 +262,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		if (path != null) {
 			return docModel.getOperation(appId, null, path, attribute, value);
 		} else if (attribute != null) {
-			return mediaModel.getOperation(appId, attribute, value, type);
+			return userModel.getOperation(appId, attribute, value);
 		} else {
 			throw new Exception("Error in query.");
 		}
