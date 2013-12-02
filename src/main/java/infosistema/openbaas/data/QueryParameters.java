@@ -7,20 +7,10 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class QueryParameters {
 
-	public static final String OPER = "oper";
-	public static final String OP1 = "op1";
-	public static final String OP2 = "op2";
-	public static final String OPER_AND = "and";
-	public static final String OPER_OR = "or";
-	public static final String OPER_NOT = "not";
-	public static final String OPER_CONTAINS = "contains";
-	public static final String OPER_EQUALS = "equals";
-	public static final String OPER_GREATER = "greater";
-	public static final String OPER_LESSER = "lesser";
 	public static final String ATTR_PATH = "path";
 	public static final String ATTR_ATTRIBUTE = "attribute";
 	public static final String ATTR_VALUE = "value";
-	
+
 	private String appId = null;
 	private JSONObject query = null;
 	private Double radius = null;
@@ -30,6 +20,8 @@ public class QueryParameters {
 	private Integer pageSize = Const.getPageSize();
 	private String orderBy = Const.getOrderBy();
 	private String orderType = Const.getOrderType();
+	private String url = "";
+	
 	private ModelEnum type = null;
 
 	private QueryParameters() {
@@ -37,6 +29,12 @@ public class QueryParameters {
 
 	public static QueryParameters getQueryParameters(String appId, JSONObject query, String radiusStr, String latitudeStr, 
 			String longitudeStr, String pageNumberStr, String pageSizeStr, String orderByStr, String orderTypeStr, ModelEnum type) {
+		return getQueryParameters(appId, query, radiusStr, latitudeStr, longitudeStr, pageNumberStr, pageSizeStr,
+				orderByStr, orderTypeStr, null, type); 
+	}
+
+	public static QueryParameters getQueryParameters(String appId, JSONObject query, String radiusStr, String latitudeStr, 
+			String longitudeStr, String pageNumberStr, String pageSizeStr, String orderByStr, String orderTypeStr, String url, ModelEnum type) {
 		QueryParameters retObj = new QueryParameters();
 
 		retObj.setAppId(appId);
@@ -58,6 +56,7 @@ public class QueryParameters {
 		} catch (Exception e) { }
 		retObj.setOrderBy(orderByStr);
 		retObj.setOrderType(orderTypeStr);
+		retObj.setUrl(url);
 		retObj.setType(type);
 		
 		return retObj;
@@ -134,6 +133,14 @@ public class QueryParameters {
 
 	public void setOrderType(String orderType) {
 		this.orderType = orderType;
+	}
+
+	public String getUrl() {
+		return this.url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 	public ModelEnum getType() {
