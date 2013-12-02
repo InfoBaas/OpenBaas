@@ -1,6 +1,7 @@
 package infosistema.openbaas.dataaccess.models;
 
 import infosistema.openbaas.data.enums.ModelEnum;
+import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.utils.Const;
 
 import java.util.Iterator;
@@ -58,7 +59,7 @@ public class MediaModel {
 	
 	// *** GET LIST *** //
 
-	public List<String> getOperation(String appId, String attribute, String value, ModelEnum type) {
+	public List<String> getOperation(String appId, OperatorEnum oper, String attribute, String value, ModelEnum type) {
 		//TODO IMPLEMENT
 		return null;
 	}

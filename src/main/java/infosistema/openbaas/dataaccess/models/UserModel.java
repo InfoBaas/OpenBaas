@@ -1,6 +1,7 @@
 package infosistema.openbaas.dataaccess.models;
 
 import infosistema.openbaas.data.enums.ModelEnum;
+import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
@@ -174,7 +175,7 @@ public class UserModel {
 
 	// *** GET LIST *** //
 
-	public List<String> getOperation(String appId, String attribute, String value) {
+	public List<String> getOperation(String appId, OperatorEnum oper, String attribute, String value) {
 		//TODO IMPLEMENT
 		return null;
 	}

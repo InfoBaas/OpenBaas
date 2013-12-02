@@ -1,6 +1,7 @@
 package infosistema.openbaas.dataaccess.models;
 
 import infosistema.openbaas.data.enums.ModelEnum;
+import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
@@ -165,7 +166,7 @@ public class DocumentModel {
 	
 	// *** GET LIST *** //
 	
-	public List<String> getOperation(String appId, String url, String path, String attribute, String value) {
+	public List<String> getOperation(String appId, OperatorEnum oper, String url, String path, String attribute, String value) {
 		//TODO IMPLEMENT
 		// Obter todos os paths (que são os ids, que correspondem ao path que vem no pedido
 		// exemplo se o path == "cidade/restaurante" devolver:

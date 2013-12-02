@@ -260,9 +260,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	@Override
 	protected List<String> getOperation(OperatorEnum oper, String appId, String url, String path, String attribute, String value, ModelEnum type) throws Exception {
 		if (path != null) {
-			return docModel.getOperation(appId, null, path, attribute, value);
+			return docModel.getOperation(appId, oper, null, path, attribute, value);
 		} else if (attribute != null) {
-			return userModel.getOperation(appId, attribute, value);
+			return userModel.getOperation(appId, oper, attribute, value);
 		} else {
 			throw new Exception("Error in query.");
 		}

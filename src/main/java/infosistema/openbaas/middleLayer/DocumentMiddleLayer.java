@@ -125,7 +125,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 
 	@Override
 	protected List<String> getOperation(OperatorEnum oper, String appId, String url, String path, String attribute, String value, ModelEnum type) throws Exception {
-		return docModel.getOperation(appId, url, path, attribute, value);
+		return docModel.getOperation(appId, oper, url, path, attribute, value);
 	}
 	
 

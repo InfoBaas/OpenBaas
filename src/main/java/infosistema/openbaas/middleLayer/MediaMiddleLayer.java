@@ -168,7 +168,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 
 	@Override
 	protected List<String> getOperation(OperatorEnum oper, String url, String appId, String path, String attribute, String value, ModelEnum type) throws Exception {
-		return mediaModel.getOperation(appId, attribute, value, type);
+		return mediaModel.getOperation(appId, oper, attribute, value, type);
 	}
 	
 
