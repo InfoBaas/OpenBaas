@@ -8,6 +8,7 @@ import infosistema.openbaas.utils.Log;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -176,6 +177,7 @@ public class DocumentModel {
 		// se path for null é para devolver o path composto só por userid:
 		// "userid1", "userid2", "userid6"
 		List<String> listRes = new ArrayList<String>();
+		List<String> listTotal = new ArrayList<String>();
 		try {
 			
 			DBCollection coll = db.getCollection("testejm"); //getAppCollection(appId);
@@ -196,6 +198,12 @@ public class DocumentModel {
 					if(cursor2.hasNext())
 						listRes.add(mainKey+"."+path);
 				}
+				listTotal.add(mainKey+"."+path);
+			}
+			if(oper.equals(OperatorEnum.notContains)||oper.equals(OperatorEnum.diferent)){
+				//Collections.substract(listTotal, listRes);
+				listTotal.removeAll(listRes);
+				listRes = listTotal;
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -203,6 +211,8 @@ public class DocumentModel {
 		}
 		return listRes;
 	}
+	
+	
 	
 
 	// *** GET *** //
@@ -214,6 +224,7 @@ public class DocumentModel {
 				res.put(path, java.util.regex.Pattern.compile(value));
 				//res = java.util.regex.Pattern.compile(value);
 			if(oper.equals(OperatorEnum.notContains)){
+				res.put(path, java.util.regex.Pattern.compile(value));
 				//TODO
 				/*BasicDBList docIds = new BasicDBList();
             	docIds.add(java.util.regex.Pattern.compile(value));
@@ -222,7 +233,7 @@ public class DocumentModel {
 			if(oper.equals(OperatorEnum.equals))
 				res = QueryBuilder.start(path).is(value).get();
 			if(oper.equals(OperatorEnum.diferent))
-				res = QueryBuilder.start(path).notEquals(value).get();
+				res = QueryBuilder.start(path).is(value).get();
 			if(oper.equals(OperatorEnum.greater))
 				res = QueryBuilder.start(path).greaterThan(value).get();
 			if(oper.equals(OperatorEnum.greaterOrEqual))
