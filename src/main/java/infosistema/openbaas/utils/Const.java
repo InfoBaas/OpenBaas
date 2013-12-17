@@ -2,6 +2,8 @@ package infosistema.openbaas.utils;
 
 import java.util.Properties;
 
+import org.omg.CORBA.PUBLIC_MEMBER;
+
 
 public class Const {
 
@@ -25,8 +27,8 @@ public class Const {
 	
 	private static Integer DEFAULT_PAGE_SIZE = 10;
 	private static Integer DEFAULT_PAGE_NUMBER = 1;
-	private static String DEFAULT_ORDER_BY = "_id";
-	private static String DEFAULT_ORDER_TYPE = "desc";
+	public static String DEFAULT_ORDER_BY = "_id";
+	public static String DEFAULT_ORDER_TYPE = "desc";
 
 	private static String REDIS_GENERAL_SERVER = "localhost";
 	private static Integer REDIS_GENERAL_PORT = 6382;

@@ -73,6 +73,8 @@ public class ImageResource {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
+		
+		
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
@@ -110,7 +112,7 @@ public class ImageResource {
 	public Response deleteImage(@Context HttpHeaders hh, @PathParam("imageId") String imageId) {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
-		if (sessionMid.checkAppForToken(sessionToken, appId))
+		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (SessionMiddleLayer.getInstance().sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "deleteImage", "***********Deleting Image***********");
@@ -139,7 +141,7 @@ public class ImageResource {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
-			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
+			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
@@ -150,18 +152,22 @@ public class ImageResource {
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 
-		int code = Utils.treatParametersAdmin(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			try {
 				ListResult res = mediaMid.find(qp);
-				response = Response.status(Status.OK).entity(res).build();
+				if(Integer.parseInt(pageNumberStr) <= res.getTotalnumberpages())
+					response = Response.status(Status.OK).entity(res).build();
+				else{
+					response = Response.status(Status.NOT_FOUND).entity(new Error("Page not found.")).build();
+				}
 			} catch (Exception e) {
 				response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
 			}
 		} else if (code == -2) {
-			response = Response.status(Status.FORBIDDEN).entity("Invalid Session Token.").build();
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
-			response = Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
 
@@ -178,15 +184,15 @@ public class ImageResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response getImageMetadata(@PathParam("imageId") String imageId,@Context UriInfo ui, @Context HttpHeaders hh){
 		Response response = null;
-		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
+		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "getImageMetadata", "********Finding Image Meta**********");
-			Image temp = null;
+			Media temp = null;
 			if(AppsMiddleLayer.getInstance().appExists(this.appId)){
 				if(mediaMid.mediaExists(appId, ModelEnum.image, imageId)){
-					temp = (Image)(mediaMid.getMedia(appId, ModelEnum.image, imageId));
+					temp = (Media)(mediaMid.getMedia(appId, ModelEnum.image, imageId));
 					Metadata meta = mediaMid.getMetadata(appId, null, imageId, ModelEnum.image);
 					Result res = new Result(temp, meta);
 					
@@ -215,7 +221,7 @@ public class ImageResource {
 	public Response downloadImage(@PathParam("imageId") String imageId,	@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
 		byte[] sucess = null;
-		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
+		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -227,6 +233,8 @@ public class ImageResource {
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
 							.header("content-disposition","attachment; filename = "+image.getFileName()+"."+image.getFileExtension()).build();
 					//response = Response.status(Status.OK).entity(image).build();
+				}else{
+					response = Response.status(Status.NO_CONTENT).entity(new Error("Error downloading file.")).build();
 				}
 			} else
 				response = Response.status(Status.NOT_FOUND).entity(imageId).build();

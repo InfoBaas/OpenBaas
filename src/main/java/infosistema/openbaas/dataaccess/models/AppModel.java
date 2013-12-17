@@ -177,7 +177,7 @@ public class AppModel {
 		Jedis jedis = pool.getResource();
 		Boolean confirmUsersEmail = false;
 		try {
-			confirmUsersEmail = Boolean.parseBoolean(this.jedis.hget("apps:"+appId, "confirmUsersEmail"));
+			confirmUsersEmail = Boolean.parseBoolean(jedis.hget("apps:"+appId, "confirmUsersEmail"));
 		}finally {
 			pool.returnResource(jedis);
 		}

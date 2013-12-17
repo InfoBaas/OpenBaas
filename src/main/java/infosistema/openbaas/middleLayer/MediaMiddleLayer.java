@@ -1,8 +1,10 @@
 package infosistema.openbaas.middleLayer;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +59,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		while (mediaModel.mediaExists(appId, type, id)) {
 			id = Utils.getRandomString(Const.getIdLength());
 		}
-		return id;
+		return type+":"+id;
 	}
 	
 	private Map<String, String> getFileFields(InputStream stream, FormDataContentDisposition fileDetail,
@@ -67,7 +69,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		int idx = fullFileName.lastIndexOf(".");
 		String fileName = (idx < 0 ? fullFileName : fullFileName.substring(0, idx));
 		String fileExtension = (idx < 0 ? "" : fullFileName.substring(idx + 1));
-		String fileSize = "";
+		String fileSize = "-1";
 		/*
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -115,7 +117,11 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		FileInterface fileModel = getAppFileInterface(appId);
 		try{
 			filePath = fileModel.upload(appId, type, id, fields.get(Media.FILEEXTENSION), stream);
+			File file = new File(filePath);
 			fields.put(Media.PATH, filePath);
+			fields.put(type+"Id", id);
+			fields.put(Media.SIZE, String.valueOf(file.length()));
+			
 		} catch(AmazonServiceException e) {
 			Log.error("", this, "upload", "Amazon Service error.", e);
 			return null;
@@ -132,7 +138,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		}
 
 		
-		if (mediaModel.createMedia(appId, ModelEnum.audio, id, fields))
+		if (mediaModel.createMedia(appId, type, id, fields))
 			return id;
 		else 
 			return null;
@@ -175,29 +181,33 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 
 	
 	// *** GET *** //
+	protected List<String> getAll(String appId, ModelEnum type) throws Exception {
+		return mediaModel.getAllMediaIds(appId, type);
+	}
 	
 	public Media getMedia(String appId, ModelEnum type, String id) {
-		Map<String, String> fields = mediaModel.getMedia(appId, ModelEnum.video, id);
+		Map<String, String> fields = mediaModel.getMedia(appId, type, id);
 		fields.put(Media.ID, id);
 
 		Media media = null;
 		
 		if (type == ModelEnum.audio) {
 			media = new Audio();
-			((Audio)media).setDefaultBitRate(fields.get(Audio.BITRATE));
+			//((Audio)media).setDefaultBitRate(fields.get(Audio.BITRATE));
 		} else if (type == ModelEnum.image) {
 			media = new Image();
-			((Image)media).setResolution(fields.get(Image.RESOLUTION));
+			//((Image)media).setResolution(fields.get(Image.RESOLUTION));
 		} else if (type == ModelEnum.storage) {
 			media = new Storage();
 		} else if (type == ModelEnum.video) {
 			media = new Video();
-			((Video)media).setResolution(fields.get(Video.RESOLUTION));
+			//((Video)media).setResolution(fields.get(Video.RESOLUTION));
 		}
 		media.setId(fields.get(Media.ID));
 		media.setSize(Long.parseLong(fields.get(Media.SIZE)));
 		media.setDir(fields.get(Media.PATH));
 		media.setFileName(fields.get(Media.FILENAME));
+		media.setFileExtension(fields.get(Media.FILEEXTENSION));
 		media.setLocation(fields.get(Media.LOCATION));
 
 		return media;

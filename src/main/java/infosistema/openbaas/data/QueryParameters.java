@@ -54,8 +54,14 @@ public class QueryParameters {
 		try {
 			retObj.setPageSize(Integer.parseInt(pageSizeStr));
 		} catch (Exception e) { }
-		retObj.setOrderBy(orderByStr);
-		retObj.setOrderType(orderTypeStr);
+		if(orderByStr!=null)
+			retObj.setOrderBy(orderByStr);
+		else
+			retObj.setOrderBy(Const.DEFAULT_ORDER_BY);
+		if(orderTypeStr!=null)
+			retObj.setOrderType(orderTypeStr);
+		else
+			retObj.setOrderType(Const.DEFAULT_ORDER_TYPE);
 		retObj.setUrl(url);
 		retObj.setType(type);
 		

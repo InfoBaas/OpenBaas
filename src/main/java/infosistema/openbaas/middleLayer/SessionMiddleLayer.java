@@ -40,12 +40,12 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 	
 	public boolean createSession(String sessionId, String appId, String userId, String attemptedPassword) {
 		boolean sucess = false;
-		boolean ok = false;
-		ok = authenticateUser(appId, userId, attemptedPassword);
-		Log.debug("", this, "createSession", "AUTHENTICATED: " + ok);
-		if (ok) {
+		try{
+			sucess = authenticateUser(appId, userId, attemptedPassword);
 			sessions.createSession(sessionId, appId, userId);
 			sucess = true;
+		}catch (Exception e1){
+			sucess = false;
 		}
 		return sucess;
 	}

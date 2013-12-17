@@ -41,12 +41,13 @@ public class MediaModel {
 		Jedis jedis = pool.getResource();
 		Boolean sucess = false;
 		String appObjectId = getAppObjectId(type, appId);
-		String id = getId(type, objId);
+		//String id = getId(type, objId);
 		try {
 			for (String key : fields.keySet()) {
-				jedis.hset(id, key, fields.get(key));
+				if(fields.get(key)!=null)
+					jedis.hset(objId, key, fields.get(key));
 			}
-			jedis.sadd(appObjectId, id);
+			jedis.sadd(appObjectId, objId);
 			sucess = true;
 		} finally {
 			pool.returnResource(jedis);
@@ -112,6 +113,33 @@ public class MediaModel {
 
 	// *** GET *** //
 
+	public ArrayList<String> getAllMediaIds(String appId, ModelEnum type) {
+		Jedis jedis = pool.getResource();
+		ArrayList<String> mediaIds = new ArrayList<String>();
+		try {
+			String id = null;
+			if (type == null || type == ModelEnum.audio) {
+				id = getAppObjectId(ModelEnum.audio, appId);
+				mediaIds.addAll(jedis.smembers(id));
+			}
+			if (type == null || type == ModelEnum.image) {
+				id = getAppObjectId(ModelEnum.image, appId);
+				mediaIds.addAll(jedis.smembers(id));
+			}
+			if (type == null || type == ModelEnum.video) {
+				id = getAppObjectId(ModelEnum.video, appId);
+				mediaIds.addAll(jedis.smembers(id));
+			}
+			if (type == ModelEnum.storage) {
+				id = getAppObjectId(ModelEnum.storage, appId);
+				mediaIds.addAll(jedis.smembers(id));
+			}
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return mediaIds;		
+	}
+	
 	public Map<String, String> getMedia(String appId, ModelEnum type, String objId) {
 		Jedis jedis = pool.getResource();
 		Map<String, String> fields = null;
@@ -123,7 +151,7 @@ public class MediaModel {
 				if (it.next().equalsIgnoreCase(objId))
 					imageExistsForApp = true;
 			if (imageExistsForApp)
-				fields = jedis.hgetAll(getId(type, objId));
+				fields = jedis.hgetAll(objId);
 		} finally {
 			pool.returnResource(jedis);
 		}

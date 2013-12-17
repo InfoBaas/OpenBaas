@@ -69,7 +69,7 @@ public class AppDataResource {
 		if (code == 1) {
 			String sessionToken = Utils.getSessionToken(hh);
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-			if (sessionMid.checkAppForToken(sessionToken, appId))
+			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (AppsMiddleLayer.getInstance().appExists(appId)) {
 				if (docMid.insertDocumentInPath(appId, null, null, inputJsonObj, location)) {
@@ -114,7 +114,7 @@ public class AppDataResource {
 		if (code == 1) {
 			String sessionToken = Utils.getSessionToken(hh);
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-			if (sessionMid.checkAppForToken(sessionToken, appId))
+			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (AppsMiddleLayer.getInstance().appExists(appId)) {
 				if (docMid.insertDocumentInPath(appId, null, path, inputJsonObj, location)){
@@ -152,7 +152,7 @@ public class AppDataResource {
 		if (code == 1) {
 			String sessionToken = Utils.getSessionToken(hh);
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-			if (sessionMid.checkAppForToken(sessionToken, appId))
+			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (docMid.existsDocumentInPath(appId, null, path)) {
 				if (docMid.updateDocumentInPath(appId, null, path, inputJson, location)){
@@ -188,7 +188,7 @@ public class AppDataResource {
 		Response response = null;
 		
 		int code = Utils.treatParameters(ui, hh);
-		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
+		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (code == 1) {
 			if (docMid.existsDocumentInPath(appId, null, path)) {
@@ -223,7 +223,7 @@ public class AppDataResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
-			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
+			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
@@ -248,7 +248,7 @@ public class AppDataResource {
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
 		Response response = null;
-		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
+		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {

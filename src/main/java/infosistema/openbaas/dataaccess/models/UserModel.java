@@ -1,6 +1,5 @@
 package infosistema.openbaas.dataaccess.models;
 
-import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.utils.Const;
@@ -176,6 +175,7 @@ public class UserModel {
 	// *** GET LIST *** //
 
 	
+	
 	public List<String> getOperation(String appId, OperatorEnum oper, String attribute, String value) throws Exception {
 		Jedis jedis = pool.getResource();
 		List<String> listRes = new ArrayList<String>();
@@ -257,7 +257,7 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		String userName = null;
 		try {
-			Set<String> usersInApp = this.jedis.smembers("app:" + appId
+			Set<String> usersInApp = jedis.smembers("app:" + appId
 					+ ":users");
 			Iterator<String> it = usersInApp.iterator();
 			while (it.hasNext())
@@ -273,7 +273,7 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		String email = null;
 		try {
-			Set<String> usersInApp = this.jedis.smembers("app:" + appId
+			Set<String> usersInApp = jedis.smembers("app:" + appId
 					+ ":users");
 			Iterator<String> it = usersInApp.iterator();
 			while (it.hasNext())
@@ -289,7 +289,7 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		String userId = null;
 		try {
-			Set<String> usersInApp = this.jedis.smembers("app:" + appId	+ ":users");
+			Set<String> usersInApp = jedis.smembers("app:" + appId	+ ":users");
 			Iterator<String> it = usersInApp.iterator();
 			while (it.hasNext()){
 				String userAux = it.next();
@@ -394,10 +394,10 @@ public class UserModel {
 		try {
 			if (jedis.exists("users:"+userId)) {
 				jedis.zrem("users:time", userId);
-				Client c1 = this.jedis.getClient();
+				Client c1 = jedis.getClient();
 				c1.getPort();
-				this.jedis.hset("users:" + userId, "alive", "false");
-				this.jedis.sadd("app:" + appId + ":users:inactive", appId + ":" + userId);
+				jedis.hset("users:" + userId, "alive", "false");
+				jedis.sadd("app:" + appId + ":users:inactive", appId + ":" + userId);
 				sucess = true;
 			} else {
 				sucess = false;

@@ -103,8 +103,8 @@ public class AccountResource {
 			userFile = (String) inputJsonObj.opt("userFile");
 			email = (String) inputJsonObj.get("email");
 			password = (String) inputJsonObj.get("password");
-				baseLocationOption = (Boolean) inputJsonObj.opt("baseLocationOption");
-				baseLocation = (String) inputJsonObj.opt("baseLocation");
+			baseLocationOption = (Boolean) inputJsonObj.opt("baseLocationOption");
+			baseLocation = (String) inputJsonObj.opt("baseLocation");
 			readOk = true;
 		} catch (JSONException e) {
 			Log.error("", this, "createUserAndLogin", "Error parsing the JSON.", e); 
@@ -113,13 +113,16 @@ public class AccountResource {
 		if (userName == null) {
 			userName = email;
 		}
+		if (baseLocationOption == null) {
+			baseLocationOption=false;
+		}
 		if(!AppsMiddleLayer.getInstance().appExists(appId))
 			return Response.status(Status.NOT_FOUND).entity("{\"App\": "+appId+"}").build();
 		if (readOk) {
 			if (!usersMid.userExistsInApp(appId, userId, email)) {
 				if (uriInfo == null) 
 					uriInfo=ui;
-					User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile,baseLocationOption, baseLocation);
+				User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile,baseLocationOption, baseLocation);
 				Metadata meta = usersMid.createMetadata(appId, outUser.getUserId(), null, outUser.getUserId(), ModelEnum.users, location);
 				Result res = new Result(outUser, meta);
 				response = Response.status(Status.CREATED).entity(res).build();
@@ -267,14 +270,17 @@ public class AccountResource {
 	 * Deletes a session (signout).
 	 * 
 	 * @param sessionToken
-	 * @return
+	 * @return@Context HttpHeaders hh
 	 */
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
 	@POST
-	@Path("/signout/{sessionToken}")
-	public Response deleteSession(JSONObject inputJsonObj, @PathParam(Const.SESSION_TOKEN) String sessionToken) {
+	@Path("/signout")
+	public Response deleteSession(JSONObject inputJsonObj, @Context HttpHeaders hh) {
 		Response response = null;
+		String sessionToken = null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		sessionToken = headerParams.getFirst(Const.SESSION_TOKEN);
 		Boolean flagAll = (Boolean) inputJsonObj.opt("all");
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 		if(userId!=null){
@@ -326,6 +332,7 @@ public class AccountResource {
 	 * @return
 	 */
 	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/sessions/{sessionToken}")
 	public Response getUserIdWithSession(
 			@PathParam(Const.SESSION_TOKEN) String sessionToken) {
@@ -349,15 +356,19 @@ public class AccountResource {
 	 * @return
 	 */
 	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/sessions")
-	public Response getSessionFields(
-			@PathParam(Const.SESSION_TOKEN) String sessionToken) {
+	public Response getSessionFields(@Context HttpHeaders hh) {
 		Response response = null;
+		String sessionToken = null;
+		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+		sessionToken = headerParams.getFirst(Const.SESSION_TOKEN);
 		if (sessionMid.sessionTokenExists(sessionToken)) {
-			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
+			String userId 	= sessionMid.getUserIdUsingSessionToken(sessionToken);
 			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			User outUser = usersMid.getUserInApp(appId, userId);
+			outUser.setReturnToken(sessionToken);
 			Metadata meta = usersMid.getMetadata(appId, userId, null, ModelEnum.users);
 			Result res = new Result(outUser, meta);
 			response = Response.status(Status.OK).entity(res).build();
@@ -447,7 +458,7 @@ public class AccountResource {
 		try{
 			String sessionToken = Utils.getSessionToken(hh);
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-			if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
+			if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			Boolean auth = sessionMid.authenticateUser(appId, userId, oldPassword);
 			if(auth){

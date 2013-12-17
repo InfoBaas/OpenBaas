@@ -76,7 +76,7 @@ public class AudioResource {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-		if(sessionMid.checkAppForToken(sessionToken, appId))
+		if(!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -114,7 +114,7 @@ public class AudioResource {
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
 		
-		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
+		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -145,10 +145,9 @@ public class AudioResource {
 	 * @return
 	 */
 	@GET
-	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
-			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
+			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
@@ -189,7 +188,7 @@ public class AudioResource {
 			@Context UriInfo ui, @Context HttpHeaders hh
 			) {
 		Response response = null;
-		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
+		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -229,7 +228,7 @@ public class AudioResource {
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
 		byte[] sucess = null;
-		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
+		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {

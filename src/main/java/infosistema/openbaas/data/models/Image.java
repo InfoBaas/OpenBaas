@@ -17,7 +17,7 @@ public class Image extends Media {
 	public Image() {
 		
 	}
-
+/*
 	public Image getThumbnailSize() {
 		// TODO Auto-generated method stub
 		return null;
@@ -80,5 +80,5 @@ public class Image extends Media {
 	public String getResolution() {
 		return this.defaultResolution;
 	}
-
+*/
 }

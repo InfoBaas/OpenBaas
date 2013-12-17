@@ -67,7 +67,7 @@ public class Utils {
 			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
 				sessionToken = new Cookie(Const.SESSION_TOKEN, entry.getValue().get(0));
 		}
-		if (sessionToken != null && sessionToken.equals(Const.getADMIN_TOKEN())) {
+		if (sessionToken != null && sessionToken.getValue().equals(Const.getADMIN_TOKEN())) {
 			SessionModel sessions = new SessionModel();
 			if (sessions.sessionTokenExists(sessionToken.getValue())) {
 				code = 1;

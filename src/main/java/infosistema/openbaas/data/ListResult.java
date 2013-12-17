@@ -47,7 +47,7 @@ public class ListResult {
 		super();
 		this.ids = ids;
 		this.pageNumber = pageNumber;
-		this.totalnumberpages = totalnumberpages;
+		//this.totalnumberpages = totalnumberpages;
 	}
 	
 	public List<String> getIds() {

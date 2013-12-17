@@ -182,7 +182,7 @@ public class SessionModel {
 		Jedis jedis = pool.getResource();
 		Map<String, String> adminFields = null;
 		try {
-			adminFields = this.jedis.hgetAll(OPENBAASADMIN);
+			adminFields = jedis.hgetAll(OPENBAASADMIN);
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -422,10 +422,26 @@ public class SessionModel {
 	}
 
 	private String getAppUsingSessionToken(String sessionToken) {
-		return jedis.hget("sessions:" + sessionToken, "appId");
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
+		Jedis jedis = pool.getResource();
+		String res = null;
+		try {
+			res = jedis.hget("sessions:" + sessionToken, "appId");
+		}finally {
+			pool.returnResource(jedis);
+		}
+		return res;
 	}
 
 	public String getUserIdUsingSessionToken(String sessionToken) {
-		return jedis.hget("sessions:" + sessionToken, "userId");
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
+		Jedis jedis = pool.getResource();
+		String res = null;
+		try {
+			res = jedis.hget("sessions:" + sessionToken, "userId");
+		}finally {
+			pool.returnResource(jedis);
+		}
+		return res;
 	}
 }

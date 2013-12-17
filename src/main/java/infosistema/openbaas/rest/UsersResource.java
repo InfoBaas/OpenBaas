@@ -100,7 +100,7 @@ public class UsersResource {
 		
 		if(appKey==null)
 			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
-		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
+		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -166,7 +166,7 @@ public class UsersResource {
 	public Response deleteUser(@PathParam("userId") String userId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
+		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -192,10 +192,9 @@ public class UsersResource {
 	 * @return
 	 */
 	@GET
-	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
-			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
+			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
@@ -206,7 +205,7 @@ public class UsersResource {
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 
-		int code = Utils.treatParametersAdmin(ui, hh);
+		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			try {
 				ListResult res = usersMid.find(qp);
@@ -236,7 +235,7 @@ public class UsersResource {
 	public Response findById(@PathParam("userId") String userId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		if (sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
+		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
@@ -245,8 +244,10 @@ public class UsersResource {
 			if (AppsMiddleLayer.getInstance().appExists(appId)) {
 				if (usersMid.identifierInUseByUserInApp(appId, userId)) {
 					temp = usersMid.getUserInApp(appId, userId);
+					Metadata meta = usersMid.getMetadata(appId, null, userId, ModelEnum.users);
+					Result res = new Result(temp, meta);
 					Log.debug("", this, "findById", "userId: " + temp.getUserId()+ "email: " + temp.getEmail());
-					response = Response.status(Status.OK).entity(temp).build();
+					response = Response.status(Status.OK).entity(res).build();
 				} else {
 					response = Response.status(Status.NOT_FOUND).entity(temp).build();
 				}

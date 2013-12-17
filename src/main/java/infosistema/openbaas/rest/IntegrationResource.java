@@ -148,7 +148,6 @@ public class IntegrationResource {
 			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
 			Metadata meta = usersMid.createMetadata(appId, userId, null, userId, ModelEnum.users, location);
 			Result res = new Result(outUser, meta);
-			
 			response = Response.status(Status.CREATED).entity(res).build();
 		} else {
 			String sessionToken = Utils.getRandomString(Const.getIdLength());

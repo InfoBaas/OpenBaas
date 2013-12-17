@@ -6,7 +6,6 @@ import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.utils.Log;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;

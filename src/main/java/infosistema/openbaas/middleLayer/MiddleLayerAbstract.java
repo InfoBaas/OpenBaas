@@ -73,43 +73,53 @@ public abstract class MiddleLayerAbstract {
 	// *** GET LIST *** //
 
 	public ListResult find(QueryParameters qp) throws Exception {
+		List<String> listRes = new ArrayList<String>();
 		List<String> list1 = getAllSearchResults(qp.getAppId(), qp.getUrl(), qp.getQuery(), qp.getOrderType(), qp.getType());
 		List<String> list2 = new ArrayList<String>();
-		if (qp.getLatitude() != null && qp.getLongitude() != null && qp.getRadius()!= null)
-			geo.getObjectsInDistance(qp.getLatitude(), qp.getLongitude(), qp.getRadius(), qp.getAppId(), qp.getType());
-		List<String> list = and(list1, list2);
-		return paginate(qp.getAppId(), list, qp.getOrderBy(), qp.getOrderType(), qp.getPageNumber(),
+		if (qp.getLatitude() != null && qp.getLongitude() != null && qp.getRadius()!= null){
+			list2 = geo.getObjectsInDistance(qp.getLatitude(), qp.getLongitude(), qp.getRadius(), qp.getAppId(), qp.getType());
+			listRes = and(list1, list2);
+		}else {
+			listRes = list1;
+		}
+		
+		return paginate(qp.getAppId(), listRes, qp.getOrderBy(), qp.getOrderType(), qp.getPageNumber(),
 				qp.getPageSize(), qp.getType());
 	}
 
 	private List<String> getAllSearchResults(String appId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
-		OperatorEnum oper = OperatorEnum.valueOf(query.getString(OperatorEnum.oper.toString())); 
-		if (oper == null)
-			throw new Exception("Error in query."); 
-		else if (oper.equals(OperatorEnum.and)) {
-			List<String> listOper1 = getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType, type);
-			List<String> listOper2 = getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op2.toString())), orderType, type);
-			return and(listOper1, listOper2);
-		} else if (oper.equals(OperatorEnum.or)) {
-			List<String> listOper1 = getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType, type);
-			List<String> listOper2 = getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op2.toString())), orderType, type);
-			return or(listOper1, listOper2);
-		} else if (oper.equals(OperatorEnum.not)) {
-			return not(appId, url, query, orderType, type);
-		} else {
-			String value = null; 
-			try { value = query.getString(QueryParameters.ATTR_VALUE); } catch (Exception e) {}
-			String attribute = null;
-			try { attribute = query.getString(QueryParameters.ATTR_ATTRIBUTE); } catch (Exception e) {}
-			String path = null;
-			try { path = query.getString(QueryParameters.ATTR_PATH); } catch (Exception e) {}
-			if (oper.equals(OperatorEnum.contains) || oper.equals(OperatorEnum.equals) ||
-					oper.equals(OperatorEnum.greater) || oper.equals(OperatorEnum.lesser)) {
-				return getOperation(oper, appId, url, path, attribute, value, type);
+		if(query!=null){
+			OperatorEnum oper = OperatorEnum.valueOf(query.getString(OperatorEnum.oper.toString())); 
+			if (oper == null)
+				throw new Exception("Error in query."); 
+			else if (oper.equals(OperatorEnum.and)) {
+				List<String> listOper1 = getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType, type);
+				List<String> listOper2 = getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op2.toString())), orderType, type);
+				return and(listOper1, listOper2);
+			} else if (oper.equals(OperatorEnum.or)) {
+				List<String> listOper1 = getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType, type);
+				List<String> listOper2 = getAllSearchResults(appId, url, (JSONObject)(query.get(OperatorEnum.op2.toString())), orderType, type);
+				return or(listOper1, listOper2);
+			} else if (oper.equals(OperatorEnum.not)) {
+				return not(appId, url, query, orderType, type);
 			} else {
-				throw new Exception("Error in query.");
-				
+				String value = null; 
+				try { value = query.getString(QueryParameters.ATTR_VALUE); } catch (Exception e) {}
+				String attribute = null;
+				try { attribute = query.getString(QueryParameters.ATTR_ATTRIBUTE); } catch (Exception e) {}
+				String path = null;
+				try { path = query.getString(QueryParameters.ATTR_PATH); } catch (Exception e) {}
+				if (oper.equals(OperatorEnum.contains) || oper.equals(OperatorEnum.equals) ||
+						oper.equals(OperatorEnum.greater) || oper.equals(OperatorEnum.lesser)) {
+					return getOperation(oper, appId, url, path, attribute, value, type);
+				} else {
+					throw new Exception("Error in query.");
+					
+				}
 			}
+		}
+		else{
+			return getAll(appId,type);
 		}
 	}
 
@@ -180,6 +190,9 @@ public abstract class MiddleLayerAbstract {
 	protected List<String> getOperation(OperatorEnum oper, String appId, String url, String path, String attribute, String value, ModelEnum type) throws Exception {
 		return new ArrayList<String>();
 	}
+	protected List<String> getAll(String appId, ModelEnum type) throws Exception {
+		return new ArrayList<String>();
+	}
 	
 	private ListResult paginate(String appId, List<String> lst, String orderBy, String orderType, 
 			Integer pageNumber, Integer pageSize, ModelEnum type) {
@@ -193,10 +206,20 @@ public abstract class MiddleLayerAbstract {
 			String key = it.next();
 			if(type.compareTo(ModelEnum.audio)==0 ||type.compareTo(ModelEnum.video)==0 ||
 			   type.compareTo(ModelEnum.storage)==0 ||type.compareTo(ModelEnum.image)==0){
+				if(orderBy.equals("_id")&&type.compareTo(ModelEnum.audio)==0)
+					orderBy="audioId";
+				if(orderBy.equals("_id")&&type.compareTo(ModelEnum.video)==0)
+					orderBy="videoId";
+				if(orderBy.equals("_id")&&type.compareTo(ModelEnum.storage)==0)
+					orderBy="storageId";
+				if(orderBy.equals("_id")&&type.compareTo(ModelEnum.image)==0)
+					orderBy="imageId";
 				Map<String, String> temp = mediaModel.getMedia(appId, type, key);
 				value = temp.get(orderBy);
 			}
 			if(type.compareTo(ModelEnum.users)==0){
+				if(orderBy.equals("_id"))
+					orderBy="userId";
 				Map<String, String> temp = userModel.getUser(appId, key);
 				value = temp.get(orderBy);
 			}
@@ -223,11 +246,13 @@ public abstract class MiddleLayerAbstract {
 		Integer finIndex = (((pageNumber-1)*pageSize)+pageSize);
 		
 		if(finIndex>listIdsSorted.size())
-			listRes  = listIdsSorted.subList(iniIndex, listIdsSorted.size());
-		else
-			listRes = listIdsSorted.subList(iniIndex, finIndex);
+			try{listRes  = listIdsSorted.subList(iniIndex, listIdsSorted.size());}catch(Exception e){}
+		else{
+			try{listRes = listIdsSorted.subList(iniIndex, finIndex);}catch(Exception e){}
+		}
+			
 		Integer totalElems = (int) Utils.roundUp(listIdsSorted.size(),pageSize);
-		ListResult listResultRes = new ListResult(listRes, pageNumber, pageSize, totalElems);
+		ListResult listResultRes = new ListResult(listRes, pageNumber, pageSize, lst.size(),totalElems);
 		return listResultRes;
 	}
 	

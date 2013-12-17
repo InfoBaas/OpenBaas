@@ -79,10 +79,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		}
 		if (locationList != null)
 			location = locationList.get(0);
-		if(baseLocationOption){
+		if(baseLocationOption)
 			if(location!=null)
 				location = baseLocation;
-		}
 		if (!getConfirmUsersEmailOption(appId)) {
 			SessionMiddleLayer sessionMid = SessionMiddleLayer.getInstance();
 			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt, hash, userFile, null, null, baseLocationOption, baseLocation, location);
@@ -271,6 +270,12 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	
 	// *** GET *** //
 	
+	protected List<String> getAll(String appId, ModelEnum type) throws Exception {
+		 List<String> res = new ArrayList<String>();
+		 res.addAll(userModel.getAllUserIdsForApp(appId));
+		 return res;
+	}
+	
 	public User getUserInApp(String appId, String userId) {
 		Map<String, String> userFields = null;
 		try {
@@ -282,8 +287,18 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		for (Map.Entry<String, String> entry : userFields.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase("email"))
 				temp.setUserEmail(entry.getValue());
-			else if (entry.getKey().equalsIgnoreCase("alive"))
+			if (entry.getKey().equalsIgnoreCase("alive"))
 				temp.setAlive(entry.getValue());
+			if (entry.getKey().equalsIgnoreCase("returnToken"))
+				temp.setReturnToken(entry.getValue());
+			if (entry.getKey().equalsIgnoreCase("userName"))
+				temp.setUserName(entry.getValue());
+			if (entry.getKey().equalsIgnoreCase("userFile"))
+				temp.setUserFile(entry.getValue());
+			if (entry.getKey().equalsIgnoreCase("baseLocation"))
+				temp.setBaseLocation(entry.getValue());
+			if (entry.getKey().equalsIgnoreCase("baseLocationOption"))
+				temp.setBaseLocationOption(Boolean.parseBoolean(entry.getValue()));
 		}
 		return temp;
 	}
