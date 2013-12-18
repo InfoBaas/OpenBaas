@@ -154,8 +154,6 @@ public class SessionModel {
 					if (dist >= 1) {
 						jedis.hset("sessions:" + sessionToken, Const.LOCATION, location);
 						UserModel userModel = new UserModel(); 
-						userModel.updateUserLocation(userId, appId, sessionToken, location);
-
 						updateLocationToSession(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue, 
 								location, sessionToken, appId, userId);
 					}

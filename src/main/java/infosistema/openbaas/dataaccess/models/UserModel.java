@@ -139,7 +139,7 @@ public class UserModel {
 		}
 	}
 
-	public void updateUserLocation(String userId, String appId, String sessionToken, String location) {
+	public void updateUserLocation(String userId, String appId, String location) {
 		Jedis jedis = pool.getResource();
 		try{
 			jedis.hset(("users:" + userId), Const.LOCATION, location);
@@ -370,6 +370,10 @@ public class UserModel {
 					res.setUserID(userFields.get("userId"));
 					res.setUserName(userFields.get("userName"));
 					res.setUserFile(userFields.get("userFile"));
+					
+					res.setBaseLocation(userFields.get("baseLocation"));
+					res.setLastLocation(userFields.get("location"));
+					res.setBaseLocationOption(Boolean.parseBoolean(userFields.get("baseLocationOption")));
 				}
 			} 
 		} finally {

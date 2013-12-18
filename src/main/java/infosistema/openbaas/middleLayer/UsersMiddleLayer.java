@@ -97,6 +97,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 				outUser.setReturnToken(sessionToken);
 				outUser.setUserEmail(email);
 				outUser.setUserName(userName);
+				outUser.setBaseLocation(baseLocation);
+				outUser.setBaseLocationOption(baseLocationOption);
+				outUser.setLastLocation(location);
 			}
 		} else if (getConfirmUsersEmailOption(appId)) {
 			boolean emailConfirmed = false;
@@ -104,6 +107,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			outUser.setUserID(userId);
 			outUser.setUserEmail(email);
 			outUser.setUserName(userName);
+			outUser.setBaseLocation(baseLocation);
+			outUser.setBaseLocationOption(baseLocationOption);
+			outUser.setLastLocation(location);
 		}
 		return outUser;
 		
@@ -299,6 +305,8 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 				temp.setBaseLocation(entry.getValue());
 			if (entry.getKey().equalsIgnoreCase("baseLocationOption"))
 				temp.setBaseLocationOption(Boolean.parseBoolean(entry.getValue()));
+			if (entry.getKey().equalsIgnoreCase("location"))
+				temp.setLastLocation(entry.getValue());
 		}
 		return temp;
 	}
@@ -414,6 +422,25 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 
 	private Map<String, String> getUserFields(String appId, String userId)throws UnsupportedEncodingException {
 		return userModel.getUser(appId, userId);
+	}
+
+	public String updateUserLocation(String userId, String appId, String location) {
+		User user = getUserInApp(appId,userId);
+		String loc = null;
+		try{
+			if(user.getBaseLocationOption()){
+				if(user.getBaseLocation()!=null || !user.getBaseLocation().equals("")){
+					userModel.updateUserLocation(userId, appId, user.getBaseLocation());
+					loc=user.getBaseLocation();
+				}
+			}else{
+				userModel.updateUserLocation(userId, appId,location);
+				loc = location;
+			}
+		}catch(Exception e){
+			Log.error("", this, "updateUserLocation", "updateUserLocation exception.", e); 
+		}
+		return loc;
 	}
 
 }

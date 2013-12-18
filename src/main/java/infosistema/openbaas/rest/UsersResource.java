@@ -81,7 +81,7 @@ public class UsersResource {
 		String newEmail = null;
 		Boolean newBaseLocationOption = null;
 		String newBaseLocation = null;
-		Boolean userUpdateEmail = false;
+		Boolean userUpdateEmail = true;
 		Boolean userUpdateFields = false;
 		
 		List<String> locationList = null;
@@ -114,19 +114,19 @@ public class UsersResource {
 					newBaseLocationOption = (Boolean) inputJsonObj.opt("baseLocationOption");
 					newBaseLocation = (String) inputJsonObj.opt("baseLocation");
 					
-					if(newUserName.equals(""))
+					if(newUserName==null)
 						newUserName = user.getUserName();
-					if(newUserFile.equals(""))
+					if(newUserFile==null)
 						newUserFile = user.getUserFile();		
 					if(newBaseLocationOption==null)
 						newBaseLocationOption = user.getBaseLocationOption();		
-					if(newBaseLocation.equals(""))
+					if(newBaseLocation==null)
 						newBaseLocation = user.getBaseLocation();	
 					if (locationList != null)
 						location = locationList.get(0);
 					if (userAgentList != null)
 						userAgent = userAgentList.get(0);
-					if(newEmail.equals(""))
+					if(newEmail==null)
 						newEmail = user.getEmail();
 					else{
 						String oldEmail = user.getEmail();

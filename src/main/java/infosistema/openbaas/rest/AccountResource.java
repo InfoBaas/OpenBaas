@@ -159,6 +159,7 @@ public class AccountResource {
 		String location = null;
 		String appKey = null;
 		Boolean refreshCode = false;
+		String lastLocation =null;
 
 		try {
 			email = (String) inputJsonObj.get("email");
@@ -195,6 +196,7 @@ public class AccountResource {
 					String sessionToken = Utils.getRandomString(Const.getIdLength());
 					boolean validation = sessionMid.createSession(sessionToken, appId, outUser.getUserId(), attemptedPassword);
 					sessionMid.refreshSession(sessionToken, location, userAgent);
+					lastLocation = usersMid.updateUserLocation(outUser.getUserId(),appId,location);
 					refreshCode = true;
 					if (validation && refreshCode) {
 						outUser.setUserID(outUser.getUserId());
@@ -202,6 +204,9 @@ public class AccountResource {
 						outUser.setUserEmail(email);
 						outUser.setUserName(outUser.getUserName());
 						outUser.setUserFile(outUser.getUserFile());
+						outUser.setBaseLocation(outUser.getBaseLocation());
+						outUser.setBaseLocationOption(outUser.getBaseLocationOption());
+						outUser.setLastLocation(lastLocation);
 						Metadata meta = usersMid.createMetadata(appId, outUser.getUserId(), null, outUser.getUserId(), ModelEnum.users, location);
 						Result res = new Result(outUser, meta);
 						response = Response.status(Status.OK).entity(res).build();
@@ -216,12 +221,16 @@ public class AccountResource {
 				if(validation){
 					sessionMid.refreshSession(sessionToken, location, userAgent);
 					refreshCode = true;
+					lastLocation = usersMid.updateUserLocation(outUser.getUserId(),appId,location);
 					if (validation && refreshCode) {
 						outUser.setUserID(outUser.getUserId());
 						outUser.setReturnToken(sessionToken);
 						outUser.setUserEmail(email);
 						outUser.setUserName(outUser.getUserName());
 						outUser.setUserFile(outUser.getUserFile());
+						outUser.setBaseLocation(outUser.getBaseLocation());
+						outUser.setBaseLocationOption(outUser.getBaseLocationOption());
+						outUser.setLastLocation(lastLocation);
 						Metadata meta = usersMid.createMetadata(appId, outUser.getUserId(), null, outUser.getUserId(), ModelEnum.users, location);
 						Result res = new Result(outUser, meta);
 						response = Response.status(Status.OK).entity(res).build();
@@ -241,16 +250,20 @@ public class AccountResource {
 	@PATCH
 	@Path("/sessions/{sessionToken}")
 	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
 	public Response patchSession( @HeaderParam("user-agent") String userAgent, @HeaderParam(Const.LOCATION) String location,
 			@PathParam(Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
+			User user = usersMid.getUserInApp(appId, userId);
 			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (location != null) {
+				String lastLocation = usersMid.updateUserLocation(userId, appId, location);
+				user.setLastLocation(lastLocation);
 				Metadata meta = usersMid.updateMetadata(appId, userId, null, userId, ModelEnum.users, location);
-				Result res = new Result("Refresh OK", meta);
+				Result res = new Result(user, meta);
 				sessionMid.refreshSession(sessionToken, location, userAgent);					
 				response = Response.status(Status.OK).entity(res).build();
 			} // if the device does not have the gps turned on we should not
