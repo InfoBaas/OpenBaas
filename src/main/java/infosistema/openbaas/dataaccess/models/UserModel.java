@@ -44,7 +44,8 @@ public class UserModel {
 				long unixTime = System.currentTimeMillis() / 1000L;
 				jedis.zadd("users:time", unixTime, appId + ":" + userId);
 				jedis.hset("users:" + userId, "userId", userId);
-				jedis.hset("users:" + userId, "userName", userName);
+				if(userName!=null)
+					jedis.hset("users:" + userId, "userName", userName);
 				jedis.hset("users:" + userId, socialNetwork+"_id", socialId);
 				jedis.hset("users:" + userId, "email", email);
 				jedis.hset("users:" + userId, "salt", new String(salt, "ISO-8859-1"));

@@ -28,7 +28,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -109,9 +108,6 @@ public class AccountResource {
 		} catch (JSONException e) {
 			Log.error("", this, "createUserAndLogin", "Error parsing the JSON.", e); 
 			return Response.status(Status.BAD_REQUEST).entity("Error parsing the JSON.").build();
-		}
-		if (userName == null) {
-			userName = email;
 		}
 		if (baseLocationOption == null) {
 			baseLocationOption=false;

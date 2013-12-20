@@ -18,7 +18,6 @@ import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -93,6 +92,7 @@ public class IntegrationResource {
 		Response response = null;
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		String email = null;
+		String name = null;
 		String socialNetwork = null;
 		String socialId = null;
 		String userSocialId = null;
@@ -118,6 +118,7 @@ public class IntegrationResource {
 			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
 		if(!appsMid.authenticateApp(appId,appKey))
 			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
+		
 		if (locationList != null)
 			location = locationList.get(0);
 		if (userAgentList != null)
@@ -131,19 +132,22 @@ public class IntegrationResource {
 			socialNetwork = "Facebook";
 			socialId = (String) jsonReqFB.get("id"); 
 			userName = (String) jsonReqFB.opt("username");
+			name = (String) jsonReqFB.opt("name");
 		} catch (JSONException e) {
 			Log.error("", this, "createOrLoginFacebookUser", "Error parsing the JSON.", e); 
-			return Response.status(Status.BAD_REQUEST).entity(new Error("Error reading JSON")).build();
+			return Response.status(Status.BAD_REQUEST).entity(new Error("Error reading FB info")).build();
 		}		
 				
 		if(email == null && userName != null){
 			email = userName+"@facebook.com";
 		}
+		if(email == null && userName == null){
+			email = socialId+"@facebook.com";
+			userName = name;
+			
+		}
 		userId = usersMid.getUserIdUsingEmail(appId, email);
 		userSocialId = usersMid.socialUserExistsInApp(appId, socialId, socialNetwork);
-		
-		if(userId!=null && userSocialId==null)
-			response =  Response.status(302).entity(new Error("User "+userId+" with email: "+email+" already exists in app.")).build();
 		if (userId==null) {
 			if (uriInfo == null) uriInfo=ui;
 			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
