@@ -1,3 +1,4 @@
+
 package infosistema.openbaas.rest;
 
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
@@ -197,6 +198,8 @@ public class AccountResource {
 					boolean validation = sessionMid.createSession(sessionToken, appId, outUser.getUserId(), attemptedPassword);
 					sessionMid.refreshSession(sessionToken, location, userAgent);
 					lastLocation = usersMid.updateUserLocation(outUser.getUserId(),appId,location);
+					if(lastLocation==null)
+						lastLocation = outUser.getLastLocation();
 					refreshCode = true;
 					if (validation && refreshCode) {
 						outUser.setUserID(outUser.getUserId());
