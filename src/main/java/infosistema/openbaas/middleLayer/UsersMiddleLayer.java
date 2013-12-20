@@ -1,3 +1,4 @@
+
 package infosistema.openbaas.middleLayer;
 
 import infosistema.openbaas.data.enums.ModelEnum;
@@ -56,6 +57,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		List<String> locationList = null;
 		String userAgent = null;
 		String location = null;
+		String lastLocation =null;
 		userId = Utils.getRandomString(Const.getIdLength());
 		while (identifierInUseByUserInApp(appId, userId))
 			userId = Utils.getRandomString(Const.getIdLength());
@@ -91,7 +93,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 				userAgent = userAgentList.get(0);
 			
 			Boolean refresh = sessionMid.refreshSession(sessionToken, location, userAgent);
-
+			lastLocation = updateUserLocation(userId,appId,location);
+			if(lastLocation==null)
+				lastLocation = outUser.getLastLocation();
 			if (validation && refresh) {
 				outUser.setUserID(userId);
 				outUser.setReturnToken(sessionToken);
@@ -99,7 +103,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 				outUser.setUserName(userName);
 				outUser.setBaseLocation(baseLocation);
 				outUser.setBaseLocationOption(baseLocationOption);
-				outUser.setLastLocation(location);
+				outUser.setLastLocation(lastLocation);
 			}
 		} else if (getConfirmUsersEmailOption(appId)) {
 			boolean emailConfirmed = false;
@@ -427,15 +431,18 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	public String updateUserLocation(String userId, String appId, String location) {
 		User user = getUserInApp(appId,userId);
 		String loc = null;
+		
 		try{
-			if(user.getBaseLocationOption()){
-				if(user.getBaseLocation()!=null || !user.getBaseLocation().equals("")){
-					userModel.updateUserLocation(userId, appId, user.getBaseLocation());
-					loc=user.getBaseLocation();
+			if(location!=null){
+				if(user.getBaseLocationOption()){
+					if(user.getBaseLocation()!=null || !user.getBaseLocation().equals("")){
+						userModel.updateUserLocation(userId, appId, user.getBaseLocation());
+						loc=user.getBaseLocation();
+					}
+				}else{
+					userModel.updateUserLocation(userId, appId,location);
+					loc = location;
 				}
-			}else{
-				userModel.updateUserLocation(userId, appId,location);
-				loc = location;
 			}
 		}catch(Exception e){
 			Log.error("", this, "updateUserLocation", "updateUserLocation exception.", e); 
