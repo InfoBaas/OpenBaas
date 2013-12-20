@@ -191,9 +191,15 @@ public class AppModel {
 		try {
 			aws =  Boolean.parseBoolean(jedis.hget("apps:" + appId, FileMode.aws.toString()));
 		} catch (Exception e) { }
+		finally {
+			pool.returnResource(jedis);
+		}
 		try {
 			ftp = Boolean.parseBoolean(jedis.hget("apps:" + appId, FileMode.ftp.toString()));
 		} catch (Exception e) { }
+		finally {
+			pool.returnResource(jedis);
+		}
 		
 		if (aws) return FileMode.aws;
 		else if (ftp) return FileMode.ftp;
