@@ -50,6 +50,7 @@ public abstract class ModelAbstract {
 	private DB db;
 	public static final String APP_COLL_FORMAT = "app%sData";
 	public static final String UserDataColl = "users:data";
+	
 	Geolocation geo;
 	
 	public ModelAbstract() {
@@ -140,7 +141,8 @@ public abstract class ModelAbstract {
 	
 	public Boolean updateDocumentInPath(String appId, String userId, List<String> path, JSONObject data) throws JSONException{
 		try{
-			if (!existsDocumentInPath(appId, userId, path)) 
+			String id = getDocumentId(userId, path);
+			if (!existsDocument(appId, id)) 
 				return insertDocument(appId, userId, path, data);
 			Iterator<?> it = data.keys();
 			while (it.hasNext()) {
@@ -152,7 +154,6 @@ public abstract class ModelAbstract {
 					newPath.add(key);
 					insertDocument(appId, userId, newPath, (JSONObject)value);
 				} else { 
-					String id = getDocumentId(userId, path);
 					if(existsDocument(appId,id))
 						updateDocument(appId,id,key,value);
 					else 
@@ -166,31 +167,11 @@ public abstract class ModelAbstract {
 		return true;
 	}
 	
-	
-	private Boolean existsDocument(String appId, String id) throws JSONException{
-		DBCollection coll = getAppCollection(appId);
-		try{
-			//db.collection.find({_id: "myId"}, {_id: 1}).limit(1)
-			BasicDBObject dbQuery = new BasicDBObject();
-			dbQuery.append("_id", id); 		
-			BasicDBObject dbProjection = new BasicDBObject();
-			dbProjection.append("_id", 1);
-			DBCursor cursor = coll.find(dbQuery, dbProjection).limit(1);
-			if(cursor.hasNext())
-				return true;
-			else 
-				return false;
-		} catch (Exception e) {
-			Log.error("", this, "existsDocument", "An error ocorred.", e); 
-		}
-		return false;
-	}
-	
 	private Boolean updateDocument(String appId, String id, String key, Object value) throws JSONException{
 		DBCollection coll = getAppCollection(appId);
 		try{
 			BasicDBObject dbQuery = new BasicDBObject();
-			dbQuery.append("_id", id); 		
+			dbQuery.append(_ID, id); 		
 			BasicDBObject dbBase = new BasicDBObject();
 			dbBase.append(key, value);
 			BasicDBObject dbUpdate = new BasicDBObject();
@@ -204,42 +185,69 @@ public abstract class ModelAbstract {
 	}
 	
 	
+	
 	// *** DELETE *** //
 	
 	public Boolean deleteDocumentInPath(String appId, String userId, List<String> path) throws JSONException{
-		DBCollection coll = getAppCollection(appId);
-		String sPath = getDocumentId(userId, path);
-		//XPTO: está errado
-		//TODO: apagar todos os documentos com _id = id + "*" 
-		String[] splitted = sPath.split("\\.");
-		String baseKey =  splitted[0];
+		
 		try{
-			BasicDBObject existsQuery = new BasicDBObject();
-			existsQuery.append("$exists", 1);
-			BasicDBObject dbQuery = new BasicDBObject();
-			dbQuery.append(baseKey, existsQuery);
-			BasicDBObject dbBaseData = new BasicDBObject();
-			dbBaseData.append(sPath, 1);
-			BasicDBObject dbProjection = new BasicDBObject();
-			dbProjection.append("$unset", dbBaseData);
-			coll.update(dbQuery, dbProjection);
-		} catch (Exception e) {
+			String sPath = getDocumentId(userId, path);
+			List<DBObject> listToDel = getDocumentAndChilds(appId,sPath);		
+			Iterator<DBObject> itDoc = listToDel.iterator();
+			while(itDoc.hasNext()){
+				DBObject doc = itDoc.next();
+				String id= doc.get(_ID).toString();
+				deleteDocument(appId, id);
+			}
+		}
+		catch (Exception e) {
 			Log.error("", this, "deleteDocumentInPath", "An error ocorred.", e); 
 			return false;
 		}
 		return true;
 	}
 	
-	
+	private Boolean deleteDocument(String appId, String id) {
+		DBCollection coll = getAppCollection(appId);
+		//db.test_users.remove( {"_id": ObjectId("4d512b45cc9374271b02ec4f")});
+		try{
+			BasicDBObject dbRemove = new BasicDBObject();
+			dbRemove.append(_ID, id);
+			coll.remove(dbRemove);
+		} catch (Exception e) {
+			Log.error("", this, "deleteDocumentInPath", "An error ocorred.", e); 
+			return false;
+		}
+		return true;		
+	}
 	// *** GET LIST *** //
 	
+	
+
+
+	private List<DBObject> getDocumentAndChilds(String appId, String path) {		
+		//db.r1.find({"_id" :{$regex:"data.serviços.1.*"}})
+		List<DBObject> res = new ArrayList<DBObject>();
+		try {
+			DBCollection coll = getAppCollection(appId);
+			BasicDBObject dbQuery = new BasicDBObject();
+			dbQuery.append(_ID, "{$regex:\""+path+".*}}");
+			DBCursor cursor = coll.find(dbQuery);
+			res = cursor.toArray();	
+		}catch (Exception e) {
+			Log.error("", this, "getDocumentAndChilds", "Error quering mongoDB.", e);
+		}
+		return res;
+	}
+
+
 	public List<String> getOperation(String appId, OperatorEnum oper, String url, String path, String attribute, String value) {
 		List<String> listRes = new ArrayList<String>();
 		try {
 			
 			DBCollection coll = getAppCollection(appId);
 			BasicDBObject projection = new BasicDBObject();
-			projection.append("_id",0);
+			projection.append(_ID,0);
 			DBCursor cursor1 = coll.find(new BasicDBObject(),projection);
 			while(cursor1.hasNext()){
 				DBObject obj = cursor1.next();
@@ -315,19 +323,40 @@ public abstract class ModelAbstract {
 
 	// *** EXISTS *** //
 
-	public boolean existsDocumentInPath(String appId, String userId, List<String> path) {
-		//TODO XPTO: Errado o que se pretende é ver se existe o object com _id = id + *
+	private Boolean existsDocument(String appId, String id) throws JSONException{
 		DBCollection coll = getAppCollection(appId);
-		String id = getDocumentId(userId, path);
-		BasicDBObject existsQuery = new BasicDBObject();
-		existsQuery.append("$exists", true);
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put(id, existsQuery); //atenção isto não está bem
-		DBCursor cursor = coll.find(searchQuery);
-		boolean exists = false;
-		if (cursor.hasNext())
-			exists = true;
-		return exists;
+		try{
+			//db.collection.find({_id: "myId"}, {_id: 1}).limit(1)
+			BasicDBObject dbQuery = new BasicDBObject();
+			dbQuery.append("_id", id); 		
+			BasicDBObject dbProjection = new BasicDBObject();
+			dbProjection.append("_id", 1);
+			DBCursor cursor = coll.find(dbQuery, dbProjection).limit(1);
+			if(cursor.hasNext())
+				return true;
+			else 
+				return false;
+		} catch (Exception e) {
+			Log.error("", this, "existsDocument", "An error ocorred.", e); 
+		}
+		return false;
+	}
+	
+	public Boolean existsDocumentAndChilds(String appId, String userId, List<String> path) {
+		try {
+			String id = getDocumentId(userId, path);
+			DBCollection coll = getAppCollection(appId);
+			BasicDBObject dbQuery = new BasicDBObject();
+			dbQuery.append(_ID, "{$regex:\""+id+".*}}");
+			DBCursor cursor = coll.find(dbQuery);
+			if(cursor.hasNext())
+				return true;
+			else 
+				return false;
+		}catch (Exception e) {
+			Log.error("", this, "getDocumentAndChilds", "Error quering mongoDB.", e);
+			return false;
+		}
 	}
 
 }

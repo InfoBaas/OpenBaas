@@ -142,7 +142,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 
 	public boolean existsDocumentInPath(String appId, String userId, List<PathSegment> path) {
 		try {
-			return docModel.existsDocumentInPath(appId, userId, convertPath(path));
+			return docModel.existsDocumentAndChilds(appId, userId, convertPath(path));
 		} catch (Exception e) {
 			Log.error("", this, "existsDocumentInPath", "An error ocorred.", e); 
 			return false;
