@@ -23,7 +23,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.QueryBuilder;
 import com.mongodb.util.JSON;
 
-public class DocumentModel extends ModelAbtract {
+public class DocumentModel extends ModelAbstract {
 
 	public DocumentModel() {
 	}

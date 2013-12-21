@@ -83,8 +83,9 @@ public class ImageResource {
 			if (imageId == null) { 
 				response = Response.status(Status.BAD_REQUEST).entity(new Error("")).build();
 			} else {
+				Image img = (Image) mediaMid.getMedia(appId, ModelEnum.image, imageId);
 				Metadata meta = mediaMid.createMetadata(appId, null, imageId, userId, ModelEnum.image, location);
-				Result res = new Result(imageId, meta);
+				Result res = new Result(img, meta);
 				response = Response.status(Status.OK).entity(res).build();
 			}
 		} else if(code == -2) {

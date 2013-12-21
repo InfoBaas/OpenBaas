@@ -54,6 +54,8 @@ public class UserModel {
 				jedis.hset("users:" + userId, "baseLocationOption", baseLocationOption.toString());
 				if(baseLocation!=null)
 					jedis.hset("users:" + userId, "baseLocation", baseLocation.toString());
+				else
+					jedis.hset("users:" + userId, "baseLocation", "null");
 				if(location!=null)
 					jedis.hset("users:" + userId, Const.LOCATION, location);
 				jedis.sadd("app:" + appId + ":users", userId);
@@ -97,6 +99,8 @@ public class UserModel {
 			jedis.hset("users:" + userId, "baseLocationOption", baseLocationOption.toString());
 			if(baseLocation!=null)
 				jedis.hset("users:" + userId, "baseLocation", baseLocation.toString());
+			else
+				jedis.hset("users:" + userId, "baseLocation", "null");
 			if(location!=null)
 				jedis.hset("users:" + userId, Const.LOCATION, location);
 			if(userFile!=null)
@@ -233,6 +237,8 @@ public class UserModel {
 			if (userExistsforApp) {
 				userFields = jedis.hgetAll("users:" + userId);
 			}
+			if(userFields.get("baseLocation").equals("null"))
+				userFields.put("baseLocation", null);
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -371,8 +377,10 @@ public class UserModel {
 					res.setUserID(userFields.get("userId"));
 					res.setUserName(userFields.get("userName"));
 					res.setUserFile(userFields.get("userFile"));
-					
-					res.setBaseLocation(userFields.get("baseLocation"));
+					if(userFields.get("baseLocation").equals("null"))
+						res.setBaseLocation(null);
+					else
+						res.setBaseLocation(userFields.get("baseLocation"));
 					res.setLastLocation(userFields.get("location"));
 					res.setBaseLocationOption(Boolean.parseBoolean(userFields.get("baseLocationOption")));
 				}

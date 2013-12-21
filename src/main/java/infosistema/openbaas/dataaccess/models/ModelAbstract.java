@@ -35,7 +35,7 @@ import com.mongodb.util.JSON;
  * This is the same database as the one found in MongoDBDataModel, we are splitting data in a new class due to
  * its unique properties.
  */
-public abstract class ModelAbtract {
+public abstract class ModelAbstract {
 
 	// *** CONSTANTS *** //
 
@@ -52,7 +52,7 @@ public abstract class ModelAbtract {
 	public static final String UserDataColl = "users:data";
 	Geolocation geo;
 	
-	public ModelAbtract() {
+	public ModelAbstract() {
 		try {
 			mongoClient = new MongoClient(Const.getMongoServer(), Const.getMongoPort());
 		} catch (UnknownHostException e) {
@@ -139,7 +139,6 @@ public abstract class ModelAbtract {
 	// *** UPDATE *** //
 	
 	public Boolean updateDocumentInPath(String appId, String userId, List<String> path, JSONObject data) throws JSONException{
-		DBCollection coll = getAppCollection(appId);
 		try{
 			if (!existsDocumentInPath(appId, userId, path)) 
 				return insertDocument(appId, userId, path, data);
@@ -152,18 +151,53 @@ public abstract class ModelAbtract {
 					newPath.addAll(path);
 					newPath.add(key);
 					insertDocument(appId, userId, newPath, (JSONObject)value);
-				} else { //XPTO fazer update da key no document com _id = id
-					BasicDBObject dbQuery = new BasicDBObject();
-					dbQuery.append("baseKey", new  BasicDBObject("$exists", true)); //Corrigir
-					BasicDBObject dbBaseData = new BasicDBObject();
-					dbBaseData.append(path+"."+key, value);
-					BasicDBObject dbInsert = new BasicDBObject();
-					dbInsert.append("$set", dbBaseData);
-					coll.update(dbQuery, dbInsert);
+				} else { 
+					String id = getDocumentId(userId, path);
+					if(existsDocument(appId,id))
+						updateDocument(appId,id,key,value);
+					else 
+						return false;
 				}
 			}
 		} catch (Exception e) {
 			Log.error("", this, "updateDocumentInPath", "An error ocorred.", e); 
+			return false;
+		}
+		return true;
+	}
+	
+	
+	private Boolean existsDocument(String appId, String id) throws JSONException{
+		DBCollection coll = getAppCollection(appId);
+		try{
+			//db.collection.find({_id: "myId"}, {_id: 1}).limit(1)
+			BasicDBObject dbQuery = new BasicDBObject();
+			dbQuery.append("_id", id); 		
+			BasicDBObject dbProjection = new BasicDBObject();
+			dbProjection.append("_id", 1);
+			DBCursor cursor = coll.find(dbQuery, dbProjection).limit(1);
+			if(cursor.hasNext())
+				return true;
+			else 
+				return false;
+		} catch (Exception e) {
+			Log.error("", this, "existsDocument", "An error ocorred.", e); 
+		}
+		return false;
+	}
+	
+	private Boolean updateDocument(String appId, String id, String key, Object value) throws JSONException{
+		DBCollection coll = getAppCollection(appId);
+		try{
+			BasicDBObject dbQuery = new BasicDBObject();
+			dbQuery.append("_id", id); 		
+			BasicDBObject dbBase = new BasicDBObject();
+			dbBase.append(key, value);
+			BasicDBObject dbUpdate = new BasicDBObject();
+			dbUpdate.append("$set", dbBase);
+			coll.update(dbQuery, dbUpdate);
+		} catch (Exception e) {
+			Log.error("", this, "updateDocument", "An error ocorred.", e); 
 			return false;
 		}
 		return true;
@@ -282,7 +316,7 @@ public abstract class ModelAbtract {
 	// *** EXISTS *** //
 
 	public boolean existsDocumentInPath(String appId, String userId, List<String> path) {
-		//XPTO: Errado o que se pretende é ver se existe o object com _id = id
+		//TODO XPTO: Errado o que se pretende é ver se existe o object com _id = id + *
 		DBCollection coll = getAppCollection(appId);
 		String id = getDocumentId(userId, path);
 		BasicDBObject existsQuery = new BasicDBObject();
