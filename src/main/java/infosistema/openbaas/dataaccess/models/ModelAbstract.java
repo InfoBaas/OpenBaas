@@ -41,8 +41,9 @@ public abstract class ModelAbstract {
 
 	private static final String _PATH = "_path"; 
 	private static final String _ID = "_id"; 
-	private static final String _KEY = "_key"; 
-	
+	private static final String _KEY = "_key";
+	private static final String _USER_ID = "_userId";
+	private static final String DATA = "data";
 	
 	// *** VARIABLES *** //
 	
@@ -50,7 +51,8 @@ public abstract class ModelAbstract {
 	private DB db;
 	public static final String APP_COLL_FORMAT = "app%sData";
 	public static final String UserDataColl = "users:data";
-	
+	private List<JSONObject> jsonList = new ArrayList<JSONObject>();
+	private JSONObject aux;
 	Geolocation geo;
 	
 	public ModelAbstract() {
@@ -74,7 +76,7 @@ public abstract class ModelAbstract {
 		StringBuilder sb = new StringBuilder();
 		for(int i = 0; i < path.size() - 1; i++)
 			sb.append(path.get(i)).append('.');
-		sb.deleteCharAt(sb.length()-1);
+		if (sb.length() > 0) sb.deleteCharAt(sb.length()-1);
 		return sb.toString();
 	}
 
@@ -110,32 +112,39 @@ public abstract class ModelAbstract {
 	
 	private Boolean insertDocument(String appId, String userId, List<String> path, JSONObject data) throws JSONException{
 		DBCollection coll = getAppCollection(appId);
-		try{
+		List<String> keysToRemove = new ArrayList<String>();
+		try{ 
 			Iterator<?> it = data.keys();
 			while (it.hasNext()) {
 				String key = (String) it.next();
 				Object value = data.get(key);
+				aux = data; 
 				if (value instanceof JSONObject) {
-					data.remove(key);
+					keysToRemove.add(key);
 					List<String> newPath = new ArrayList<String>();
 					newPath.addAll(path);
 					newPath.add(key);
 					insertDocument(appId, userId, newPath, (JSONObject)value);
 				}
 			}
-			data.append(_KEY, getDocumentKey(path));
-			data.append(_ID, getDocumentId(userId, path));
-			data.append(_PATH, getDocumentPath(path));
+			for(String key: keysToRemove) {
+				data.remove(key);
+			}
+			data.put(_KEY, getDocumentKey(path));
+			data.put(_ID, getDocumentId(userId, path));
+			if (userId == null) 
+				userId = DATA;
+			data.put(_USER_ID, userId);
+			data.put(_PATH, getDocumentPath(path));
 			DBObject dbData = (DBObject) JSON.parse(data.toString());
 			coll.insert(dbData);
 		} catch (Exception e) {
-			Log.error("", this, "insertDocumentInPath", "An error ocorred.", e); 
+			Log.error("", this, "insertDocumentInPath", "An error ocorred.", e);
 			return false;
 		}
 		return true;
 	}
-	
-	
+
 	// *** UPDATE *** //
 	
 	public Boolean updateDocumentInPath(String appId, String userId, List<String> path, JSONObject data) throws JSONException{
@@ -153,9 +162,9 @@ public abstract class ModelAbstract {
 					newPath.add(key);
 					insertDocument(appId, userId, newPath, (JSONObject)value);
 				} else { 
-					if (!existsDocument(appId, id)) {
-						//XPTO Inserir um documento vazio para actualizar a key
-					}
+					/*if (!existsDocument(appId, id)) {
+						//Caso nao se insiram os documentos vazios inserir um documento vazio para actualizar a key
+					}*/
 					updateDocumentValue(appId, id, key, value);
 				}
 			}
@@ -209,7 +218,7 @@ public abstract class ModelAbstract {
 		DBCollection coll = getAppCollection(appId);
 		try{
 			BasicDBObject dbRemove = new BasicDBObject();
-			dbRemove.append(_ID, id); //XPTO não era possível fazer dbRemove.append(_ID, "{ $match :" +id + "* }") 
+			dbRemove.append(_ID, id);  
 			coll.remove(dbRemove); 
 		} catch (Exception e) {
 			Log.error("", this, "deleteDocumentInPath", "An error ocorred.", e); 

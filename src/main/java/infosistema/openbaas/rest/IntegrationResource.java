@@ -147,7 +147,7 @@ public class IntegrationResource {
 			
 		}
 		userId = usersMid.getUserIdUsingEmail(appId, email);
-		userSocialId = usersMid.socialUserExistsInApp(appId, socialId, socialNetwork);
+		//userSocialId = usersMid.socialUserExistsInApp(appId, socialId, socialNetwork);
 		if (userId==null) {
 			if (uriInfo == null) uriInfo=ui;
 			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
@@ -166,6 +166,8 @@ public class IntegrationResource {
 				Metadata meta = usersMid.createMetadata(appId, userId, null, userId, ModelEnum.users, location);
 				Result res = new Result(outUser, meta);
 				response = Response.status(Status.OK).entity(res).build();
+			}else{
+				response = Response.status(Status.CONFLICT).entity(new Error("Invalid authentication")).build();
 			}
 		}
 		return response;
@@ -192,7 +194,7 @@ public class IntegrationResource {
 	 * 
 	 * @param inputJsonObj
 	 * @return
-	 */
+	 *//*
 	@Path("/linkedin")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -269,5 +271,5 @@ public class IntegrationResource {
 			}
 		}
 		return response;
-	}
+	}*/
 }

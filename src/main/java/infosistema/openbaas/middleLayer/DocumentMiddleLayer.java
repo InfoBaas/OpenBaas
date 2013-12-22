@@ -41,8 +41,8 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		if (path != null) {
 			for(int i = 0; i < path.size(); i++)
 				sb.append(path.get(i).getPath()).append('.');
+			sb.deleteCharAt(sb.length()-1);
 		}
-		sb.deleteCharAt(sb.length()-1);
 		return sb.toString();
 	}
 
