@@ -34,11 +34,11 @@ public class MetadataModel {
 				if(fields.get(field) != null)
 					jedis.hset(key, field, fields.get(field));
 			}
-			return true;
 		} finally {
 			pool.returnResource(jedis);
-			pool.destroy();
+			//pool.destroy();
 		}
+		return true;
 	}
 
 
@@ -59,11 +59,11 @@ public class MetadataModel {
 					jedis.del(k);
 				}
 			}
-			return true;
 		} finally {
 			pool.returnResource(jedis);
-			pool.destroy();
+			//pool.destroy();
 		}
+		return true;
 	}
 
 	
@@ -73,12 +73,14 @@ public class MetadataModel {
 	
 	public Map<String, String> getMetadata(String key) {
 		Jedis jedis = pool.getResource();
+		Map<String, String> res;
 		try {
-			return jedis.hgetAll(key);
+			res = jedis.hgetAll(key);
 		} finally {
 			pool.returnResource(jedis);
-			pool.destroy();
+			//pool.destroy();
 		}
+		return res;
 	}
 
 	
@@ -86,12 +88,14 @@ public class MetadataModel {
 	
 	public boolean existsMetadata(String key) {
 		Jedis jedis = pool.getResource();
+		Boolean res = null;
 		try {
-			return jedis.exists(key);
+			res = jedis.exists(key);
 		} finally {
 			pool.returnResource(jedis);
-			pool.destroy();
+			//pool.destroy();
 		}
+		return res;
 	}
 	
 	// *** OTHERS *** //

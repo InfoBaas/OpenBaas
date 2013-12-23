@@ -13,6 +13,7 @@ import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Utils;
 
+import java.util.Iterator;
 import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -74,11 +75,12 @@ public class AppDataResource {
 			if (AppsMiddleLayer.getInstance().appExists(appId)) {
 				if (docMid.insertDocumentInPath(appId, null, null, inputJsonObj, location)) {
 					Metadata meta = null;
-					while (inputJsonObj.keys().hasNext()) { 
-						String key = inputJsonObj.keys().next().toString();
+					Iterator<?> it = inputJsonObj.keys();
+					while (it.hasNext()) { 
+						String key = it.next().toString();
 						meta = docMid.createMetadata(appId, null, key, userId, location, inputJsonObj);
 					}
-					Result res = new Result(inputJsonObj, meta);					
+					Result res = new Result(inputJsonObj.toString(), meta);					
 					response = Response.status(Status.OK).entity(res).build();
 				} else {
 					response = Response.status(Status.BAD_REQUEST).entity(new Error(inputJsonObj.toString())).build();
@@ -118,9 +120,14 @@ public class AppDataResource {
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (AppsMiddleLayer.getInstance().appExists(appId)) {
 				if (docMid.insertDocumentInPath(appId, null, path, inputJsonObj, location)){
-					Metadata meta = docMid.createMetadata(appId, null, docMid.convertPathToString(path), userId, location, inputJsonObj);
-					Result res = new Result(inputJsonObj, meta);
-					response = Response.status(Status.CREATED).entity(res).build();
+					Metadata meta = null;
+					Iterator<?> it = inputJsonObj.keys();
+					while (it.hasNext()) { 
+						String key = it.next().toString();
+						meta = docMid.createMetadata(appId, null, key, userId, location, inputJsonObj);
+					}
+					Result res = new Result(inputJsonObj.toString(), meta);					
+					response = Response.status(Status.OK).entity(res).build();
 				}
 				else
 					response = Response.status(Status.BAD_REQUEST).entity(new Error(inputJsonObj.toString())).build();
@@ -157,7 +164,7 @@ public class AppDataResource {
 			if (docMid.existsDocumentInPath(appId, null, path)) {
 				if (docMid.updateDocumentInPath(appId, null, path, inputJson, location)){
 					Metadata meta = docMid.updateMetadata(appId, null, docMid.convertPathToString(path), userId, location, inputJson);
-					Result res = new Result(inputJson, meta);
+					Result res = new Result(inputJson.toString(), meta);
 					response = Response.status(Status.OK).entity(res).build();
 				}
 				else

@@ -137,7 +137,8 @@ public abstract class ModelAbstract {
 			data.put(_USER_ID, userId);
 			data.put(_PATH, getDocumentPath(path));
 			DBObject dbData = (DBObject) JSON.parse(data.toString());
-			coll.insert(dbData);
+			if(!getDocumentId(userId, path).equals(userId))
+				coll.insert(dbData);
 		} catch (Exception e) {
 			Log.error("", this, "insertDocumentInPath", "An error ocorred.", e);
 			return false;
@@ -160,8 +161,13 @@ public abstract class ModelAbstract {
 					List<String> newPath = new ArrayList<String>();
 					newPath.addAll(path);
 					newPath.add(key);
-					insertDocument(appId, userId, newPath, (JSONObject)value);
-				} else { 
+					if(existsDocument(appId, id+"."+key)){
+						deleteDocument(appId, id+"."+key);
+						insertDocument(appId, userId, newPath, (JSONObject)value);
+					}
+					else
+						insertDocument(appId, userId, newPath, (JSONObject)value);
+				} else {
 					/*if (!existsDocument(appId, id)) {
 						//Caso nao se insiram os documentos vazios inserir um documento vazio para actualizar a key
 					}*/
@@ -234,10 +240,12 @@ public abstract class ModelAbstract {
 		List<DBObject> res = new ArrayList<DBObject>();
 		try {
 			DBCollection coll = getAppCollection(appId);
+			BasicDBObject regexQuery = new BasicDBObject();
+			regexQuery.append("$regex", path+"\\.");
 			BasicDBObject dbQuery = new BasicDBObject();
-			dbQuery.append(_ID, "{$regex:\""+path+".*}}");
+			dbQuery.append(_ID, regexQuery);
 			DBCursor cursor = coll.find(dbQuery);
-			res = cursor.toArray();	
+			res = cursor.toArray();
 		}catch (Exception e) {
 			Log.error("", this, "getDocumentAndChilds", "Error quering mongoDB.", e);
 		}
@@ -346,12 +354,14 @@ public abstract class ModelAbstract {
 	// *** EXISTS *** //
 
 	public Boolean existsDocument(String appId, String userId, List<String> path) {
+		DBCollection coll = getAppCollection(appId);
 		try {
 			String id = getDocumentId(userId, path);
-			DBCollection coll = getAppCollection(appId);
 			BasicDBObject dbQuery = new BasicDBObject();
-			dbQuery.append(_ID, "{$regex:\""+id+".*}}");
-			DBCursor cursor = coll.find(dbQuery);
+			dbQuery.append("_id", id); 		
+			BasicDBObject dbProjection = new BasicDBObject();
+			dbProjection.append("_id", 1);
+			DBCursor cursor = coll.find(dbQuery, dbProjection).limit(1);
 			if(cursor.hasNext())
 				return true;
 			else 

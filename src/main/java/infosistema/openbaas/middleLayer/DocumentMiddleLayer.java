@@ -8,6 +8,7 @@ import infosistema.openbaas.utils.Log;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +64,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		try {
 			String pathRes = getDocumentPath(userId, path);
 			Boolean res =  docModel.insertDocumentInPath(appId, userId, convertPath(path), data);
-			if (location != null){
+			if (location != null && res){
 				String[] splitted = location.split(":");
 				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, pathRes);
 			}
@@ -190,8 +191,9 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		}
 		metadataModel.createUpdateMetadata(key, fields);
 		fields.remove(Metadata.LOCATION);
-		while (input.keys().hasNext()) { 
-			String k = input.keys().next().toString();
+		Iterator<?> it = input.keys();
+		while (it.hasNext()) { 
+			String k = (String)it.next();
 			try {
 				Object obj = input.get(k);
 				if (obj instanceof JSONObject) {
