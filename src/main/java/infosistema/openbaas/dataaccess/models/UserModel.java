@@ -58,7 +58,7 @@ public class UserModel extends ModelAbstract {
 							jedis.set(getKey(appId, key, value), userId);
 						}
 						jedis.hset(userKey, key, value);
-						obj.append(key, value);
+						obj.put(key, value);
 					}
 				}
 				super.insertDocumentInPath(appId, userId, null, obj);

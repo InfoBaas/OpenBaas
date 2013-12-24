@@ -134,7 +134,7 @@ public abstract class ModelAbstract {
 			data.put(_USER_ID, userId);
 			data.put(_PATH, getDocumentPath(path));
 			DBObject dbData = (DBObject) JSON.parse(data.toString());
-			if(!getDocumentId(userId, path).equals(userId))
+			//if(!getDocumentId(userId, path).equals(userId))
 				coll.insert(dbData);
 		} catch (Exception e) {
 			Log.error("", this, "insertDocumentInPath", "An error ocorred.", e);
