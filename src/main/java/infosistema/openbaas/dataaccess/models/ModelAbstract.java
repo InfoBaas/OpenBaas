@@ -239,8 +239,13 @@ public abstract class ModelAbstract {
 		key = auxKey + ((key == null || "".equals(key)) ? "" : "." + key);
 		path.remove(path.size() -1);
 		String id = getDocumentId(userId, path);
-		//XPTO: apagar a key do doc com _id=id
-		return removeKeyFromAscendents(appId, userId, key, path);
+		
+		//XPTO: apagar a key do doc com _id=id jm
+		Boolean aux = deleteDocument(appId, id);
+		if(aux)
+			return removeKeyFromAscendents(appId, userId, key, path);
+		else 
+			return false;
 	}
 	
 	// *** GET LIST *** //
@@ -252,8 +257,8 @@ public abstract class ModelAbstract {
 		DBCollection coll = getAppCollection(appId);
 		DBObject queryObj = (DBObject)JSON.parse(searchQuery);
 		BasicDBObject projection = new BasicDBObject();
-		//XPTO: na projection só deve vir o ID
-		projection.append(_ID, "1");
+		//XPTO: na projection só deve vir o ID jm
+		projection.append(_ID, 1);
 		DBCursor cursor = coll.find(queryObj, projection);
 		List<String> retObj = new ArrayList<String>();
 		while (cursor.hasNext()) {
