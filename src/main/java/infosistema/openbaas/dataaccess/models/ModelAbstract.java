@@ -332,14 +332,21 @@ public abstract class ModelAbstract {
 	public Object getDocumentInPath(String appId, String userId, List<String> path) {
 		String id = getDocumentId(userId, path);
 		DBCollection coll = getAppCollection(appId);
-		//XPTO alterar a query para pesquisa _id = id
+		//XPTO alterar a query para pesquisa _id = id jm
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.append(_ID,id);
+		
+		/*
 		BasicDBObject existsQuery = new BasicDBObject();
 		existsQuery.append("$exists", true);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.append(id, existsQuery);
 		BasicDBObject projection = new BasicDBObject();
 		projection.append(id, "\"_id\":0");
-		DBCursor cursor = coll.find(searchQuery, projection);
+		DBCursor cursor = coll.find(searchQuery, projection);*/
+		
+		DBCursor cursor = coll.find(searchQuery);
+		
 		if (cursor.hasNext()) {
 			return cursor.next();
 		} else {
@@ -348,9 +355,16 @@ public abstract class ModelAbstract {
 			newPath.addAll(path);
 			newPath.remove(path.size() -1);
 			id = getDocumentId(userId, newPath);
-			//XPTO: pesquisar se existe um document com _id=id e que key exists
+			//XPTO: pesquisar se existe um document com _id=id e que key exists jm
+			
+			BasicDBObject existsQuery = new BasicDBObject();
+			existsQuery.append("$exists", true);
+			BasicDBObject searchQuery2 = new BasicDBObject();
+			searchQuery2.append(key, existsQuery);
+			searchQuery2.append(_ID,id);
+			return coll.find(searchQuery2);
 		}
-		return null;
+		//return null;
 	}
 	
 	private List<DBObject> getDocumentAndChilds(String appId, String path) {		
