@@ -38,7 +38,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 
 	public String convertPathToString(List<PathSegment> path) {
 		StringBuilder sb = new StringBuilder();
-		if (path != null) {
+		if (path != null && !path.isEmpty()) {
 			for(int i = 0; i < path.size(); i++)
 				sb.append(path.get(i).getPath()).append('.');
 			sb.deleteCharAt(sb.length()-1);

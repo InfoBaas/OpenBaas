@@ -227,7 +227,6 @@ public class AppDataResource {
 	 * @return
 	 */
 	@GET
-	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
 			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
@@ -245,7 +244,6 @@ public class AppDataResource {
 	 */
 	@GET
 	@Path("/{pathId:.+}")
-	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response findDocument(@PathParam("pathId") List<PathSegment> path, 
 			@Context UriInfo ui, @Context HttpHeaders hh,
