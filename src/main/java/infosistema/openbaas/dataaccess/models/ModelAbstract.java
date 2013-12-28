@@ -135,9 +135,9 @@ public abstract class ModelAbstract {
 		if (dataProjection == null) {
 			dataProjection = new BasicDBObject();
 			dataProjection.append(_ID, ZERO);
-			dataProjection.append(_ID, ZERO);
 			dataProjection.append(_USER_ID, ZERO);
 			dataProjection.append(_PARENT_PATH, ZERO);
+			dataProjection.append(_KEY, ZERO);
 		}
 		return dataProjection;
 	}
@@ -257,7 +257,7 @@ public abstract class ModelAbstract {
 		}
 		*/
 		String key = getDocumentKey(path);
-		if (path.size() > 0) path.remove(path.size() -1);
+		if (path!= null && path.size() > 0) path.remove(path.size() -1);
 		String id = getDocumentId(userId, path);
 		if (!existsDocument(appId, id))
 			insert(appId, userId, path, new JSONObject());
@@ -378,10 +378,17 @@ public abstract class ModelAbstract {
 	}
 	
 	private static String getAndQueryString(String oper1, String oper2) {
-		if (oper1.startsWith("{")) oper1 = oper1.substring(1);
-		if (oper1.endsWith("}")) oper1 = oper1.substring(0, oper1.length() - 1);
-		if (oper2.startsWith("{")) oper2 = oper2.substring(1);
-		if (oper2.endsWith("}")) oper2 = oper2.substring(0, oper2.length() - 1);
+		if(oper1!=null){
+			if (oper1.startsWith("{")) oper1 = oper1.substring(1);
+			if (oper1.endsWith("}")) oper1 = oper1.substring(0, oper1.length() - 1);
+			if(oper1.contains("null"))
+				oper1 = oper1.replace("null", "");
+		}
+		if(oper2!=null){
+			if (oper2.startsWith("{")) oper2 = oper2.substring(1);
+			if (oper2.endsWith("}")) oper2 = oper2.substring(0, oper2.length() - 1);
+		}else
+			oper2="";
 		return String.format(AND_QUERY_FORMAT, oper1, oper2);
 	}
 	

@@ -33,7 +33,13 @@ import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 public class AppDataResource {
 
@@ -311,9 +317,14 @@ public class AppDataResource {
 				if (data == null)
 					response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 				else{
-					Metadata meta = docMid.getMetadata(appId, null, docMid.convertPathToString(path), ModelEnum.data);
-					Result res = new Result(data, meta);
-					response = Response.status(Status.OK).entity(res).build();
+					try {
+						Metadata meta = docMid.getMetadata(appId, null, docMid.convertPathToString(path), ModelEnum.data);
+						DBObject db = (DBObject) JSON.parse(data.toString());
+						Result res = new Result(db, meta);
+						response = Response.status(Status.OK).entity(res).build();
+					} catch (Exception e) {
+						response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+					}	
 				}
 			} else {
 				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
