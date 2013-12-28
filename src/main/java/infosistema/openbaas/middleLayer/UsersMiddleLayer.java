@@ -288,6 +288,8 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 
 	@Override
 	protected List<String> getAllSearchResults(String appId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
+//		if(query==null)
+			//query.put("_id", value) TODO JM meter uma query para filtrar os users
 		return docModel.getDocuments(appId, url, query, orderType);
 	}
 
@@ -305,8 +307,9 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		temp.setEmail(userFields.get(User.EMAIL));
 		temp.setAlive(userFields.get(User.ALIVE));
 		temp.setEmailConfirmed(userFields.get(User.EMAIL_CONFIRMED));
-		temp.setBaseLocation(userFields.get(User.BASE_LOCATION_OPTION));
+		temp.setBaseLocationOption(userFields.get(User.BASE_LOCATION_OPTION));
 		temp.setBaseLocation(userFields.get(User.BASE_LOCATION));
+		temp.setLastLocation(userFields.get(User.LOCATION));
 		
 		return temp;
 	}
@@ -433,7 +436,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			}
 			if(location!=null){
 				Map<String, String> fields = getUserFields(null, null, null, null, null, null, null, null, null, null, null, location);
-				userModel.updateUser(userId, appId, fields);
+				userModel.updateUser(appId,userId, fields);
 			}
 		}catch(Exception e){
 			Log.error("", this, "updateUserLocation", "updateUserLocation exception.", e); 

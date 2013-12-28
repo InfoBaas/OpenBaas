@@ -111,6 +111,8 @@ public class UsersResource {
 					newBaseLocation = (String) inputJsonObj.opt(User.BASE_LOCATION);
 					userUpdateFields = usersMid.updateUser(appId, userId, newUserName, newEmail,
 							newUserFile, newBaseLocationOption, newBaseLocation, location);
+					if(newBaseLocationOption==true)
+						usersMid.updateUserLocation(userId, appId, newBaseLocation);
 					if(userUpdateFields){
 						sessionMid.refreshSession(sessionToken.getValue(), location, userAgent);
 						Metadata meta = usersMid.updateMetadata(appId, null, userId, userId, ModelEnum.users, location);
