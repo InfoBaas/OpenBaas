@@ -319,8 +319,7 @@ public class AppDataResource {
 				else{
 					try {
 						Metadata meta = docMid.getMetadata(appId, null, docMid.convertPathToString(path), ModelEnum.data);
-						DBObject db = (DBObject) JSON.parse(data.toString());
-						Result res = new Result(db, meta);
+						Result res = new Result(data, meta);
 						response = Response.status(Status.OK).entity(res).build();
 					} catch (Exception e) {
 						response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
