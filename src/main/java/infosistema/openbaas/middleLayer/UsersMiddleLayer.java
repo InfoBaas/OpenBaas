@@ -288,8 +288,15 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 
 	@Override
 	protected List<String> getAllSearchResults(String appId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
-//		if(query==null)
-			//query.put("_id", value) TODO JM meter uma query para filtrar os users
+		if(query==null){
+			query = new JSONObject();
+			JSONObject jAux= new JSONObject();
+			jAux.put("$exists",1);
+			query.put("email", jAux); 
+			query.put("hash", jAux);
+			query.put("salt", jAux); 
+		}
+			
 		return docModel.getDocuments(appId, url, query, orderType);
 	}
 
