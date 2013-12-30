@@ -218,7 +218,7 @@ public class DocumentModel extends ModelAbstract {
 				BasicDBObject dbQuery = new BasicDBObject();
 				dbQuery.append(_ID, id); 		
 				coll.update(dbQuery, dbRemove);
-				removeKeyFromAscendents(appId, userId, "", path);
+				removeKeyFromAscendents(appId, userId, key, path);
 			}
 			catch (Exception e) {
 				Log.error("", this, "deleteDocumentInPath", "An error ocorred.", e); 
@@ -234,7 +234,7 @@ public class DocumentModel extends ModelAbstract {
 		key = auxKey + ((key == null || "".equals(key)) ? "" : "." + key);
 		path = removeLast(path);
 		String id = getDocumentId(userId, path); 
-		super.removeKeyFromDocument(appId, id, auxKey);
+		super.removeKeyFromDocument(appId, id, key);
 		return removeKeyFromAscendents(appId, userId, key, path);
 	}
 	
