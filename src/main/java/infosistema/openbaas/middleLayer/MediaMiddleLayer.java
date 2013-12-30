@@ -164,7 +164,17 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 
 	@Override
 	protected List<String> getAllSearchResults(String appId, String userId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
-		return mediaModel.getMedia(appId, type, query, orderType);
+		if(query==null){
+			query = new JSONObject();
+			JSONObject jAux= new JSONObject();
+			jAux.put("$exists",1);
+			query.put("fileExtension", jAux); 
+			query.put("imageId", jAux);
+			query.put("pixelsSize", jAux);
+			query.put("fileName", jAux); 
+		}
+		return docModel.getDocuments(appId, userId, url, query, orderType);
+		//return mediaModel.getMedia(appId, type, query, orderType);
 	}
 	
 	

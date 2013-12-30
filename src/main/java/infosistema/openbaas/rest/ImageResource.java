@@ -144,6 +144,7 @@ public class ImageResource {
 		QueryParameters qp = QueryParameters.getQueryParameters(appId, null, query, radiusStr, latitudeStr, longitudeStr, 
 				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.image);
 		Response response = null;
+		if(pageNumberStr==null) pageNumberStr = "1";
 		String sessionToken = Utils.getSessionToken(hh);
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();

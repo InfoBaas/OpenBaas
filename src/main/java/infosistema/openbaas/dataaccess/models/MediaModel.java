@@ -16,7 +16,7 @@ import com.mongodb.DBCollection;
 public class MediaModel extends ModelAbstract {
 
 	// request types
-	public static final String APP_MEDIA_COLL_FORMAT = "app.%s.media";
+	public static final String APP_MEDIA_COLL_FORMAT = "app%sdata";
 	protected static final String _TYPE = "_type";
 	private static final String TYPE_QUERY_FORMAT = "{" + _TYPE + ": \"%s\"";
 	private static final String ID_FORMAT = "%s:%s";
@@ -61,7 +61,7 @@ public class MediaModel extends ModelAbstract {
 				return false;
 			}
 			JSONObject data = getJSonObject(fields);
-			data.put(_ID, getMediaId(type, objId));
+			data.put(_ID, objId);
 			data.put(_TYPE, type.toString());
 			super.insert(appId, data);
 		} catch (Exception e) {
@@ -92,9 +92,8 @@ public class MediaModel extends ModelAbstract {
 
 	public Map<String, String> getMedia(String appId, ModelEnum type, String objId) {
 		//CACHE
-		String id = getMediaId(type, objId);
 		try {
-			return getObjectFields(super.getDocument(appId, id));
+			return getObjectFields(super.getDocument(appId, objId));
 		} catch (JSONException e) {
 			Log.error("", this, "getMedia", "Error getting Media.", e);
 		}
@@ -133,7 +132,7 @@ public class MediaModel extends ModelAbstract {
 	
 	public Boolean mediaExists(String appId, ModelEnum type, String objId) {
 		//CACHE
-		String id = getMediaId(type, objId);
+		String id =objId;
 		return super.existsNode(appId, id);
 	}
 

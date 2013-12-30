@@ -85,7 +85,7 @@ public class IntegrationResource {
 		
 		Jedis jedis = pool.getResource();
 		try {
-			Set<String> a = jedis.keys("sessions:*");
+			Set<String> a = jedis.keys("sessions*");
 			Iterator<String> it =  a.iterator();
 			while(it.hasNext()){
 				String s = it.next();

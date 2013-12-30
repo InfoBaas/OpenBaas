@@ -189,30 +189,33 @@ public abstract class ModelAbstract {
 	
 	protected String getQueryString(String appId, String path, JSONObject query, String orderType) throws Exception {
 		if (query!=null) {
-			OperatorEnum oper = OperatorEnum.valueOf(query.getString(OperatorEnum.oper.toString())); 
-			if (oper == null)
-				throw new Exception("Error in query."); 
-			else if (oper.equals(OperatorEnum.and)) {
-				String oper1 = getQueryString(appId, path, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType);
-				String oper2 = getQueryString(appId, path, (JSONObject)(query.get(OperatorEnum.op2.toString())), orderType);
-				return getAndQueryString(oper1, oper2);
-			} else if (oper.equals(OperatorEnum.or)) {
-				String oper1 = getQueryString(appId, path, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType);
-				String oper2 = getQueryString(appId, path, (JSONObject)(query.get(OperatorEnum.op2.toString())), orderType);
-				return getOrQueryString(oper1, oper2);
-			} else if (oper.equals(OperatorEnum.not)) {
-				String oper1 = getQueryString(appId, path, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType);
-				return getNotQueryString(oper1);
-			} else {
-				String value = null; 
-				try { value = query.getString(QueryParameters.ATTR_VALUE); } catch (Exception e) {}
-				String attribute = null;
-				try { attribute = query.getString(QueryParameters.ATTR_ATTRIBUTE); } catch (Exception e) {}
-				if (attribute == null) {
-					try { attribute = query.getString(QueryParameters.ATTR_PATH); } catch (Exception e) {}
+			if(query.has(OperatorEnum.oper.toString())){
+				OperatorEnum oper = OperatorEnum.valueOf(query.getString(OperatorEnum.oper.toString())); 
+				if (oper == null)
+					throw new Exception("Error in query."); 
+				else if (oper.equals(OperatorEnum.and)) {
+					String oper1 = getQueryString(appId, path, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType);
+					String oper2 = getQueryString(appId, path, (JSONObject)(query.get(OperatorEnum.op2.toString())), orderType);
+					return getAndQueryString(oper1, oper2);
+				} else if (oper.equals(OperatorEnum.or)) {
+					String oper1 = getQueryString(appId, path, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType);
+					String oper2 = getQueryString(appId, path, (JSONObject)(query.get(OperatorEnum.op2.toString())), orderType);
+					return getOrQueryString(oper1, oper2);
+				} else if (oper.equals(OperatorEnum.not)) {
+					String oper1 = getQueryString(appId, path, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType);
+					return getNotQueryString(oper1);
+				} else {
+					String value = null; 
+					try { value = query.getString(QueryParameters.ATTR_VALUE); } catch (Exception e) {}
+					String attribute = null;
+					try { attribute = query.getString(QueryParameters.ATTR_ATTRIBUTE); } catch (Exception e) {}
+					if (attribute == null) {
+						try { attribute = query.getString(QueryParameters.ATTR_PATH); } catch (Exception e) {}
+					}
+					return getOperationQueryString(oper, attribute, value);
 				}
-				return getOperationQueryString(oper, attribute, value);
-			}
+			}else
+				return query.toString();
 		} else {
 			return null;
 		}
