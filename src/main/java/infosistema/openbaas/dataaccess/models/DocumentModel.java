@@ -21,10 +21,17 @@ public class DocumentModel extends ModelAbstract {
 	private static final String DATA = "data";
 	private static final String _PARENT_PATH = "_parentPath"; 
 	private static final String _KEY = "_key";
+	protected static final String _SN_SOCIALNETWORK_ID = "SN_SocialNetwork_ID";
+	protected static final String _BASE_LOCATION_OPTION = "baseLocationOption";
+	protected static final String _BASE_LOCATION = "baseLocation";
+	protected static final String _LOCATION = "location";
+	protected static final String _HASH = "hash";
+	protected static final String _EMAIL = "email";
+	protected static final String _ALIVE = "alive";
+	protected static final String _SALT = "salt";
 	private static final String PARENT_PATH_QUERY_FORMAT = "{\"" + _PARENT_PATH + "\": \"%s\"}";
 	private static final String APP_DATA_COLL_FORMAT = "app%sdata";
 
-	
 	// *** VARIABLES *** //
 	
 	Geolocation geo;
@@ -85,9 +92,17 @@ public class DocumentModel extends ModelAbstract {
 	protected BasicDBObject getDataProjection() {
 		if (dataProjection == null) {
 			dataProjection = super.getDataProjection(new BasicDBObject());
-			dataProjection.append(_KEY, ZERO);
-			dataProjection.append(_USER_ID, ZERO);
-			dataProjection.append(_PARENT_PATH, ZERO);
+			dataProjection.append(_KEY, 0);
+			dataProjection.append(_USER_ID, 0);
+			dataProjection.append(_PARENT_PATH, 0);
+			dataProjection.append(_SN_SOCIALNETWORK_ID, 0);
+			dataProjection.append(_BASE_LOCATION_OPTION, 0);
+			dataProjection.append(_BASE_LOCATION, 0);
+			dataProjection.append(_LOCATION, 0);
+			dataProjection.append(_HASH, 0);
+			dataProjection.append(_EMAIL, 0);
+			dataProjection.append(_ALIVE, 0);
+			dataProjection.append(_SALT, 0);
 		}
 		return dataProjection;
 	}

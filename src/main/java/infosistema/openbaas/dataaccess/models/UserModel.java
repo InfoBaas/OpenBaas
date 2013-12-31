@@ -28,13 +28,13 @@ public class UserModel extends ModelAbstract {
 
 	// *** PRIVATE *** //
 	
-	private static final String _SN_SOCIALNETWORK_ID = "SN_SocialNetwork_ID";
-	private static final String _BASE_LOCATION_OPTION = "baseLocationOption";
-	private static final String _HASH = "hash";
-	private static final String _EMAIL = "email";
-	private static final String _ALIVE = "alive";
-	private static final String _SALT = "salt";
 	private static final String APP_DATA_COLL_FORMAT = "app%sdata";
+	protected static final String _SN_SOCIALNETWORK_ID = "SN_SocialNetwork_ID";
+	protected static final String _BASE_LOCATION_OPTION = "baseLocationOption";
+	protected static final String _HASH = "hash";
+	protected static final String _EMAIL = "email";
+	protected static final String _ALIVE = "alive";
+	protected static final String _SALT = "salt";
 		
 	private static final String USER_FIELD_KEY_FORMAT = "app:%s:user:%s:%s";
 	private static final String ALL = "all";
@@ -60,14 +60,14 @@ public class UserModel extends ModelAbstract {
 	protected BasicDBObject getDataProjection() {
 		if (dataProjection == null) {
 			dataProjection = super.getDataProjection(new BasicDBObject());
-			dataProjection.append(_USER_ID, ZERO);
+			dataProjection.append(_USER_ID, 1);
 			//Users
-			dataProjection.append(_SN_SOCIALNETWORK_ID, ZERO);
-			dataProjection.append(_BASE_LOCATION_OPTION, ZERO);
-			dataProjection.append(_HASH, ZERO);
-			dataProjection.append(_EMAIL, ZERO);
-			dataProjection.append(_ALIVE, ZERO);
-			dataProjection.append(_SALT, ZERO);
+			dataProjection.append(_SN_SOCIALNETWORK_ID, 1);
+			dataProjection.append(_BASE_LOCATION_OPTION, 1);
+			dataProjection.append(_HASH, 1);
+			dataProjection.append(_EMAIL, 1);
+			dataProjection.append(_ALIVE, 1);
+			dataProjection.append(_SALT, 1);
 		}
 		return dataProjection;
 	}

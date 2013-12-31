@@ -38,7 +38,7 @@ public class MediaModel extends ModelAbstract {
 	protected BasicDBObject getDataProjection() {
 		if (dataProjection == null) {
 			dataProjection = super.getDataProjection(new BasicDBObject());
-			dataProjection.append(_TYPE, ZERO);
+			dataProjection.append(_TYPE, 0);
 		}
 		return dataProjection;
 	}

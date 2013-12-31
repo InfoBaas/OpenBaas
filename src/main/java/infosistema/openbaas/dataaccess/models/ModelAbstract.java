@@ -27,7 +27,6 @@ public abstract class ModelAbstract {
 
 	// *** CONSTANTS *** //
 
-	protected static final int ZERO = 0; 
 	protected static final String _ID = "_id"; 
 	protected static final String _USER_ID = "_userId";
 		
@@ -63,7 +62,7 @@ public abstract class ModelAbstract {
 	protected abstract BasicDBObject getDataProjection();
 
 	protected BasicDBObject getDataProjection(BasicDBObject dataProjection) {
-		dataProjection.append(_ID, ZERO);
+		dataProjection.append(_ID, 0);
 		return dataProjection;
 	}
 
