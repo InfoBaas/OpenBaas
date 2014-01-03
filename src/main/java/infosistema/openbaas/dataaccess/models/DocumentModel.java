@@ -8,7 +8,6 @@ import infosistema.openbaas.utils.Log;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -66,6 +65,7 @@ public class DocumentModel {
 	}
 	
 	// criar nó da arvore se nao existe raiz (data ou userId)
+	//XPTO: Isto não me parece estar bem 
 	private boolean checkPath(DBCollection coll, String appId, String path, String userId) throws JSONException {
 		//se nao existir raiz faz um insert
 		try{
@@ -170,17 +170,10 @@ public class DocumentModel {
 	// *** GET LIST *** //
 	
 	public List<String> getOperation(String appId, OperatorEnum oper, String url, String path, String attribute, String value) {
-		//TODO IMPLEMENT
-		// Obter todos os paths (que são os ids, que correspondem ao path que vem no pedido
-		// exemplo se o path == "cidade/restaurante" devolver:
-		// "data/cidade/restaurante", "useid1//cidade/restaurante", "userid32/cidade/restaurante"
-		// se path for null é para devolver o path composto só por userid:
-		// "userid1", "userid2", "userid6"
 		List<String> listRes = new ArrayList<String>();
-		List<String> listTotal = new ArrayList<String>();
 		try {
 			
-			DBCollection coll = db.getCollection("testejm"); //getAppCollection(appId);
+			DBCollection coll = getAppCollection(appId);
 			BasicDBObject projection = new BasicDBObject();
 			projection.append("_id",0);
 			DBCursor cursor1 = coll.find(new BasicDBObject(),projection);
@@ -192,27 +185,18 @@ public class DocumentModel {
 				if(jsonIter.hasNext())
 					mainKey = (String) jsonIter.next();
 				if(mainKey!=null){
-					DBObject query = getOperDBQuery(oper,value,mainKey+"."+path);
+					DBObject query = getOperDBQuery(oper, value, mainKey+"."+path);
 					BasicDBObject findQuery = new BasicDBObject();
 					DBCursor cursor2 = coll.find(query);
 					if(cursor2.hasNext())
 						listRes.add(mainKey+"."+path);
 				}
-				listTotal.add(mainKey+"."+path);
-			}
-			if(oper.equals(OperatorEnum.notContains)||oper.equals(OperatorEnum.diferent)){
-				//Collections.substract(listTotal, listRes);
-				listTotal.removeAll(listRes);
-				listRes = listTotal;
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.error("", this, "getOperation", "Error quering mongoDB.", e);
 		}
 		return listRes;
 	}
-	
-	
 	
 
 	// *** GET *** //
@@ -224,7 +208,6 @@ public class DocumentModel {
 				res.put(path, java.util.regex.Pattern.compile(value));
 				//res = java.util.regex.Pattern.compile(value);
 			if(oper.equals(OperatorEnum.notContains)){
-				res.put(path, java.util.regex.Pattern.compile(value));
 				//TODO
 				/*BasicDBList docIds = new BasicDBList();
             	docIds.add(java.util.regex.Pattern.compile(value));
@@ -233,7 +216,7 @@ public class DocumentModel {
 			if(oper.equals(OperatorEnum.equals))
 				res = QueryBuilder.start(path).is(value).get();
 			if(oper.equals(OperatorEnum.diferent))
-				res = QueryBuilder.start(path).is(value).get();
+				res = QueryBuilder.start(path).notEquals(value).get();
 			if(oper.equals(OperatorEnum.greater))
 				res = QueryBuilder.start(path).greaterThan(value).get();
 			if(oper.equals(OperatorEnum.greaterOrEqual))
