@@ -200,7 +200,7 @@ public class AwsModel implements FileInterface {
 		return true;
 	}
 	
-	//XPTO parece-me muito muito parvo
+	//Parece-me muito muito parvo
 	@Override
 	public void deleteUser(String appId, String userId) throws NoSuchEntityException {
 		try{

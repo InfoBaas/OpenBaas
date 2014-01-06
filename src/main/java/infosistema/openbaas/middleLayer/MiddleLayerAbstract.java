@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.ws.rs.core.PathSegment;
+
 import org.codehaus.jettison.json.JSONObject;
 
 import infosistema.openbaas.data.ListResult;
@@ -70,6 +72,19 @@ public abstract class MiddleLayerAbstract {
 	}
 	
 
+	// *** PROTECTED *** //
+	
+	protected List<String> convertPath(List<PathSegment> path) {
+		List<String> retObj = new ArrayList<String>();
+		if (path != null) {
+			for(PathSegment pathSegment: path) {
+				retObj.add(pathSegment.getPath());
+			}
+		}
+		return retObj;
+	}
+	
+	
 	// *** GET LIST *** //
 
 	public ListResult find(QueryParameters qp) throws Exception {
@@ -190,6 +205,7 @@ public abstract class MiddleLayerAbstract {
 	protected List<String> getOperation(OperatorEnum oper, String appId, String url, String path, String attribute, String value, ModelEnum type) throws Exception {
 		return new ArrayList<String>();
 	}
+	
 	protected List<String> getAll(String appId, ModelEnum type) throws Exception {
 		return new ArrayList<String>();
 	}

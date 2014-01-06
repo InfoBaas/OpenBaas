@@ -136,7 +136,7 @@ public class UserDataResource {
 			}
 			if (appsMid.appExists(appId)) {
 				if (docMid.updateDocumentInPath(appId, userId, path, data, location)){
-					Metadata meta = docMid.updateMetadata(appId, userId, docMid.convertPath(path), userId, location, inputJsonObj);
+					Metadata meta = docMid.updateMetadata(appId, userId, docMid.convertPathToString(path), userId, location, inputJsonObj);
 					Result res = new Result(inputJsonObj, meta);		
 					
 					response = Response.status(Status.CREATED).entity(res).build();
@@ -175,7 +175,7 @@ public class UserDataResource {
 		if (code == 1) {
 			if (docMid.existsDocumentInPath(appId, userId, path)) {
 				if (docMid.deleteDocumentInPath(appId, userId, path)){
-					Boolean meta = docMid.deleteMetadata(appId, userId, docMid.convertPath(path), ModelEnum.data);
+					Boolean meta = docMid.deleteMetadata(appId, userId, docMid.convertPathToString(path), ModelEnum.data);
 					if(meta)
 						response = Response.status(Status.OK).entity("").build();
 					else
@@ -248,11 +248,11 @@ public class UserDataResource {
 				}
 				return response;
 			} else if (docMid.existsDocumentInPath(appId, userId, path)) {
-				String data = docMid.getDocumentInPath(appId, userId, path);
+				Object data = docMid.getDocumentInPath(appId, userId, path);
 				if (data == null)
 					response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 				else{
-					Metadata meta = docMid.getMetadata(appId, userId, docMid.convertPath(path), ModelEnum.data);
+					Metadata meta = docMid.getMetadata(appId, userId, docMid.convertPathToString(path), ModelEnum.data);
 					Result res = new Result(data, meta);
 					response = Response.status(Status.OK).entity(res).build();
 				}

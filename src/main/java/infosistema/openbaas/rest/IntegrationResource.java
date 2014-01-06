@@ -9,7 +9,7 @@ import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.data.models.User;
-import infosistema.openbaas.dataaccess.models.DocumentModel;
+//import infosistema.openbaas.dataaccess.models.DocumentModel;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
@@ -58,11 +58,11 @@ public class IntegrationResource {
 	}
 	
 
+	/*		
 	@Path("/test")
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response test(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
-		
 		DocumentModel m = new DocumentModel();
 		List<String> contains = m.getOperation(null, OperatorEnum.contains, null, "restaurante.nome", null, "es");
 		List<String> notContains = m.getOperation(null, OperatorEnum.notContains, null, "restaurante.idade", null, "11");
@@ -74,6 +74,7 @@ public class IntegrationResource {
 		List<String> lesserOrEqual = m.getOperation(null, OperatorEnum.lesserOrEqual, null, "restaurante.idade", null, "11");
 		return Response.status(Status.OK).entity(lesserOrEqual).build();
 	}
+*/		
 	
 	
 	

@@ -182,9 +182,4 @@ public class Log {
 		log(FATAL,asUser,asCallerObject,asMethodName,asMessage, t);
 	}
 
-	public static void main (String[] args) {
-		debug("####", "####", "####", "####");
-		info("####", "####", "####", "####");
-		error("####", "####", "####", "####");
-	}
 }

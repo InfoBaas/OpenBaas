@@ -41,7 +41,6 @@ public class MediaModel {
 		Jedis jedis = pool.getResource();
 		Boolean sucess = false;
 		String appObjectId = getAppObjectId(type, appId);
-		//String id = getId(type, objId);
 		try {
 			for (String key : fields.keySet()) {
 				if(fields.get(key)!=null)
@@ -54,6 +53,7 @@ public class MediaModel {
 		}
 		return sucess;
 	}
+	
 	
 	// *** UPDATE *** //
 
@@ -81,36 +81,7 @@ public class MediaModel {
 		return listRes;
 	}
 
-	//XPTO: PAGINAÇÃO
-	/* Lixo apagar depois de consultar
- 	public ArrayList<String> getAllMediaIds(String appId, ModelEnum type, Integer pageNumber, Integer pageSize, String orderBy, String orderType) {
-		Jedis jedis = pool.getResource();
-		ArrayList<String> mediaIds = new ArrayList<String>();
-		try {
-			String id = null;
-			if (type == null || type == ModelEnum.audio) {
-				id = getAppObjectId(ModelEnum.audio, appId);
-				mediaIds.addAll(jedis.smembers(id));
-			}
-			if (type == null || type == ModelEnum.image) {
-				id = getAppObjectId(ModelEnum.image, appId);
-				mediaIds.addAll(jedis.smembers(id));
-			}
-			if (type == null || type == ModelEnum.video) {
-				id = getAppObjectId(ModelEnum.video, appId);
-				mediaIds.addAll(jedis.smembers(id));
-			}
-			if (type == ModelEnum.storage) {
-				id = getAppObjectId(ModelEnum.storage, appId);
-				mediaIds.addAll(jedis.smembers(id));
-			}
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return mediaIds;		
-	}
-	 */
-
+	
 	// *** GET *** //
 
 	public ArrayList<String> getAllMediaIds(String appId, ModelEnum type) {

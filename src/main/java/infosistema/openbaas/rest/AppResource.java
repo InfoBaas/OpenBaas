@@ -224,48 +224,7 @@ public class AppResource {
 	
 	// *** GET LIST *** //
 
-	//XPTO: Não faz sentido isto
-	/**
-	 * Get all application Identifiers.
-	 * 
-	 * @param req
-	 * @return
-	 */
-	/*
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response findAllApplicationIds(@Context HttpServletRequest req, @Context UriInfo ui, @Context HttpHeaders hh,
-			@QueryParam(Const.PAGE_NUMBER) Integer pageNumber, @QueryParam(Const.PAGE_SIZE) Integer pageSize, 
-			@QueryParam(Const.ORDER_BY) String orderBy, @QueryParam(Const.ORDER_BY) String orderType ) {
-		if (pageNumber == null) pageNumber = Const.getPageNumber();
-		if (pageSize == null) 	pageSize = Const.getPageSize();
-		if (orderBy == null) 	orderBy = Const.getOrderBy();
-		if (orderType == null) 	orderType = Const.getOrderType();
-		Response response = null;
-		// Parameters treatment
-		int code = Utils.treatParametersAdmin(ui, hh);
-		if(code == 1){
-		JSONObject temp = new JSONObject();
-		ArrayList<String> ids = new ArrayList<String>();
-		try {
-			ids = appsMid.getAllAppIds(pageNumber, pageSize, orderBy, orderType);
-			Iterator<String> it = ids.iterator();
-			while (it.hasNext()) {
-				temp.accumulate("appId", it.next());
-			}
-		} catch (JSONException e) {
-			Log.error("", this, "findAllApplicationIds", "Error parsing the JSON.", e); 
-		}
-		ListResult res = new ListResult(ids,pageNumber);
-		response = Response.status(Status.OK).entity(res).build();
-		 } else if(code == -2){
-			 response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
-		 }else if(code == -1)
-			 response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
-		return response;
-	}
-*/
-	
+
 	// *** GET *** //
 	
 	/**

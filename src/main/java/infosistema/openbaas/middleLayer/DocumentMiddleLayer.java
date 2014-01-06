@@ -36,7 +36,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	// *** PRIVATE *** //
 
-	public String convertPath(List<PathSegment> path) {
+	public String convertPathToString(List<PathSegment> path) {
 		StringBuilder sb = new StringBuilder();
 		if (path != null) {
 			for(int i = 0; i < path.size(); i++)
@@ -52,7 +52,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 			sb.append("data.");
 		else
 			sb.append(userId).append(".");
-		String pathStr = convertPath(path);
+		String pathStr = convertPathToString(path);
 		if ("".equals(pathStr)) sb.deleteCharAt(sb.length()-1);
 		return sb.toString();
 	}
@@ -62,7 +62,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	public boolean insertDocumentInPath(String appId, String userId, List<PathSegment> path, JSONObject data, String location) {
 		try {
 			String pathRes = getDocumentPath(userId, path);
-			Boolean res =  docModel.insertDocumentInPath(appId, userId, pathRes, data);
+			Boolean res =  docModel.insertDocumentInPath(appId, userId, convertPath(path), data);
 			if (location != null){
 				String[] splitted = location.split(":");
 				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, pathRes);
@@ -82,11 +82,10 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	public boolean updateDocumentInPath(String appId, String userId, List<PathSegment> path, JSONObject data, String location) {
 		try {
-			String pathRes = getDocumentPath(userId, path);
-			Boolean res =  docModel.updateDocumentInPath(appId, userId, pathRes, data);
+			Boolean res =  docModel.updateDocumentInPath(appId, userId, convertPath(path), data);
 			if (location != null){
 				String[] splitted = location.split(":");
-				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, pathRes);
+				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, getDocumentPath(userId, path));
 			}
 			return res;
 		} catch (JSONException e) {
@@ -104,14 +103,13 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		Boolean res = false;
 		
 		try {
-			String pathRes = getDocumentPath(userId, path);
-			Metadata meta = getMetadata(appId, userId, convertPath(path), ModelEnum.data);
+			Metadata meta = getMetadata(appId, userId, convertPathToString(path), ModelEnum.data);
 			String location = meta.getLocation();
 			if (location != null){
 				String[] splitted = location.split(":");
-				geo.deleteObjectFromGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, pathRes);
+				geo.deleteObjectFromGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, getDocumentPath(userId, path));
 			}
-			res = docModel.deleteDocumentInPath(appId, getDocumentPath(userId, path));
+			res = docModel.deleteDocumentInPath(appId, userId, convertPath(path));
 		} catch (Exception e) {
 			Log.error("", this, "deleteDocumentInPath", "An error ocorred.", e); 
 			return false;
@@ -131,7 +129,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	// *** GET *** //
 	
-	public String getDocumentInPath(String appId, String userId, List<PathSegment> path) {
+	public Object getDocumentInPath(String appId, String userId, List<PathSegment> path) {
 		try {
 			return docModel.getDocumentInPath(appId, userId, getDocumentPath(userId, path));
 		} catch (Exception e) {
@@ -142,10 +140,9 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	// *** EXISTS *** //
 
-	//XPTO
 	public boolean existsDocumentInPath(String appId, String userId, List<PathSegment> path) {
 		try {
-			return docModel.existsDocumentInPath(appId, getDocumentPath(userId, path));
+			return docModel.existsDocumentInPath(appId, userId, convertPath(path));
 		} catch (Exception e) {
 			Log.error("", this, "existsDocumentInPath", "An error ocorred.", e); 
 			return false;
@@ -164,7 +161,6 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 		fields.put(Metadata.LAST_UPDATE_USER, creatorId);
 		fields.put(Metadata.LOCATION, location);
 		deleteMetadata(appId, userId, path, ModelEnum.data);
-		//TODO Propagate delete
 		if (propagateMetadata(key, input, fields))
 			return getMetadata(appId, userId, path, ModelEnum.data);
 		else

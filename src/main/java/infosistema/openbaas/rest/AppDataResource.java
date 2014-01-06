@@ -118,7 +118,7 @@ public class AppDataResource {
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (AppsMiddleLayer.getInstance().appExists(appId)) {
 				if (docMid.insertDocumentInPath(appId, null, path, inputJsonObj, location)){
-					Metadata meta = docMid.createMetadata(appId, null, docMid.convertPath(path), userId, location, inputJsonObj);
+					Metadata meta = docMid.createMetadata(appId, null, docMid.convertPathToString(path), userId, location, inputJsonObj);
 					Result res = new Result(inputJsonObj, meta);
 					response = Response.status(Status.CREATED).entity(res).build();
 				}
@@ -156,7 +156,7 @@ public class AppDataResource {
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (docMid.existsDocumentInPath(appId, null, path)) {
 				if (docMid.updateDocumentInPath(appId, null, path, inputJson, location)){
-					Metadata meta = docMid.updateMetadata(appId, null, docMid.convertPath(path), userId, location, inputJson);
+					Metadata meta = docMid.updateMetadata(appId, null, docMid.convertPathToString(path), userId, location, inputJson);
 					Result res = new Result(inputJson, meta);
 					response = Response.status(Status.OK).entity(res).build();
 				}
@@ -193,7 +193,7 @@ public class AppDataResource {
 		if (code == 1) {
 			if (docMid.existsDocumentInPath(appId, null, path)) {
 				if (docMid.deleteDocumentInPath(appId, null, path)){
-					Boolean meta = docMid.deleteMetadata(appId, null, docMid.convertPath(path), ModelEnum.data);
+					Boolean meta = docMid.deleteMetadata(appId, null, docMid.convertPathToString(path), ModelEnum.data);
 					if(meta)
 						response = Response.status(Status.OK).entity("").build();
 					else
@@ -229,7 +229,6 @@ public class AppDataResource {
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
 		return findDocument(null, ui, hh, query, radiusStr, latitudeStr, longitudeStr, pageNumberStr, pageSizeStr, orderByStr, orderTypeStr);
 	}
-
 	
 	/**
 	 * Retrieves the data contained in a key.
@@ -264,11 +263,11 @@ public class AppDataResource {
 				}
 				return response;
 			} else if (docMid.existsDocumentInPath(appId, null, path)) {
-				String data = docMid.getDocumentInPath(appId, null, path);
+				Object data = docMid.getDocumentInPath(appId, null, path);
 				if (data == null)
 					response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 				else{
-					Metadata meta = docMid.getMetadata(appId, null, docMid.convertPath(path), ModelEnum.data);
+					Metadata meta = docMid.getMetadata(appId, null, docMid.convertPathToString(path), ModelEnum.data);
 					Result res = new Result(data, meta);
 					response = Response.status(Status.OK).entity(res).build();
 				}
