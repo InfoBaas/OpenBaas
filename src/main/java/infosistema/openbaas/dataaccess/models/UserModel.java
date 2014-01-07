@@ -12,12 +12,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.jettison.json.JSONObject;
+
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-public class UserModel {
+public class UserModel extends ModelAbstract {
 
 	// request types
 	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
@@ -27,12 +29,14 @@ public class UserModel {
 		jedis = new Jedis(Const.getRedisGeneralServer(), Const.getRedisGeneralPort());
 	}
 
-	public Object clone() throws CloneNotSupportedException {
-		throw new CloneNotSupportedException();
+	// *** PRIVATE *** //
+	
+	private static final String USER_KEY_FORMAT = "users:%s";
+	
+	private String getUserKey(String userId) {
+		return String.format(USER_KEY_FORMAT, userId); 
 	}
 
-	// *** *** USERS *** *** //
-	
 	// *** CREATE *** //
 
 	public Boolean createUser(String appId, String userId, String userName, String socialId, String socialNetwork,
@@ -40,32 +44,53 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		Boolean res = false;
 		try {
-			if (!jedis.exists("users:" + userId)) {
-				long unixTime = System.currentTimeMillis() / 1000L;
-				jedis.zadd("users:time", unixTime, appId + ":" + userId);
-				jedis.hset("users:" + userId, "userId", userId);
-				if(userName!=null)
-					jedis.hset("users:" + userId, "userName", userName);
-				jedis.hset("users:" + userId, socialNetwork+"_id", socialId);
-				jedis.hset("users:" + userId, "email", email);
-				jedis.hset("users:" + userId, "salt", new String(salt, "ISO-8859-1"));
-				jedis.hset(("users:" + userId), "hash", new String(hash, "ISO-8859-1"));
-				jedis.hset("users:" + userId, "alive", new String("true"));				
-				jedis.hset("users:" + userId, "baseLocationOption", baseLocationOption.toString());
-				if(baseLocation!=null)
-					jedis.hset("users:" + userId, "baseLocation", baseLocation.toString());
-				else
-					jedis.hset("users:" + userId, "baseLocation", "null");
-				if(location!=null)
-					jedis.hset("users:" + userId, Const.LOCATION, location);
+			String userKey = getUserKey(userId);
+			if (!jedis.exists(userKey)) {
+				JSONObject obj = new JSONObject();
+				jedis.hset(userKey, "userId", userId);
+				obj.append("userId", userId);
+				if(userName!=null) {
+					jedis.hset(userKey, "userName", userName);
+					obj.append("userName", userName);
+				}
+				jedis.hset(userKey, socialNetwork+"_id", socialId);
+				obj.append(socialNetwork+"_id", socialId);
+				jedis.hset(userKey, "email", email);
+				obj.append("email", email);
+				jedis.hset(userKey, "salt", new String(salt, "ISO-8859-1"));
+				obj.append("salt", new String(salt, "ISO-8859-1"));
+				jedis.hset(userKey, "hash", new String(hash, "ISO-8859-1"));
+				obj.append("hash", new String(hash, "ISO-8859-1"));
+				jedis.hset(userKey, "alive", new String("true"));				
+				obj.append("alive", new String("true"));
+				jedis.hset(userKey, "baseLocationOption", baseLocationOption.toString());
+				obj.append("baseLocationOption", baseLocationOption.toString());
+				if (baseLocation != null) {
+					jedis.hset(userKey, "baseLocation", baseLocation.toString());
+					obj.append("baseLocation", baseLocation.toString());
+				}
+				if (location != null) {
+					jedis.hset(userKey, Const.LOCATION, location);
+					obj.append(Const.LOCATION, location);
+				}
+				if (flag != null) {
+					jedis.hset(userKey, "userFile", flag);
+					obj.append("userFile", flag);
+				}
+				if (emailConfirmed != null) {
+					jedis.hset(userKey, "emailConfirmed", "" + emailConfirmed);
+					obj.append("emailConfirmed", "" + emailConfirmed);
+				}
+				
+				super.insertDocumentInPath(appId, userId, null, obj);
+				
 				jedis.sadd("app:" + appId + ":users", userId);
 				jedis.sadd("app:" + appId + ":users:emails", email);
-				if(flag!=null)
-					jedis.hset(("users:" + userId), "userFile", flag);
-				if (emailConfirmed != null) 
-					jedis.hset("users:"+userId, "emailConfirmed", "" + emailConfirmed);
+				
 				res = true;
 			}
+		} catch (Exception e) {
+			Log.error("", this, "createUser", "Error creating User", e);
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -87,25 +112,42 @@ public class UserModel {
 	 * @param alive
 	 * @throws UnsupportedEncodingException 
 	 */
-	
+
+	//Isto terá de ser mudado
 	public Boolean updateUser(String appId, String userId, String userName,	String email, 
 			String userFile, Boolean baseLocationOption, String baseLocation, String location) {
 		Jedis jedis = pool.getResource();
 		Boolean res = false;
 		try {
-			jedis.hset("users:" + userId, "userName", userName);
-			jedis.hset("users:" + userId, "email", email);
-			jedis.hset("users:" + userId, "alive", new String("true"));				
-			jedis.hset("users:" + userId, "baseLocationOption", baseLocationOption.toString());
-			if(baseLocation!=null)
-				jedis.hset("users:" + userId, "baseLocation", baseLocation.toString());
-			else
+			String userKey = getUserKey(userId);
+			JSONObject obj = new JSONObject();
+			jedis.hset(userKey, "userName", userName);
+			obj.append("userName", userName);
+			jedis.hset(userKey, "email", email);
+			obj.append("email", email);
+			jedis.hset(userKey, "alive", new String("true"));				
+			obj.append("alive", new String("true"));
+			jedis.hset(userKey, "baseLocationOption", baseLocationOption.toString());
+			obj.append("baseLocationOption", baseLocationOption.toString());
+			if(baseLocation!=null) {
+				jedis.hset(userKey, "baseLocation", baseLocation.toString());
+				obj.append("baseLocation", baseLocation.toString());
+			} else {
 				jedis.hset("users:" + userId, "baseLocation", "null");
-			if(location!=null)
-				jedis.hset("users:" + userId, Const.LOCATION, location);
-			if(userFile!=null)
-				jedis.hset(("users:" + userId), "userFile", userFile);
+				obj.append("baseLocation", "null");
+			}
+			if(location!=null) {
+				jedis.hset(userKey, Const.LOCATION, location);
+				obj.append(Const.LOCATION, location);
+			}
+			if(userFile!=null) {
+				jedis.hset(userKey, "userFile", userFile);
+				obj.append("userFile", userFile);
+			}
+			super.updateDocumentInPath(appId, userId, null, obj);
 			res = true;
+		} catch (Exception e) {
+			Log.error("", this, "updateUser", "Error updating User", e);
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -116,7 +158,6 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		Boolean res = false;
 		try{
-			//"app:68c:users:emails"
 			jedis.srem("app:"+appId+":users:emails", oldEmail);
 			jedis.sadd("app:"+appId+":users:emails", newEmail);
 			res = true;
@@ -128,16 +169,14 @@ public class UserModel {
 		return res;
 	}
 
-
 	public void updateUserRecover(String appId, String userId, String email,
 			byte[] hash, byte[] salt) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
 		try {
-			jedis.hset("users:" + userId, "email", email);
-			jedis.hset(("users:" + userId), "salt", new String(salt,"ISO-8859-1"));
-			jedis.hset(("users:" + userId), "hash", new String(hash,"ISO-8859-1"));
-			long unixTime = System.currentTimeMillis() / 1000L;
-			jedis.zadd("users:time", unixTime, appId + ":" + userId);
+			String userKey = getUserKey(userId);
+			jedis.hset(userKey, "email", email);
+			jedis.hset(userKey, "salt", new String(salt,"ISO-8859-1"));
+			jedis.hset(userKey, "hash", new String(hash,"ISO-8859-1"));
 
 		} finally {
 			pool.returnResource(jedis);
@@ -147,7 +186,8 @@ public class UserModel {
 	public void updateUserLocation(String userId, String appId, String location) {
 		Jedis jedis = pool.getResource();
 		try{
-			jedis.hset(("users:" + userId), Const.LOCATION, location);
+			String userKey = getUserKey(userId);
+			jedis.hset(userKey, Const.LOCATION, location);
 		}finally{
 			pool.returnResource(jedis);
 		}
@@ -157,10 +197,9 @@ public class UserModel {
 			byte[] salt) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
 		try {
-			jedis.hset(("users:" + userId), "hash", new String(hash, "ISO-8859-1"));
-			jedis.hset("users:" + userId, "salt", new String(salt, "ISO-8859-1"));
-			long unixTime = System.currentTimeMillis() / 1000L;
-			jedis.zadd("users:time", unixTime, appId + ":" + userId);
+			String userKey = getUserKey(userId);
+			jedis.hset(userKey, "hash", new String(hash, "ISO-8859-1"));
+			jedis.hset(userKey, "salt", new String(salt, "ISO-8859-1"));
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -179,8 +218,6 @@ public class UserModel {
 
 	// *** GET LIST *** //
 
-	
-	
 	public List<String> getOperation(String appId, OperatorEnum oper, String attribute, String value) throws Exception {
 		Jedis jedis = pool.getResource();
 		List<String> listRes = new ArrayList<String>();
@@ -228,6 +265,7 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		Map<String, String> userFields = null;
 		try {
+			String userKey = getUserKey(userId);
 			Set<String> usersOfApp = jedis.smembers("app:" + appId + ":users");
 			Iterator<String> it = usersOfApp.iterator();
 			Boolean userExistsforApp = false;
@@ -235,10 +273,8 @@ public class UserModel {
 				if (it.next().equalsIgnoreCase(userId))
 					userExistsforApp = true;
 			if (userExistsforApp) {
-				userFields = jedis.hgetAll("users:" + userId);
+				userFields = jedis.hgetAll(userKey);
 			}
-			if(userFields.get("baseLocation").equals("null"))
-				userFields.put("baseLocation", null);
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -264,12 +300,13 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		String userName = null;
 		try {
+			String userKey = getUserKey(userId);
 			Set<String> usersInApp = jedis.smembers("app:" + appId
 					+ ":users");
 			Iterator<String> it = usersInApp.iterator();
 			while (it.hasNext())
 				if (it.next().equalsIgnoreCase(userId))
-					userName = jedis.hget("users:" + userId, "userName");
+					userName = jedis.hget(userKey, "userName");
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -280,12 +317,13 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		String email = null;
 		try {
+			String userKey = getUserKey(userId);
 			Set<String> usersInApp = jedis.smembers("app:" + appId
 					+ ":users");
 			Iterator<String> it = usersInApp.iterator();
 			while (it.hasNext())
 				if (it.next().equalsIgnoreCase(userId))
-					email = jedis.hget("users:" + userId, "email");
+					email = jedis.hget(userKey, "email");
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -300,7 +338,7 @@ public class UserModel {
 			Iterator<String> it = usersInApp.iterator();
 			while (it.hasNext()){
 				String userAux = it.next();
-				String socialTemp = jedis.hget("users:" + userAux, socialNetwork+"_id");
+				String socialTemp = jedis.hget(getUserKey(userAux), socialNetwork+"_id");
 				if (socialTemp.equals(socialId))
 					userId = userAux;
 			}
@@ -317,8 +355,7 @@ public class UserModel {
 			Iterator<String> it = usersInApp.iterator();
 			while (it.hasNext()) {
 				String userId = it.next();
-				Map<String, String> userFields = jedis.hgetAll("users:"
-						+ userId);
+				Map<String, String> userFields = jedis.hgetAll(getUserKey(userId));
 				if (userFields.get("userName").equalsIgnoreCase(userName))
 					return userFields.get("email");
 			}
@@ -336,8 +373,7 @@ public class UserModel {
 			Iterator<String> it = usersInApp.iterator();
 			while (it.hasNext()) {
 				String userId = it.next();
-				Map<String, String> userFields = jedis.hgetAll("users:"
-						+ userId);
+				Map<String, String> userFields = jedis.hgetAll(getUserKey(userId));
 				if (userFields.get("userName").equalsIgnoreCase(userName))
 					return userFields.get("userId");
 			}
@@ -354,7 +390,7 @@ public class UserModel {
 			Iterator<String> it = usersInApp.iterator();
 			while (it.hasNext()) {
 				String userId = it.next();
-				Map<String, String> userFields = jedis.hgetAll("users:"	+ userId);
+				Map<String, String> userFields = jedis.hgetAll(getUserKey(userId));
 				if (userFields.get("email").equalsIgnoreCase(email))
 					return userFields.get("userId");
 			} 
@@ -372,15 +408,13 @@ public class UserModel {
 			Iterator<String> it = usersInApp.iterator();
 			while (it.hasNext()) {
 				String userId = it.next();
-				Map<String, String> userFields = jedis.hgetAll("users:"	+ userId);
+				Map<String, String> userFields = jedis.hgetAll(getUserKey(userId));
 				if (userFields.get("email").equalsIgnoreCase(email)){
 					res.setUserID(userFields.get("userId"));
 					res.setUserName(userFields.get("userName"));
 					res.setUserFile(userFields.get("userFile"));
-					if(userFields.get("baseLocation").equals("null"))
-						res.setBaseLocation(null);
-					else
-						res.setBaseLocation(userFields.get("baseLocation"));
+					
+					res.setBaseLocation(userFields.get("baseLocation"));
 					res.setLastLocation(userFields.get("location"));
 					res.setBaseLocationOption(Boolean.parseBoolean(userFields.get("baseLocationOption")));
 				}
@@ -405,11 +439,12 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		Boolean sucess = false;
 		try {
-			if (jedis.exists("users:"+userId)) {
+			String userKey = getUserKey(userId);
+			if (jedis.exists(userKey)) {
 				jedis.zrem("users:time", userId);
 				Client c1 = jedis.getClient();
 				c1.getPort();
-				jedis.hset("users:" + userId, "alive", "false");
+				jedis.hset(userKey, "alive", "false");
 				jedis.sadd("app:" + appId + ":users:inactive", appId + ":" + userId);
 				sucess = true;
 			} else {
@@ -428,8 +463,6 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		Boolean userExists = false;
 		try {
-			//Set<String> usersInApp = jedis.smembers("app:" + appId + ":users");
-			//Iterator<String> it = usersInApp.iterator();
 			if (jedis.sismember("app:" + appId + ":users:emails", email))
 				userExists = true;
 		} finally {
@@ -458,7 +491,8 @@ public class UserModel {
 	public Boolean confirmUserEmail(String appId, String userId) {
 		Jedis jedis = pool.getResource();
 		try {
-			jedis.hset("users:"+userId, "emailConfirmed", true+"");
+			String userKey = getUserKey(userId);
+			jedis.hset(userKey, "emailConfirmed", true+"");
 		}finally {
 			pool.returnResource(jedis);
 		}
@@ -469,14 +503,12 @@ public class UserModel {
 		Jedis jedis = pool.getResource();
 		Boolean isConfirmed = false;
 		try {
-			isConfirmed = Boolean.parseBoolean(jedis.hget("users:"+userId, "emailConfirmed"));
+			String userKey = getUserKey(userId);
+			isConfirmed = Boolean.parseBoolean(jedis.hget(userKey, "emailConfirmed"));
 		}finally {
 			pool.returnResource(jedis);
 		}
 		return isConfirmed;
 	}
-
-	
-	
 
 }

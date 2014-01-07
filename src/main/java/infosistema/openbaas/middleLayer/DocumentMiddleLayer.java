@@ -131,7 +131,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	public Object getDocumentInPath(String appId, String userId, List<PathSegment> path) {
 		try {
-			return docModel.getDocumentInPath(appId, userId, getDocumentPath(userId, path));
+			return docModel.getDocumentInPath(appId, userId, convertPath(path));
 		} catch (Exception e) {
 			Log.error("", this, "getDocumentInPath", "An error ocorred.", e); 
 			return null;
@@ -142,7 +142,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 
 	public boolean existsDocumentInPath(String appId, String userId, List<PathSegment> path) {
 		try {
-			return docModel.existsDocumentAndChilds(appId, userId, convertPath(path));
+			return docModel.existsDocument(appId, userId, convertPath(path));
 		} catch (Exception e) {
 			Log.error("", this, "existsDocumentInPath", "An error ocorred.", e); 
 			return false;
