@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import javax.servlet.http.Cookie;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -81,7 +80,6 @@ public class UsersResource {
 		String newEmail = null;
 		Boolean newBaseLocationOption = null;
 		String newBaseLocation = null;
-		Boolean userUpdateEmail = true;
 		Boolean userUpdateFields = false;
 		
 		List<String> locationList = null;
@@ -105,40 +103,20 @@ public class UsersResource {
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 				try {
-				if(usersMid.userExistsInApp(appId, userId)){
-					User user = usersMid.getUserInApp(appId, userId);
-												
-					newUserName = (String) inputJsonObj.opt("userName");
+				if(usersMid.userIdExists(appId, userId)){
+					newUserName = (String) inputJsonObj.opt(User.USER_NAME);
+					newEmail = (String) inputJsonObj.opt(User.EMAIL);
 					newUserFile = (String) inputJsonObj.opt("userFile");
-					newEmail = (String) inputJsonObj.opt("email");
-					newBaseLocationOption = (Boolean) inputJsonObj.opt("baseLocationOption");
-					newBaseLocation = (String) inputJsonObj.opt("baseLocation");
-					
-					if(newUserName==null)
-						newUserName = user.getUserName();
-					if(newUserFile==null)
-						newUserFile = user.getUserFile();		
-					if(newBaseLocationOption==null)
-						newBaseLocationOption = user.getBaseLocationOption();		
-					if(newBaseLocation==null)
-						newBaseLocation = user.getBaseLocation();	
-					if (locationList != null)
-						location = locationList.get(0);
-					if (userAgentList != null)
-						userAgent = userAgentList.get(0);
-					if(newEmail==null)
-						newEmail = user.getEmail();
-					else{
-						String oldEmail = user.getEmail();
-						userUpdateEmail = usersMid.updateUserEmail(appId,userId,newEmail, oldEmail);
-				}
-					userUpdateFields = usersMid.updateUser(appId, userId, newUserName, newEmail, newUserFile, newBaseLocationOption, newBaseLocation, location);
-					if(userUpdateEmail && userUpdateFields){
+					newBaseLocationOption = (Boolean) inputJsonObj.opt(User.BASE_LOCATION_OPTION);
+					newBaseLocation = (String) inputJsonObj.opt(User.BASE_LOCATION);
+					userUpdateFields = usersMid.updateUser(appId, userId, newUserName, newEmail,
+							newUserFile, newBaseLocationOption, newBaseLocation, location);
+					if(userUpdateFields){
 						sessionMid.refreshSession(sessionToken.getValue(), location, userAgent);
 						Metadata meta = usersMid.updateMetadata(appId, null, userId, userId, ModelEnum.users, location);
 						Result res = new Result(usersMid.getUserInApp(appId, userId), meta);		
 						return Response.status(Status.OK).entity(res).build();
-			}
+					}
 				}
 			}catch(Exception e){
 				Log.error("", this, "Internal Error", "Internal Error", e); 
@@ -242,8 +220,8 @@ public class UsersResource {
 			Log.debug("", this, "findById", "********Finding User info************");
 			User temp = null;
 			if (AppsMiddleLayer.getInstance().appExists(appId)) {
-				if (usersMid.identifierInUseByUserInApp(appId, userId)) {
-					temp = usersMid.getUserInApp(appId, userId);
+				temp = usersMid.getUserInApp(appId, userId);
+				if (temp != null) {
 					Metadata meta = usersMid.getMetadata(appId, null, userId, ModelEnum.users);
 					Result res = new Result(temp, meta);
 					Log.debug("", this, "findById", "userId: " + temp.getUserId()+ "email: " + temp.getEmail());

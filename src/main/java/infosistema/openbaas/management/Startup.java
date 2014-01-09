@@ -40,7 +40,7 @@ public class Startup implements ServletContextListener {
 		} catch (InvalidKeySpecException e) {
 			Log.error("", this, "contextInitialized", "Invalid Key.", e); 
 		}
-		if (!usersMid.userExistsInApp(AdminAppId, AdminId, AdminEmail)) {
+		if (!usersMid.userEmailExists(AdminAppId, AdminEmail)) {
 			Log.debug("", this, "contextInitialized", "*****************Creating user***************");
 			Log.debug("", this, "contextInitialized", "userId: " + AdminId + " email: " + AdminEmail);
 			Log.debug("", this, "contextInitialized", "********************************************");

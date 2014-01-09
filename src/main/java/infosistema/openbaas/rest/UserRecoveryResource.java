@@ -68,7 +68,7 @@ public class UserRecoveryResource {
 				Log.error("", this, "makeRecoveryRequest", "Error parsing the JSON.", e); 
 			}
 			String newPass="aaa";
-			boolean opOk = usersMid.recoverUser(appId, userId, email, ui,newPass,null,null);
+			boolean opOk = usersMid.recoverUser(appId, userId, email, ui, newPass, null, null);
 			if(opOk)
 				response = Response.status(Status.OK).entity(Const.getEmailConfirmationSended()).build();
 			else

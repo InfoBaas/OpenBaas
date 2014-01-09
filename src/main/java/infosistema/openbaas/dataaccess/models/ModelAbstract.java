@@ -51,8 +51,6 @@ public abstract class ModelAbstract {
 	private DB db;
 	public static final String APP_COLL_FORMAT = "app%sData";
 	public static final String UserDataColl = "users:data";
-	private List<JSONObject> jsonList = new ArrayList<JSONObject>();
-	private JSONObject aux;
 	Geolocation geo;
 	
 	public ModelAbstract() {
@@ -118,7 +116,6 @@ public abstract class ModelAbstract {
 			while (it.hasNext()) {
 				String key = (String) it.next();
 				Object value = data.get(key);
-				aux = data; 
 				if (value instanceof JSONObject) {
 					keysToRemove.add(key);
 					List<String> newPath = new ArrayList<String>();
@@ -335,7 +332,7 @@ public abstract class ModelAbstract {
 			if (path.size() <= 0) return null;
 			//3 - ver se existe um document que tenha _id = path - last
 			List<String> newPath = new ArrayList<String>();
-			String key = newPath.get(path.size() -1);
+			//String key = newPath.get(path.size() -1);
 			newPath.addAll(path);
 			newPath.remove(path.size() -1);
 			id = getDocumentId(userId, newPath);

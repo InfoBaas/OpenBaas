@@ -19,40 +19,37 @@ import org.codehaus.jackson.annotate.JsonIgnore;
  */
 @XmlRootElement
 public class User {
+	
+	public static final String USER_NAME = "userName";
+	public static final String EMAIL = "email";
+	public static final String USER_FILE = "userFile";
+	public static final String SALT = "salt";
+	public static final String HASH = "hash";
+	public static final String FLAG = "flag";
+	public static final String ALIVE = "alive";
+	public static final String EMAIL_CONFIRMED = "emailConfirmed";
+	public static final String BASE_LOCATION_OPTION = "baseLocationOption";
+	public static final String BASE_LOCATION = "baseLocation";
+	public static final String LOCATION = "location";
+	private static final String SN_PREFIXO = "SN_";
+	private static final String SN_SUFIXO = "_ID";
+	private static final String SOCIAL_NETWORK_ID_FORMAT = SN_PREFIXO +"%s" + SN_SUFIXO;
+	
 	private String userId;
 	private String email;
+	private String emailConfirmed;
 	private String userName;
+	private String userFile;
 	@JsonIgnore
 	private byte[] salt;
 	@JsonIgnore
 	private byte[] hash;
 	private String alive;
 	private String returnToken;
-	private String userFile;
-	private Boolean baseLocationOption;
+	private String baseLocationOption;
 	private String baseLocation;
 	private String lastLocation;
-	/**
-	 * Provides the user creation mechanism.
-	 * 
-	 * The password's hash is computed using PBKDF2, salt and hash are stored.
-	 * 
-	 * @param name
-	 *            User name;
-	 * @param email
-	 *            User email;
-	 * @param password
-	 *            User password in Hash;
-	 * @return true if the user was created sucessfully.
-	 * 
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeySpecException
-	 */
-	public User(String userId, String email) {
-		this.userId = userId;
-		this.email = email;
-		this.setAlive("true");
-	}
+
 	public User(String userId){
 		this.userId = userId;
 	}
@@ -60,68 +57,35 @@ public class User {
 		this.setAlive("true");
 	}
 
-	public User(String id, String email, byte[] hash,  byte[] salt) {
-		this.userId = id;
-		this.email = email;
-		this.setAlive("true");
-	}
-
-	public String getIDByEmail(String email) {
-		return this.userId;
-	}
-
-	public void setUserEmail(String email) {
-		this.email = email;
-	}
-
 	public boolean equals(String id) {
-		if (this.userId.equalsIgnoreCase(id))
-			return true;
-		else
-			return false;
+		return this.userId.equalsIgnoreCase(id);
 	}
 
-	
-	public void setUserID(String id) {
-		this.userId = id;
-
-	}
-
-	public void setUserIDAndEmail(String id, String email) {
-		this.userId = id;
-		this.email = email;
-	}
-
-	public void updateAllFields(String id, String email, String password) {
-		try {
-			PasswordEncryptionService service = new PasswordEncryptionService();
-			salt = service.generateSalt();
-			this.email = email;
-			this.userId = id;
-
-			this.hash = service.getEncryptedPassword(password, salt);
-		} catch (NoSuchAlgorithmException e) {
-			Log.error("", this, "updateAllFields", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
-		} catch (InvalidKeySpecException e) {
-			Log.error("", this, "updateAllFields", "Invalid Key.", e); 
-		}
-	}
-
-	public void setAllFields(String id, String email, String password) {
-		this.userId = id;
-		this.email = email;
-		this.setUserPassword(password);
+	public void setUserID(String userId) {
+		this.userId = userId;
 	}
 
 	public String getUserId() {
 		return this.userId;
 	}
 
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	
 	public String getEmail() {
 		return this.email;
 	}
 
-	public void setUserPassword(String password) {
+	public void setEmailConfirmed(String emailConfirmed) {
+		this.emailConfirmed = emailConfirmed;
+	}
+	
+	public String getEmailConfirmed() {
+		return this.emailConfirmed;
+	}
+
+	public void setUserPassword_(String password) {
 		try {
 			PasswordEncryptionService service = new PasswordEncryptionService();
 			salt = service.generateSalt();
@@ -133,54 +97,74 @@ public class User {
 		}
 
 	}
+
 	@JsonIgnore
-	public byte[] getHash() {
+	public byte[] getHash_() {
 		return this.hash;
 	}
-	public void setInactive(){
-		this.setAlive("false");
-	}
+	
 	public String getUserName() {
 		return this.userName;
 	}	
+
 	public void setUserName(String userName){
 		this.userName = userName;
 	}
+	
+	public String getUserFile() {
+		return this.userFile;
+	}	
+
+	public void setUserFile(String userFile){
+		this.userFile = userFile;
+	}
+	
 	public String getAlive() {
 		return alive;
 	}
+	
 	public void setAlive(String alive) {
 		this.alive = alive;
 	}
+	
 	public String getReturnToken() {
 		return returnToken;
 	}
+	
 	public void setReturnToken(String returnToken) {
 		this.returnToken = returnToken;
 	}
-	public String getUserFile() {
-		return userFile;
-	}
-	public void setUserFile(String userFile) {
-		this.userFile = userFile;
-	}
-	public Boolean getBaseLocationOption() {
+
+	public String getBaseLocationOption() {
 		return baseLocationOption;
 	}
-	public void setBaseLocationOption(Boolean baseLocationOption) {
+
+	public void setBaseLocationOption(String baseLocationOption) {
 		this.baseLocationOption = baseLocationOption;
 	}
+	
 	public String getLastLocation() {
 		return lastLocation;
 	}
+	
 	public void setLastLocation(String lastLocation) {
 		this.lastLocation = lastLocation;
 	}
+	
 	public String getBaseLocation() {
 		return baseLocation;
 	}
+	
 	public void setBaseLocation(String baseLocation) {
 		this.baseLocation = baseLocation;
 	}
+
+	public static String SOCIAL_NETWORK_ID(String socialNetwork) {
+		return String.format(SOCIAL_NETWORK_ID_FORMAT, socialNetwork); 
+	}
 	
+	public static boolean isIndexedField(String key) {
+		return key!=null && (key.equals(EMAIL) || key.equals(USER_NAME) || (key.startsWith(SN_PREFIXO) && key.endsWith(SN_SUFIXO))); 
+	}
+
 }

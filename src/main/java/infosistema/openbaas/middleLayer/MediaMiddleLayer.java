@@ -70,14 +70,6 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		String fileName = (idx < 0 ? fullFileName : fullFileName.substring(0, idx));
 		String fileExtension = (idx < 0 ? "" : fullFileName.substring(idx + 1));
 		String fileSize = "-1";
-		/*
-		try {
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			InputStream streamAux = stream;
-			//IOUtils.copy(streamAux, out);
-			fileSize = "" + out.size();
-		} catch (Exception e) { }
-		*/
 		Map<String, String> fields = new HashMap<String, String>();
 
 		fields.put(Media.SIZE, fileSize);

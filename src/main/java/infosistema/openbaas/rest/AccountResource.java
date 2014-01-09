@@ -80,7 +80,6 @@ public class AccountResource {
 		Boolean baseLocationOption = null;
 		String baseLocation = null;
 		String userFile = null;
-		String userId = null;
 		String appKey = null;
 		Boolean readOk = false;
 		String location = null;
@@ -115,7 +114,7 @@ public class AccountResource {
 		if(!AppsMiddleLayer.getInstance().appExists(appId))
 			return Response.status(Status.NOT_FOUND).entity("{\"App\": "+appId+"}").build();
 		if (readOk) {
-			if (!usersMid.userExistsInApp(appId, userId, email)) {
+			if (!usersMid.userEmailExists(appId, email)) {
 				if (uriInfo == null) 
 					uriInfo=ui;
 				User outUser = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile,baseLocationOption, baseLocation);
@@ -199,7 +198,7 @@ public class AccountResource {
 					if (validation && refreshCode) {
 						outUser.setUserID(outUser.getUserId());
 						outUser.setReturnToken(sessionToken);
-						outUser.setUserEmail(email);
+						outUser.setEmail(email);
 						outUser.setUserName(outUser.getUserName());
 						outUser.setUserFile(outUser.getUserFile());
 						outUser.setBaseLocation(outUser.getBaseLocation());
@@ -223,7 +222,7 @@ public class AccountResource {
 					if (validation && refreshCode) {
 						outUser.setUserID(outUser.getUserId());
 						outUser.setReturnToken(sessionToken);
-						outUser.setUserEmail(email);
+						outUser.setEmail(email);
 						outUser.setUserName(outUser.getUserName());
 						outUser.setUserFile(outUser.getUserFile());
 						outUser.setBaseLocation(outUser.getBaseLocation());

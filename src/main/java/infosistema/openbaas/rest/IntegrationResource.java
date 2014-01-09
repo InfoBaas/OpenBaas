@@ -147,7 +147,7 @@ public class IntegrationResource {
 			
 		}
 		userId = usersMid.getUserIdUsingEmail(appId, email);
-		//userSocialId = usersMid.socialUserExistsInApp(appId, socialId, socialNetwork);
+		userSocialId = usersMid.socialUserExists(appId, socialId, socialNetwork);
 		if (userId==null) {
 			if (uriInfo == null) uriInfo=ui;
 			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
@@ -161,13 +161,11 @@ public class IntegrationResource {
 				sessionMid.refreshSession(sessionToken, location, userAgent);
 				outUser.setUserID(userId);
 				outUser.setReturnToken(sessionToken);
-				outUser.setUserEmail(email);
+				outUser.setEmail(email);
 				outUser.setUserName(userName);
 				Metadata meta = usersMid.createMetadata(appId, userId, null, userId, ModelEnum.users, location);
 				Result res = new Result(outUser, meta);
 				response = Response.status(Status.OK).entity(res).build();
-			}else{
-				response = Response.status(Status.CONFLICT).entity(new Error("Invalid authentication")).build();
 			}
 		}
 		return response;
@@ -194,7 +192,7 @@ public class IntegrationResource {
 	 * 
 	 * @param inputJsonObj
 	 * @return
-	 *//*
+	 */
 	@Path("/linkedin")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -244,7 +242,7 @@ public class IntegrationResource {
 			userName = email;
 		}
 		userId = usersMid.getUserIdUsingEmail(appId, email);
-		userSocialId = usersMid.socialUserExistsInApp(appId, socialId, socialNetwork);
+		userSocialId = usersMid.socialUserExists(appId, socialId, socialNetwork);
 		
 		if(userId!=null && userSocialId==null)
 			response =  Response.status(302).entity("User "+userId+" with email: "+email+" already exists in app.").build();
@@ -263,7 +261,7 @@ public class IntegrationResource {
 				sessionMid.refreshSession(sessionToken, location, userAgent);
 				outUser.setUserID(userId);
 				outUser.setReturnToken(sessionToken);
-				outUser.setUserEmail(email);
+				outUser.setEmail(email);
 				outUser.setUserName(userName);
 				Metadata meta = usersMid.createMetadata(appId, userId, null, userId, ModelEnum.users, location);
 				Result res = new Result(outUser, meta);
@@ -271,5 +269,5 @@ public class IntegrationResource {
 			}
 		}
 		return response;
-	}*/
+	}
 }

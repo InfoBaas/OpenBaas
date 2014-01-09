@@ -14,7 +14,6 @@ import java.util.Set;
 
 import org.codehaus.jettison.json.JSONObject;
 
-import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -31,61 +30,40 @@ public class UserModel extends ModelAbstract {
 
 	// *** PRIVATE *** //
 	
-	private static final String USER_KEY_FORMAT = "users:%s";
+	private static final String USER_FIELD_KEY_FORMAT = "app:%s:user:%s:%s";
+	private static final String ALL = "all";
 	
-	private String getUserKey(String userId) {
-		return String.format(USER_KEY_FORMAT, userId); 
+	private String getKey(String appId, String field, String id) {
+		return String.format(USER_FIELD_KEY_FORMAT, appId, field, id); 
 	}
 
+	private String getUserKey(String appId, String userId) {
+		return getKey(appId, ALL, userId); 
+	}
+
+	
 	// *** CREATE *** //
 
-	public Boolean createUser(String appId, String userId, String userName, String socialId, String socialNetwork,
-			String email, byte[] salt, byte[] hash, String flag, Boolean emailConfirmed, Boolean baseLocationOption, String baseLocation, String location) throws UnsupportedEncodingException {
+	public Boolean createUser(String appId, String userId, Map<String, String> fields) {
 		Jedis jedis = pool.getResource();
 		Boolean res = false;
 		try {
-			String userKey = getUserKey(userId);
+			String userKey = getUserKey(appId, userId);
 			if (!jedis.exists(userKey)) {
 				JSONObject obj = new JSONObject();
-				jedis.hset(userKey, "userId", userId);
-				obj.append("userId", userId);
-				if(userName!=null) {
-					jedis.hset(userKey, "userName", userName);
-					obj.append("userName", userName);
+				for (String key : fields.keySet()) {
+					if (fields.get(key) != null) {
+						String value = fields.get(key);
+						if (User.isIndexedField(key)) {
+							jedis.set(getKey(appId, key, value), userId);
+						}
+						jedis.hset(userKey, key, value);
+						obj.append(key, value);
+					}
 				}
-				jedis.hset(userKey, socialNetwork+"_id", socialId);
-				obj.append(socialNetwork+"_id", socialId);
-				jedis.hset(userKey, "email", email);
-				obj.append("email", email);
-				jedis.hset(userKey, "salt", new String(salt, "ISO-8859-1"));
-				obj.append("salt", new String(salt, "ISO-8859-1"));
-				jedis.hset(userKey, "hash", new String(hash, "ISO-8859-1"));
-				obj.append("hash", new String(hash, "ISO-8859-1"));
-				jedis.hset(userKey, "alive", new String("true"));				
-				obj.append("alive", new String("true"));
-				jedis.hset(userKey, "baseLocationOption", baseLocationOption.toString());
-				obj.append("baseLocationOption", baseLocationOption.toString());
-				if (baseLocation != null) {
-					jedis.hset(userKey, "baseLocation", baseLocation.toString());
-					obj.append("baseLocation", baseLocation.toString());
-				}
-				if (location != null) {
-					jedis.hset(userKey, Const.LOCATION, location);
-					obj.append(Const.LOCATION, location);
-				}
-				if (flag != null) {
-					jedis.hset(userKey, "userFile", flag);
-					obj.append("userFile", flag);
-				}
-				if (emailConfirmed != null) {
-					jedis.hset(userKey, "emailConfirmed", "" + emailConfirmed);
-					obj.append("emailConfirmed", "" + emailConfirmed);
-				}
-				
 				super.insertDocumentInPath(appId, userId, null, obj);
 				
-				jedis.sadd("app:" + appId + ":users", userId);
-				jedis.sadd("app:" + appId + ":users:emails", email);
+				//TODO: APAGAR jedis.sadd("app:" + appId + ":users", userId);
 				
 				res = true;
 			}
@@ -113,38 +91,27 @@ public class UserModel extends ModelAbstract {
 	 * @throws UnsupportedEncodingException 
 	 */
 
-	//Isto terá de ser mudado
-	public Boolean updateUser(String appId, String userId, String userName,	String email, 
-			String userFile, Boolean baseLocationOption, String baseLocation, String location) {
+	public Boolean updateUser(String appId, String userId, Map<String, String> fields) {
 		Jedis jedis = pool.getResource();
 		Boolean res = false;
 		try {
-			String userKey = getUserKey(userId);
-			JSONObject obj = new JSONObject();
-			jedis.hset(userKey, "userName", userName);
-			obj.append("userName", userName);
-			jedis.hset(userKey, "email", email);
-			obj.append("email", email);
-			jedis.hset(userKey, "alive", new String("true"));				
-			obj.append("alive", new String("true"));
-			jedis.hset(userKey, "baseLocationOption", baseLocationOption.toString());
-			obj.append("baseLocationOption", baseLocationOption.toString());
-			if(baseLocation!=null) {
-				jedis.hset(userKey, "baseLocation", baseLocation.toString());
-				obj.append("baseLocation", baseLocation.toString());
-			} else {
-				jedis.hset("users:" + userId, "baseLocation", "null");
-				obj.append("baseLocation", "null");
+			String userKey = getUserKey(appId, userId);
+			if (jedis.exists(userKey)) {
+				JSONObject obj = new JSONObject();
+				for (String key : fields.keySet()) {
+					if (fields.get(key) != null) {
+						String value = fields.get(key);
+						if (User.isIndexedField(key)) {
+							String oldValue = jedis.hget(userKey, key);
+							if (oldValue != null) jedis.del(getKey(appId, key, oldValue));
+							jedis.set(getKey(appId, key, value), userId);
+						}
+						jedis.hset(userKey, key, value);
+						obj.append(key, value);
+					}
+				}
+				super.updateDocumentInPath(appId, userId, null, obj);
 			}
-			if(location!=null) {
-				jedis.hset(userKey, Const.LOCATION, location);
-				obj.append(Const.LOCATION, location);
-			}
-			if(userFile!=null) {
-				jedis.hset(userKey, "userFile", userFile);
-				obj.append("userFile", userFile);
-			}
-			super.updateDocumentInPath(appId, userId, null, obj);
 			res = true;
 		} catch (Exception e) {
 			Log.error("", this, "updateUser", "Error updating User", e);
@@ -154,75 +121,15 @@ public class UserModel extends ModelAbstract {
 		return res;
 	}
 	
-	public Boolean updateUserEmail(String appId, String oldEmail, String newEmail) {
-		Jedis jedis = pool.getResource();
-		Boolean res = false;
-		try{
-			jedis.srem("app:"+appId+":users:emails", oldEmail);
-			jedis.sadd("app:"+appId+":users:emails", newEmail);
-			res = true;
-		}catch(Exception e){
-			Log.error("", this, "updateUserEmail", "updateUserEmail", e);
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
-
-	public void updateUserRecover(String appId, String userId, String email,
-			byte[] hash, byte[] salt) throws UnsupportedEncodingException {
-		Jedis jedis = pool.getResource();
-		try {
-			String userKey = getUserKey(userId);
-			jedis.hset(userKey, "email", email);
-			jedis.hset(userKey, "salt", new String(salt,"ISO-8859-1"));
-			jedis.hset(userKey, "hash", new String(hash,"ISO-8859-1"));
-
-		} finally {
-			pool.returnResource(jedis);
-		}
-	}
-
-	public void updateUserLocation(String userId, String appId, String location) {
-		Jedis jedis = pool.getResource();
-		try{
-			String userKey = getUserKey(userId);
-			jedis.hset(userKey, Const.LOCATION, location);
-		}finally{
-			pool.returnResource(jedis);
-		}
-	}
-
-	public Boolean updateUserPassword(String appId, String userId, byte[] hash,
-			byte[] salt) throws UnsupportedEncodingException {
-		Jedis jedis = pool.getResource();
-		try {
-			String userKey = getUserKey(userId);
-			jedis.hset(userKey, "hash", new String(hash, "ISO-8859-1"));
-			jedis.hset(userKey, "salt", new String(salt, "ISO-8859-1"));
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return true;
-	}
-
-	// *** GET LIST *** //
-	
-	public ArrayList<String> getAllUserIdsForApp(String appId,
-			Integer pageNumber, Integer pageSize, String orderBy,
-			String orderType) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 
 	// *** GET LIST *** //
 
+	//TODO: Corrigir
 	public List<String> getOperation(String appId, OperatorEnum oper, String attribute, String value) throws Exception {
 		Jedis jedis = pool.getResource();
 		List<String> listRes = new ArrayList<String>();
 		try{
-			Set<String> setUsers = jedis.smembers("app:"+appId+":users:emails");
+			Set<String> setUsers = null; //jedis.smembers("app:"+appId+":users:emails");
 			Iterator<String> iter = setUsers.iterator();
 			while(iter.hasNext()){
 				String userId = iter.next();
@@ -239,22 +146,11 @@ public class UserModel extends ModelAbstract {
 		return listRes;
 	}
 
-	public Set<String> getAllUserIdsForApp(String appId) {
-		Jedis jedis = pool.getResource();
-		Set<String> res = null;
-		try {
-			 res = jedis.smembers("app:"+appId+":users");	
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
-
 
 	// *** GET *** //
 
 	/**
-	 * Checks if user is present in the app:{appId}:users and if it is returns
+	 * Checks if user is present in the app:{appId}:all:users and if it is returns
 	 * its fields
 	 * 
 	 * @param appId
@@ -265,250 +161,86 @@ public class UserModel extends ModelAbstract {
 		Jedis jedis = pool.getResource();
 		Map<String, String> userFields = null;
 		try {
-			String userKey = getUserKey(userId);
-			Set<String> usersOfApp = jedis.smembers("app:" + appId + ":users");
-			Iterator<String> it = usersOfApp.iterator();
-			Boolean userExistsforApp = false;
-			while (it.hasNext())
-				if (it.next().equalsIgnoreCase(userId))
-					userExistsforApp = true;
-			if (userExistsforApp) {
-				userFields = jedis.hgetAll(userKey);
-			}
+			String userKey = getUserKey(appId, userId);
+			userFields = jedis.hgetAll(userKey);
+			if (userFields == null || userFields.size() <= 0)
+				return null;
 		} finally {
 			pool.returnResource(jedis);
 		}
 		return userFields;
 	}
 
-	public Boolean identifierInUseByUserInApp(String appId, String userId) {
+	public String getUserField(String appId, String userId, String field) {
 		Jedis jedis = pool.getResource();
-		Boolean userExists = false;
 		try {
-			Set<String> usersInApp = jedis.smembers("app:" + appId	+ ":users");
-			Iterator<String> it = usersInApp.iterator();
-			while (it.hasNext())
-				if (it.next().equalsIgnoreCase(userId))
-					userExists = true;
+			String userKey = getUserKey(appId, userId);
+			return jedis.hget(userKey, field);
 		} finally {
 			pool.returnResource(jedis);
 		}
-		return userExists;
-	}
-
-	public String getUserNameUsingUserId(String appId, String userId) {
-		Jedis jedis = pool.getResource();
-		String userName = null;
-		try {
-			String userKey = getUserKey(userId);
-			Set<String> usersInApp = jedis.smembers("app:" + appId
-					+ ":users");
-			Iterator<String> it = usersInApp.iterator();
-			while (it.hasNext())
-				if (it.next().equalsIgnoreCase(userId))
-					userName = jedis.hget(userKey, "userName");
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return userName;
-	}
-
-	public String getEmailUsingUserId(String appId, String userId) {
-		Jedis jedis = pool.getResource();
-		String email = null;
-		try {
-			String userKey = getUserKey(userId);
-			Set<String> usersInApp = jedis.smembers("app:" + appId
-					+ ":users");
-			Iterator<String> it = usersInApp.iterator();
-			while (it.hasNext())
-				if (it.next().equalsIgnoreCase(userId))
-					email = jedis.hget(userKey, "email");
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return email;
 	}
 	
 	public String getUserIdUsingSocialInfo(String appId, String socialId, String socialNetwork) {
-		Jedis jedis = pool.getResource();
-		String userId = null;
-		try {
-			Set<String> usersInApp = jedis.smembers("app:" + appId	+ ":users");
-			Iterator<String> it = usersInApp.iterator();
-			while (it.hasNext()){
-				String userAux = it.next();
-				String socialTemp = jedis.hget(getUserKey(userAux), socialNetwork+"_id");
-				if (socialTemp.equals(socialId))
-					userId = userAux;
-			}
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return userId;
+		return getUserIdUsingField(appId, User.SOCIAL_NETWORK_ID(socialNetwork), socialId);
 	}	
 
-	public String getEmailUsingUserName(String appId, String userName) {
-		Jedis jedis = pool.getResource();
-		try {
-			Set<String> usersInApp = jedis.smembers("app:" + appId + ":users");
-			Iterator<String> it = usersInApp.iterator();
-			while (it.hasNext()) {
-				String userId = it.next();
-				Map<String, String> userFields = jedis.hgetAll(getUserKey(userId));
-				if (userFields.get("userName").equalsIgnoreCase(userName))
-					return userFields.get("email");
-			}
-
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return null;
-	}
-
 	public String getUserIdUsingUserName(String appId, String userName) {
-		Jedis jedis = pool.getResource();
-		try {
-			Set<String> usersInApp = jedis.smembers("app:" + appId + ":users");
-			Iterator<String> it = usersInApp.iterator();
-			while (it.hasNext()) {
-				String userId = it.next();
-				Map<String, String> userFields = jedis.hgetAll(getUserKey(userId));
-				if (userFields.get("userName").equalsIgnoreCase(userName))
-					return userFields.get("userId");
-			}
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return null;
+		return getUserIdUsingField(appId, User.USER_NAME, userName);
 	}
 	
 	public String getUserIdUsingEmail(String appId, String email) {
+		return getUserIdUsingField(appId, User.EMAIL, email);
+	}
+
+	private String getUserIdUsingField(String appId, String field, String value) {
 		Jedis jedis = pool.getResource();
 		try {
-			Set<String> usersInApp = jedis.smembers("app:" + appId + ":users");
-			Iterator<String> it = usersInApp.iterator();
-			while (it.hasNext()) {
-				String userId = it.next();
-				Map<String, String> userFields = jedis.hgetAll(getUserKey(userId));
-				if (userFields.get("email").equalsIgnoreCase(email))
-					return userFields.get("userId");
-			} 
+			return jedis.get(getKey(appId, field, value));
+		} catch (Exception e){
+			Log.error("", this, "getUserIdUsingField", "Error getting User Id", e);
 		} finally {
 			pool.returnResource(jedis);
 		}
 		return null;
-	}
-
-	public User getUserUsingEmail(String appId, String email) {
-		Jedis jedis = pool.getResource();
-		User res = new User();
-		try {
-			Set<String> usersInApp = jedis.smembers("app:" + appId + ":users");
-			Iterator<String> it = usersInApp.iterator();
-			while (it.hasNext()) {
-				String userId = it.next();
-				Map<String, String> userFields = jedis.hgetAll(getUserKey(userId));
-				if (userFields.get("email").equalsIgnoreCase(email)){
-					res.setUserID(userFields.get("userId"));
-					res.setUserName(userFields.get("userName"));
-					res.setUserFile(userFields.get("userFile"));
-					
-					res.setBaseLocation(userFields.get("baseLocation"));
-					res.setLastLocation(userFields.get("location"));
-					res.setBaseLocationOption(Boolean.parseBoolean(userFields.get("baseLocationOption")));
-				}
-			} 
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
 	}
 
 	
 	// *** DELETE *** //
 
-	/**
-	 * If forever is true, then it deletes the user forever, if not it sets it
-	 * as inactive.
-	 * 
-	 * @param userId
-	 * @return
-	 */
-	public Boolean deleteUser(String appId, String userId) {
-		Jedis jedis = pool.getResource();
-		Boolean sucess = false;
-		try {
-			String userKey = getUserKey(userId);
-			if (jedis.exists(userKey)) {
-				jedis.zrem("users:time", userId);
-				Client c1 = jedis.getClient();
-				c1.getPort();
-				jedis.hset(userKey, "alive", "false");
-				jedis.sadd("app:" + appId + ":users:inactive", appId + ":" + userId);
-				sucess = true;
-			} else {
-				sucess = false;
-			}
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return sucess;
-	}
-
 
 	// *** EXISTS *** //
 
-	public Boolean userExistsInApp(String appId, String email) {
-		Jedis jedis = pool.getResource();
-		Boolean userExists = false;
-		try {
-			if (jedis.sismember("app:" + appId + ":users:emails", email))
-				userExists = true;
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return userExists;
+	public Boolean userIdExists(String appId, String userId) {
+		return fieldExists(appId, ALL, userId);
 	}
 	
-	public Boolean socialUserExistsInApp(String appId, String socialId,	String socialNetwork) {
+	public Boolean userEmailExists(String appId, String email) {
+		return fieldExists(appId, User.EMAIL, email);
+	}
+	
+	public Boolean userNameExists(String appId, String userName) {
+		return fieldExists(appId, User.USER_NAME, userName);
+	}
+	
+	public Boolean socialUserExists(String appId, String socialId,	String socialNetwork) {
+		return fieldExists(appId, User.SOCIAL_NETWORK_ID(socialNetwork), socialId);
+	}
+
+	private Boolean fieldExists(String appId, String field, String value) {
 		Jedis jedis = pool.getResource();
-		Boolean userExists = false;
+		Boolean exists = false;
 		try {
-			//Set<String> usersInApp = jedis.smembers("app:" + appId + ":users");
-			//Iterator<String> it = usersInApp.iterator();
-			if (jedis.sismember("app:" + appId + ":users:"+socialNetwork+"_id", socialId))
-				userExists = true;
+			exists = jedis.exists(getKey(appId, field, value));
+		} catch (Exception e){
+			Log.error("", this, "userIdExistsInApp", "Error getting User", e);
 		} finally {
 			pool.returnResource(jedis);
 		}
-		return userExists;
+		return exists;
 	}
 
 
 	// *** OTHERS *** //
-
-	public Boolean confirmUserEmail(String appId, String userId) {
-		Jedis jedis = pool.getResource();
-		try {
-			String userKey = getUserKey(userId);
-			jedis.hset(userKey, "emailConfirmed", true+"");
-		}finally {
-			pool.returnResource(jedis);
-		}
-		return true;
-	}
-
-	public Boolean userEmailIsConfirmed(String appId, String userId) {
-		Jedis jedis = pool.getResource();
-		Boolean isConfirmed = false;
-		try {
-			String userKey = getUserKey(userId);
-			isConfirmed = Boolean.parseBoolean(jedis.hget(userKey, "emailConfirmed"));
-		}finally {
-			pool.returnResource(jedis);
-		}
-		return isConfirmed;
-	}
 
 }

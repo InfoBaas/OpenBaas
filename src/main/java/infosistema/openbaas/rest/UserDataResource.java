@@ -82,7 +82,7 @@ public class UserDataResource {
 			} catch (JSONException e) {
 				Log.error("", this, "createDocumentRoot", "Error parsing the JSON.", e); 
 			}
-			if (appsMid.appExists(appId) && usersMid.userExistsInApp(appId, userId)) {
+			if (appsMid.appExists(appId) && usersMid.userIdExists(appId, userId)) {
 				if (docMid.insertDocumentInPath(appId, userId, null, data, location)) {
 					Metadata meta = null;
 					while (inputJsonObj.keys().hasNext()) { 
