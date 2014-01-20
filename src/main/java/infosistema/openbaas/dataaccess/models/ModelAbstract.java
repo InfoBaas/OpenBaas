@@ -233,22 +233,6 @@ public abstract class ModelAbstract {
 	
 	// *** GET LIST *** //
 	
-	private List<DBObject> getDocumentAndChilds(String appId, String path) {		
-		List<DBObject> res = new ArrayList<DBObject>();
-		try {
-			DBCollection coll = getAppCollection(appId);
-			BasicDBObject regexQuery = new BasicDBObject();
-			regexQuery.append("$regex", path+"\\.");
-			BasicDBObject dbQuery = new BasicDBObject();
-			dbQuery.append(_ID, regexQuery);
-			DBCursor cursor = coll.find(dbQuery);
-			res = cursor.toArray();
-		}catch (Exception e) {
-			Log.error("", this, "getDocumentAndChilds", "Error quering mongoDB.", e);
-		}
-		return res;
-	}
-
 	public List<String> getOperation(String appId, OperatorEnum oper, String url, String path, String attribute, String value) {
 		List<String> listRes = new ArrayList<String>();
 		try {
@@ -341,6 +325,22 @@ public abstract class ModelAbstract {
 		return null;
 	}
 	
+	private List<DBObject> getDocumentAndChilds(String appId, String path) {		
+		List<DBObject> res = new ArrayList<DBObject>();
+		try {
+			DBCollection coll = getAppCollection(appId);
+			BasicDBObject regexQuery = new BasicDBObject();
+			regexQuery.append("$regex", path+"\\.");
+			BasicDBObject dbQuery = new BasicDBObject();
+			dbQuery.append(_ID, regexQuery);
+			DBCursor cursor = coll.find(dbQuery);
+			res = cursor.toArray();
+		}catch (Exception e) {
+			Log.error("", this, "getDocumentAndChilds", "Error quering mongoDB.", e);
+		}
+		return res;
+	}
+
 	private JSONObject mountJson(DBCursor cursor, String id) {
 		JSONObject retObj = new JSONObject();
 		//XPTO Montar o Json
