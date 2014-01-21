@@ -240,7 +240,6 @@ public abstract class ModelAbstract {
 		path.remove(path.size() -1);
 		String id = getDocumentId(userId, path);
 		
-		//XPTO: apagar a key do doc com _id=id jm
 		Boolean aux = deleteDocument(appId, id);
 		if(aux)
 			return removeKeyFromAscendents(appId, userId, key, path);
@@ -331,31 +330,25 @@ public abstract class ModelAbstract {
 	// *** GET *** //
 
 	public Object getDocumentInPath(String appId, String userId, List<String> path) {
-		//1 - Obter todos os document com _id = id + *
-		//Excluir a key _path que não vai ser usadas
-		//Sugestão: ordenar pelo id
 		String id = getDocumentId(userId, path);
 		DBCollection coll = getAppCollection(appId);
-		//XPTO alterar a query
+		//XPTO alterar a query para pesquisa _id = id
 		BasicDBObject existsQuery = new BasicDBObject();
 		existsQuery.append("$exists", true);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.append(id, existsQuery);
 		BasicDBObject projection = new BasicDBObject();
 		projection.append(id, "\"_id\":0");
-		//2 - Montar o JSon ou a String para returnar 
 		DBCursor cursor = coll.find(searchQuery, projection);
 		if (cursor.hasNext()) {
-			//XPTO retorna o JSON
+			return cursor.next();
 		} else {
-			if (path.size() <= 0) return null;
-			//3 - ver se existe um document que tenha _id = path - last
+			String key = getDocumentKey(path);
 			List<String> newPath = new ArrayList<String>();
-			//String key = newPath.get(path.size() -1);
 			newPath.addAll(path);
 			newPath.remove(path.size() -1);
 			id = getDocumentId(userId, newPath);
-			//XPTO: procurar o doc com _id = id e com um field com a key
+			//XPTO: pesquisar se existe um document com _id=id e que key exists
 		}
 		return null;
 	}
