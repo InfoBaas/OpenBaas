@@ -1,18 +1,9 @@
 package infosistema.openbaas.dataaccess.files;
 
 import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.utils.Log;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-
-import org.apache.commons.io.IOUtils;
-
-import com.sun.jersey.core.header.FormDataContentDisposition;
 
 public class FtpModel implements FileInterface {
 

@@ -1,16 +1,11 @@
 package infosistema.openbaas.dataaccess.models;
 
-import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.codehaus.jettison.json.JSONObject;
 
@@ -123,28 +118,6 @@ public class UserModel extends ModelAbstract {
 	
 
 	// *** GET LIST *** //
-
-	//TODO: Corrigir
-	public List<String> getOperation(String appId, OperatorEnum oper, String attribute, String value) throws Exception {
-		Jedis jedis = pool.getResource();
-		List<String> listRes = new ArrayList<String>();
-		try{
-			Set<String> setUsers = null; //jedis.smembers("app:"+appId+":users:emails");
-			Iterator<String> iter = setUsers.iterator();
-			while(iter.hasNext()){
-				String userId = iter.next();
-				Map<String, String> mapUser = getUser(appId, userId);
-				if(mapUser.containsKey(attribute)){
-					if(mapUser.get(attribute).equals(value))
-						listRes.add(userId);
-				}
-			}
-		}
-		catch (Exception e) {
-			throw e;
-		}
-		return listRes;
-	}
 
 
 	// *** GET *** //

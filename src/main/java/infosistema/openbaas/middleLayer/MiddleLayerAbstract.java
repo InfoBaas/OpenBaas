@@ -102,7 +102,7 @@ public abstract class MiddleLayerAbstract {
 				qp.getPageSize(), qp.getType());
 	}
 
-	private List<String> getAllSearchResults(String appId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
+	protected List<String> getAllSearchResults(String appId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
 		if(query!=null){
 			OperatorEnum oper = OperatorEnum.valueOf(query.getString(OperatorEnum.oper.toString())); 
 			if (oper == null)

@@ -3,7 +3,6 @@ package infosistema.openbaas.middleLayer;
 
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.utils.Log;
 
 import java.util.Date;
@@ -122,10 +121,9 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	// *** GET LIST *** //
 
 	@Override
-	protected List<String> getOperation(OperatorEnum oper, String appId, String url, String path, String attribute, String value, ModelEnum type) throws Exception {
-		return docModel.getOperation(appId, oper, url, path, attribute, value);
+	protected List<String> getAllSearchResults(String appId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
+		return docModel.getDocuments(appId, url, query, orderType);
 	}
-	
 
 	
 	// *** GET *** //

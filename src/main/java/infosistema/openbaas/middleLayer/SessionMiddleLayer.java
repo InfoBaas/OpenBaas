@@ -2,7 +2,6 @@ package infosistema.openbaas.middleLayer;
 
 import infosistema.openbaas.dataaccess.email.Email;
 import infosistema.openbaas.dataaccess.models.SessionModel;
-import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 import java.io.UnsupportedEncodingException;

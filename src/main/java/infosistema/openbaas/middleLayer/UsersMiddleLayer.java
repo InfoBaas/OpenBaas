@@ -1,25 +1,17 @@
 package infosistema.openbaas.middleLayer;
 
 import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.data.enums.OperatorEnum;
-import infosistema.openbaas.data.models.Audio;
-import infosistema.openbaas.data.models.Image;
-import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.data.models.User;
-import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.dataaccess.email.Email;
-import infosistema.openbaas.dataaccess.files.FileInterface;
 import infosistema.openbaas.dataaccess.models.SessionModel;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +20,7 @@ import java.util.Map.Entry;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
-import com.sun.jersey.core.header.FormDataContentDisposition;
+import org.codehaus.jettison.json.JSONObject;
 
 public class UsersMiddleLayer extends MiddleLayerAbstract {
 
@@ -295,14 +287,8 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	// *** GET LIST *** //
 
 	@Override
-	protected List<String> getOperation(OperatorEnum oper, String appId, String url, String path, String attribute, String value, ModelEnum type) throws Exception {
-		if (path != null) {
-			return docModel.getOperation(appId, oper, null, path, attribute, value);
-		} else if (attribute != null) {
-			return userModel.getOperation(appId, oper, attribute, value);
-		} else {
-			throw new Exception("Error in query.");
-		}
+	protected List<String> getAllSearchResults(String appId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
+		return docModel.getDocuments(appId, url, query, orderType);
 	}
 
 	

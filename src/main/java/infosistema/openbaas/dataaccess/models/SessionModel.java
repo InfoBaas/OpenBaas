@@ -28,14 +28,12 @@ public class SessionModel {
 
 	// *** MEMBERS *** //
 
-	private Jedis jedis;
 	private Geolocation geo = Geolocation.getInstance();
 
 	
 	// *** CONSTRUCTOR *** //
 	
 	public SessionModel() {
-		jedis = new Jedis(Const.getRedisSessionServer(), Const.getRedisSessionPort());
 	}
 	
 	
@@ -153,7 +151,6 @@ public class SessionModel {
 					double dist = geo.distance(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue);
 					if (dist >= 1) {
 						jedis.hset("sessions:" + sessionToken, Const.LOCATION, location);
-						UserModel userModel = new UserModel(); 
 						updateLocationToSession(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue, 
 								location, sessionToken, appId, userId);
 					}

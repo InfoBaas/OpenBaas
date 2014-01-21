@@ -1,14 +1,9 @@
 package infosistema.openbaas.data.models;
 
-
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 import javax.xml.bind.annotation.XmlRootElement;
-
-
-
-import org.codehaus.jettison.json.JSONObject;
 
 @XmlRootElement
 public class Audio extends Media {

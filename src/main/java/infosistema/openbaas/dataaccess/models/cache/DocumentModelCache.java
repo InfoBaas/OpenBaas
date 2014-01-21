@@ -1,31 +1,22 @@
 package infosistema.openbaas.dataaccess.models.cache;
 
-import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.QueryBuilder;
 import com.mongodb.util.JSON;
 
 /*MongoDB java driver has quite a few important things that are not easilly found. 
@@ -168,67 +159,8 @@ public class DocumentModelCache {
 	
 	// *** GET LIST *** //
 	
-	public List<String> getOperation(String appId, OperatorEnum oper, String url, String path, String attribute, String value) {
-		List<String> listRes = new ArrayList<String>();
-		try {
-			
-			DBCollection coll = getAppCollection(appId);
-			BasicDBObject projection = new BasicDBObject();
-			projection.append("_id",0);
-			DBCursor cursor1 = coll.find(new BasicDBObject(),projection);
-			while(cursor1.hasNext()){
-				DBObject obj = cursor1.next();
-				JSONObject json = new JSONObject(obj.toString());
-				Iterator<Object> jsonIter = json.keys();
-				String mainKey = null;
-				if(jsonIter.hasNext())
-					mainKey = (String) jsonIter.next();
-				if(mainKey!=null){
-					DBObject query = getOperDBQuery(oper, value, mainKey+"."+path);
-					BasicDBObject findQuery = new BasicDBObject();
-					DBCursor cursor2 = coll.find(query);
-					if(cursor2.hasNext())
-						listRes.add(mainKey+"."+path);
-				}
-			}
-		} catch (JSONException e) {
-			Log.error("", this, "getOperation", "Error quering mongoDB.", e);
-		}
-		return listRes;
-	}
-	
 
 	// *** GET *** //
-
-	private DBObject getOperDBQuery(OperatorEnum oper, String value, String path ) {
-		DBObject res = new BasicDBObject();
-		try {
-			if(oper.equals(OperatorEnum.contains))
-				res.put(path, java.util.regex.Pattern.compile(value));
-				//res = java.util.regex.Pattern.compile(value);
-			if(oper.equals(OperatorEnum.notContains)){
-				//TODO
-				/*BasicDBList docIds = new BasicDBList();
-            	docIds.add(java.util.regex.Pattern.compile(value));
-				res = QueryBuilder.start(path).notIn(docIds).get();//"{$nin:/"+value+"/}";*/
-			}
-			if(oper.equals(OperatorEnum.equals))
-				res = QueryBuilder.start(path).is(value).get();
-			if(oper.equals(OperatorEnum.diferent))
-				res = QueryBuilder.start(path).notEquals(value).get();
-			if(oper.equals(OperatorEnum.greater))
-				res = QueryBuilder.start(path).greaterThan(value).get();
-			if(oper.equals(OperatorEnum.greaterOrEqual))
-				res = QueryBuilder.start(path).greaterThanEquals(value).get();
-			if(oper.equals(OperatorEnum.lesser))
-				res = QueryBuilder.start(path).lessThan(value).get();
-			if(oper.equals(OperatorEnum.lesserOrEqual))
-				res = QueryBuilder.start(path).lessThanEquals(value).get();
-		} catch (Exception e) {
-			Log.error("", this, "getOperDBQuery", "Error creating query mongoDB.", e);
-		}
-		return res;
-	}
 
 	public String getDocumentInPath(String appId, String userId, String path) {
 		String[] splitted = path.split("\\.");

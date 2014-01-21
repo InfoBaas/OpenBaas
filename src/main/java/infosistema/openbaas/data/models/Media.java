@@ -15,7 +15,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.fileupload.FileItem;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  * Media Model object

@@ -2,9 +2,6 @@ package infosistema.openbaas.utils;
 
 import java.util.Properties;
 
-import org.omg.CORBA.PUBLIC_MEMBER;
-
-
 public class Const {
 
 	//CONSTANTS

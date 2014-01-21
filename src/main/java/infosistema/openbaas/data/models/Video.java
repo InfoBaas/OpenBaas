@@ -1,12 +1,8 @@
 package infosistema.openbaas.data.models;
 
-
 import java.io.FileOutputStream;
 
 import javax.xml.bind.annotation.XmlRootElement;
-
-
-import org.codehaus.jettison.json.JSONObject;
 
 @XmlRootElement
 public class Video extends Media {
