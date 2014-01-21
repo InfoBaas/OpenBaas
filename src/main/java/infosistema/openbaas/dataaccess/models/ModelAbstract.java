@@ -283,7 +283,6 @@ public abstract class ModelAbstract {
 				try { value = query.getString(QueryParameters.ATTR_VALUE); } catch (Exception e) {}
 				String attribute = null;
 				try { attribute = query.getString(QueryParameters.ATTR_ATTRIBUTE); } catch (Exception e) {}
-				//XPTO: TODO aqui temos um problema, uma coisa é um atributo, fácil de fazer outra é um path.
 				if (attribute == null) {
 					try { attribute = query.getString(QueryParameters.ATTR_PATH); } catch (Exception e) {}
 				}
@@ -342,7 +341,7 @@ public abstract class ModelAbstract {
 		//2 - Montar o JSon ou a String para returnar 
 		DBCursor cursor = coll.find(searchQuery, projection);
 		if (cursor.hasNext()) {
-			return mountJson(cursor, id);
+			//XPTO retorna o JSON
 		} else {
 			if (path.size() <= 0) return null;
 			//3 - ver se existe um document que tenha _id = path - last
@@ -370,13 +369,6 @@ public abstract class ModelAbstract {
 			Log.error("", this, "getDocumentAndChilds", "Error quering mongoDB.", e);
 		}
 		return res;
-	}
-
-	private JSONObject mountJson(DBCursor cursor, String id) {
-		JSONObject retObj = new JSONObject();
-		//XPTO Montar o Json
-		//
-		return retObj;
 	}
 
 	
