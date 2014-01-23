@@ -58,8 +58,6 @@ public class UserModel extends ModelAbstract {
 				}
 				super.insertDocumentInPath(appId, userId, null, obj);
 				
-				//TODO: APAGAR jedis.sadd("app:" + appId + ":users", userId);
-				
 				res = true;
 			}
 		} catch (Exception e) {

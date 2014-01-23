@@ -11,6 +11,7 @@ import infosistema.openbaas.middleLayer.DocumentMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import java.util.Iterator;
@@ -60,7 +61,7 @@ public class AppDataResource {
 	 * @param inputJsonObj
 	 * @return
 	 */
-	@POST
+	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createDocumentRoot(JSONObject inputJsonObj,@Context UriInfo ui, @Context HttpHeaders hh,
@@ -131,6 +132,43 @@ public class AppDataResource {
 				}
 				else
 					response = Response.status(Status.BAD_REQUEST).entity(new Error(inputJsonObj.toString())).build();
+			} else {
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
+			}
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
+		return response;
+	}
+
+	/**
+	 * Partial updates, adds non existing fields and edits existing ones.
+	 * 
+	 * @param path
+	 * @param inputJson
+	 * @return
+	 */
+	@PATCH
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response patchDataInRoot( @PathParam("pathId") List<PathSegment> path, JSONObject inputJson,
+			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION) String location) {
+		Response response = null;
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			String sessionToken = Utils.getSessionToken(hh);
+			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
+			if (!sessionMid.checkAppForToken(sessionToken, appId))
+				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
+			if (docMid.existsDocumentInPath(appId, null, path)) {
+				if (docMid.updateDocumentInPath(appId, null, path, inputJson, location)){
+					Metadata meta = docMid.updateMetadata(appId, null, docMid.convertPathToString(path), userId, location, inputJson);
+					Result res = new Result(inputJson.toString(), meta);
+					response = Response.status(Status.OK).entity(res).build();
+				}
+				else
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 			} else {
 				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
@@ -247,7 +285,7 @@ public class AppDataResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response findDocument(@PathParam("pathId") List<PathSegment> path, 
 			@Context UriInfo ui, @Context HttpHeaders hh,
-			JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
+			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
@@ -264,6 +302,7 @@ public class AppDataResource {
 					ListResult res = docMid.find(qp);
 					response = Response.status(Status.OK).entity(res).build();
 				} catch (Exception e) {
+					Log.error("", this, "findDocument", "Error ocorred", e);
 					response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
 				}
 				return response;

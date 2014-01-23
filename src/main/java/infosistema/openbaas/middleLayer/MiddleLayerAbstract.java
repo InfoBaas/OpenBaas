@@ -242,6 +242,7 @@ public abstract class MiddleLayerAbstract {
 			if(type.compareTo(ModelEnum.data)==0){
 				//TODO Nota JM: Nao esta implementado nem me parece possivel.
 			}
+			if (value == null) value = "_id";
 			hash.put(key, value.toString());
 		}
 

@@ -47,25 +47,20 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	}
 
 	public String getDocumentPath(String userId, List<PathSegment> path) {
-		StringBuilder sb = new StringBuilder();
-		if (userId == null)
-			sb.append("data.");
-		else
-			sb.append(userId).append(".");
-		String pathStr = convertPathToString(path);
-		if ("".equals(pathStr)) sb.deleteCharAt(sb.length()-1);
-		return sb.toString();
+		return docModel.getDocumentPath(convertPath(path));
 	}
+
 
 	// *** CREATE *** //
 	
 	public boolean insertDocumentInPath(String appId, String userId, List<PathSegment> path, JSONObject data, String location) {
 		try {
-			String pathRes = getDocumentPath(userId, path);
-			Boolean res =  docModel.insertDocumentInPath(appId, userId, convertPath(path), data);
+			List<String> lPath = convertPath(path);
+			String id = docModel.getDocumentId(userId, lPath);
+			Boolean res =  docModel.insertDocumentInPath(appId, userId, lPath, data);
 			if (location != null && res){
 				String[] splitted = location.split(":");
-				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, pathRes);
+				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, id);
 			}
 			return res;
 		} catch (JSONException e) {
@@ -82,10 +77,12 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	
 	public boolean updateDocumentInPath(String appId, String userId, List<PathSegment> path, JSONObject data, String location) {
 		try {
-			Boolean res =  docModel.updateDocumentInPath(appId, userId, convertPath(path), data);
+			List<String> lPath = convertPath(path);
+			String id = docModel.getDocumentId(userId, lPath);
+			Boolean res =  docModel.updateDocumentInPath(appId, userId, lPath, data);
 			if (location != null){
 				String[] splitted = location.split(":");
-				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, getDocumentPath(userId, path));
+				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, id);
 			}
 			return res;
 		} catch (JSONException e) {
@@ -107,7 +104,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 			String location = meta.getLocation();
 			if (location != null){
 				String[] splitted = location.split(":");
-				geo.deleteObjectFromGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, getDocumentPath(userId, path));
+				geo.deleteObjectFromGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, docModel.getDocumentId(userId, convertPath(path)));
 			}
 			res = docModel.deleteDocumentInPath(appId, userId, convertPath(path));
 		} catch (Exception e) {

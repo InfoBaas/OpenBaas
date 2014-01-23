@@ -10,6 +10,7 @@ import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.DocumentMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
+import infosistema.openbaas.rest.AppResource.PATCH;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
@@ -19,7 +20,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -65,10 +65,51 @@ public class UserDataResource {
 	 * @param inputJsonObj
 	 * @return
 	 */
-	@POST
+	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createDocumentRoot(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION) String location) {
+		Response response = null;
+		String sessionToken = Utils.getSessionToken(hh);
+		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
+		if (!sessionMid.checkAppForToken(sessionToken, appId))
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			JSONObject data = null;
+			try {
+				data = (JSONObject) inputJsonObj.get("data");
+			} catch (JSONException e) {
+				Log.error("", this, "createDocumentRoot", "Error parsing the JSON.", e); 
+			}
+			if (appsMid.appExists(appId) && usersMid.userIdExists(appId, userId)) {
+				if (docMid.insertDocumentInPath(appId, userId, null, data, location)) {
+					Metadata meta = null;
+					while (inputJsonObj.keys().hasNext()) { 
+						String key = inputJsonObj.keys().next().toString();
+						meta = docMid.createMetadata(appId, userId, key, userId, location, inputJsonObj);
+					}
+					Result res = new Result(inputJsonObj, meta);		
+					
+					response = Response.status(Status.CREATED).entity(res).build();
+				} else {
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(data.toString())).build();
+				}
+			} else {
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
+			}
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
+		return response;
+	}
+
+	@PUT
+	@Path("/{pathId:.+}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response createOrReplaceDocument(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -115,11 +156,10 @@ public class UserDataResource {
 	 * @param path
 	 * @return
 	 */
-	@PUT
-	@Path("/{pathId:.+}")
+	@PATCH
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createOrReplaceDocument(JSONObject inputJsonObj, @PathParam("pathId") List<PathSegment> path,
+	public Response patchDataInRoot(JSONObject inputJsonObj, @PathParam("pathId") List<PathSegment> path,
 			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
@@ -152,7 +192,52 @@ public class UserDataResource {
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
-
+	
+	/**
+	 * Create or replace existing elements.
+	 * 
+	 * @param inputJsonObj
+	 * @param path
+	 * @return
+	 */
+	@PATCH
+	@Path("/{pathId:.+}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response patchDataInElement(JSONObject inputJsonObj, @PathParam("pathId") List<PathSegment> path,
+			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION) String location) {
+		Response response = null;
+		String sessionToken = Utils.getSessionToken(hh);
+		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
+		if (!sessionMid.checkAppForToken(sessionToken, appId))
+			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
+		int code = Utils.treatParameters(ui, hh);
+		if (code == 1) {
+			JSONObject data = null;
+			try {
+				data = (JSONObject) inputJsonObj.get("data");
+			} catch (JSONException e) {
+				Log.error("", this, "createOrReplaceDocument", "Error parsing the JSON.", e); 
+			}
+			if (appsMid.appExists(appId)) {
+				if (docMid.updateDocumentInPath(appId, userId, path, data, location)){
+					Metadata meta = docMid.updateMetadata(appId, userId, docMid.convertPathToString(path), userId, location, inputJsonObj);
+					Result res = new Result(inputJsonObj, meta);		
+					
+					response = Response.status(Status.CREATED).entity(res).build();
+				}
+				else
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(data.toString())).build();
+			} else {
+				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
+			}
+		} else if (code == -2) {
+			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
+		} else if (code == -1)
+			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
+		return response;
+	}
+	
 	// *** DELETE *** //
 	
 	/**

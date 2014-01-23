@@ -8,8 +8,10 @@ import infosistema.openbaas.utils.Log;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -26,45 +28,57 @@ public abstract class ModelAbstract {
 
 	// *** CONSTANTS *** //
 
-	private static final String _PARENT_PATH = "_parentPath"; 
-	private static final String _ID = "_id"; 
-	private static final String _KEY = "_key";
-	private static final String _USER_ID = "_userId";
-	private static final String DATA = "data";
+	protected static final int ZERO = 0; 
+	protected static final String _PARENT_PATH = "_parentPath"; 
+	protected static final String _ID = "_id"; 
+	protected static final String _KEY = "_key";
+	protected static final String _USER_ID = "_userId";
+	protected static final String DATA = "data";
+	
 
-	private static final String PARENT_PATH_QUERY_FORMAT = "{parentPath: %s}";
-	private static final String AND_QUERY_FORMAT = "{%s, $s}";
+	private static final String PARENT_PATH_QUERY_FORMAT = "{\"" + _PARENT_PATH + "\": \"%s\"}";
+	private static final String AND_QUERY_FORMAT = "{%s, %s}";
 	private static final String OR_QUERY_FORMAT = "{ $or: [%s, %s]}}";
 	private static final String NOT_QUERY_FORMAT = "{$not: %s}";
-	private static final String CONTAINS_QUERY_FORMAT = "{%s: *%s*}";
-	private static final String EQUALS_QUERY_FORMAT = "{%s: %s}";
-	private static final String GREATER_QUERY_FORMAT = "{%s: {$gt: %s} }";
-	private static final String LESSER_QUERY_FORMAT = "{%s: {$lt: %s} }";;
+	private static final String CONTAINS_QUERY_FORMAT = "{\"%s\": \"*%s*\"}";
+	private static final String EQUALS_QUERY_FORMAT = "{\"%s\": %s}";
+	private static final String GREATER_QUERY_FORMAT = "{\"%s\": {$gt: %s} }";
+	private static final String LESSER_QUERY_FORMAT = "{\"%s\": {$lt: %s} }";;
 
 	// *** VARIABLES *** //
 	
-	private MongoClient mongoClient;
-	private DB db;
-	public static final String APP_COLL_FORMAT = "app%sData";
-	public static final String UserDataColl = "users:data";
+	protected MongoClient mongoClient;
+	protected DB db;
+	public static final String APP_DATA_COLL_FORMAT = "app%sdata";
 	Geolocation geo;
+
+	private BasicDBObject dataProjection = null; 	
 	
 	public ModelAbstract() {
 		try {
 			mongoClient = new MongoClient(Const.getMongoServer(), Const.getMongoPort());
+			db = mongoClient.getDB(Const.getMongoDb());
 		} catch (UnknownHostException e) {
 			Log.error("", this, "DocumentModel", "Unknown Host.", e); 
 		}
-		db = mongoClient.getDB(Const.getMongoDb());
 	}
 
 	
 	// *** PROTECTED *** //
 
 	protected DBCollection getAppCollection(String appId) {
-		return db.getCollection(String.format(APP_COLL_FORMAT, appId));
+		return db.getCollection(String.format(APP_DATA_COLL_FORMAT, appId));
 	}
 	
+	public String getDocumentPath(List<String> path) {
+		if (path == null) return "";
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < path.size(); i++)
+			sb.append(path.get(i)).append('.');
+		if (sb.length() > 0) sb.deleteCharAt(sb.length()-1);
+		return sb.toString();
+	}
+
 	protected String getDocumentParentPath(List<String> path) {
 		if (path == null) return "";
 		StringBuilder sb = new StringBuilder();
@@ -74,7 +88,7 @@ public abstract class ModelAbstract {
 		return sb.toString();
 	}
 
-	protected String getDocumentId(String userId, List<String> path) {
+	public String getDocumentId(String userId, List<String> path) {
 		StringBuilder sb = new StringBuilder();
 		if (userId == null)
 			sb.append("data.");
@@ -96,7 +110,39 @@ public abstract class ModelAbstract {
 		return retObj;
 	}
 
+	protected JSONObject getJSonObject(Map<String, String> fields) throws JSONException  {
+		JSONObject obj = new JSONObject();
+		for (String key : fields.keySet()) {
+			if (fields.get(key) != null) {
+				String value = fields.get(key);
+				obj.put(key, value);
+			}
+		}
+		return obj;
+	}
+	
+	protected Map<String, String> getObjectFields(JSONObject obj) throws JSONException  {
+		Map<String, String> fields = new HashMap<String, String>();
+		Iterator it = obj.keys();
+		while (it.hasNext()) {
+			String key = it.next().toString();
+			fields.put(key, obj.getString(key));
+		}
+		return fields;
+	}
+	
+	protected BasicDBObject getDataProjection() {
+		if (dataProjection == null) {
+			dataProjection = new BasicDBObject();
+			dataProjection.append(_ID, ZERO);
+			dataProjection.append(_ID, ZERO);
+			dataProjection.append(_USER_ID, ZERO);
+			dataProjection.append(_PARENT_PATH, ZERO);
+		}
+		return dataProjection;
+	}
 
+	
 	// *** CREATE *** //
 
 	public Boolean insertDocumentInPath(String appId, String userId, List<String> path, JSONObject data) throws JSONException {
@@ -105,46 +151,47 @@ public abstract class ModelAbstract {
 	}
 	
 	private Boolean insertDocument(String appId, String userId, List<String> path, JSONObject data) throws JSONException{
-		DBCollection coll = getAppCollection(appId);
-		//List<String> keysToRemove = new ArrayList<String>();
 		try{ 
 			Iterator<?> it = data.keys();
 			while (it.hasNext()) {
 				String key = (String) it.next();
 				Object value = data.get(key);
 				if (value instanceof JSONObject) {
-					//keysToRemove.add(key);
 					List<String> newPath = new ArrayList<String>();
 					newPath.addAll(path);
 					newPath.add(key);
 					insertDocument(appId, userId, newPath, (JSONObject)value);
 				}
 			}
-			//for(String key: keysToRemove) {
-				//data.remove(key);
-			//}
-			data.put(_KEY, getDocumentKey(path));
-			data.put(_ID, getDocumentId(userId, path));
-			if (userId == null)  userId = DATA;
-			data.put(_USER_ID, userId);
-			data.put(_PARENT_PATH, getDocumentParentPath(path));
-			DBObject dbData = (DBObject) JSON.parse(data.toString());
-			if(!getDocumentId(userId, path).equals(userId))
-				coll.insert(dbData);
+			return insert(appId, userId, path, data);
 		} catch (Exception e) {
 			Log.error("", this, "insertDocumentInPath", "An error ocorred.", e);
 			return false;
 		}
-		return true;
 	}
 
+	private Boolean insert(String appId, String userId, List<String> path, JSONObject value) throws JSONException{
+		DBCollection coll = getAppCollection(appId);
+		String id = getDocumentId(userId, path);
+		JSONObject  data = new JSONObject(value.toString());
+		data.put(_KEY, getDocumentKey(path));
+		data.put(_ID, id);
+		if (userId == null)  userId = DATA;
+		data.put(_USER_ID, userId);
+		data.put(_PARENT_PATH, getDocumentParentPath(path));
+		DBObject dbData = (DBObject)JSON.parse(data.toString());
+		if(!getDocumentId(userId, path).equals(userId) || !existsDocument(appId, id))
+			coll.insert(dbData);
+		return true;
+	}
+	
 	// *** UPDATE *** //
 	
 	public Boolean updateDocumentInPath(String appId, String userId, List<String> path, JSONObject data) throws JSONException{
 		try{
 			String id = getDocumentId(userId, path);
 			if (!existsDocument(appId, userId, path)) 
-				return insertDocument(appId, userId, path, data);
+				return insertDocument(appId, userId, path, data) && updateAscendents(appId, userId, path, data);
 			Iterator<?> it = data.keys();
 			while (it.hasNext()) {
 				String key = (String) it.next();
@@ -157,14 +204,11 @@ public abstract class ModelAbstract {
 						deleteDocument(appId, id+"."+key);
 					}
 					insertDocument(appId, userId, newPath, (JSONObject)value);
-				} else {
-					/*if (!existsDocument(appId, id)) {
-						//Caso nao se insiram os documentos vazios inserir um documento vazio para actualizar a key
-					}*/
-					updateDocumentValue(appId, id, key, value);
-				}
+				} 
+				updateDocumentValue(appId, id, key, value);
 			}
-			updateAscendents(appId, userId, path, data);
+			JSONObject newData = (JSONObject)getDocumentInPath(appId, userId, path);
+			updateAscendents(appId, userId, path, newData);
 		} catch (Exception e) {
 			Log.error("", this, "updateDocumentInPath", "An error ocorred.", e); 
 			return false;
@@ -175,6 +219,8 @@ public abstract class ModelAbstract {
 	private Boolean updateDocumentValue(String appId, String id, String key, Object value) throws JSONException{
 		DBCollection coll = getAppCollection(appId);
 		try{
+			if (value instanceof JSONObject)
+				value = (DBObject)JSON.parse(value.toString());
 			BasicDBObject dbQuery = new BasicDBObject();
 			dbQuery.append(_ID, id); 		
 			BasicDBObject dbBase = new BasicDBObject();
@@ -189,13 +235,38 @@ public abstract class ModelAbstract {
 		return true;
 	}
 	
+	private Boolean updateDocumentValues(String appId, String id, String key, JSONObject value) throws JSONException{
+		Iterator it = value.keys();
+		while (it.hasNext()) {
+			String k = it.next().toString();
+			Object v = value.get(k);
+			updateDocumentValue(appId, id, k, v);
+		}
+		return true;
+	}
+	
 	private Boolean updateAscendents(String appId, String userId, List<String> path, JSONObject data) throws JSONException{
-		if (path == null || path.size() <= 0) return true;
+		if (userId == null || "".equals(userId)) userId = DATA; 
+		/*
+		if (path == null || path.size() <= 0) { //(new UserModel().createUser(String appId, userId, new HashMap<String, String>())
+			Iterator it = data.keys();
+			while (it.hasNext()) {
+				updateDocumentValue(appId, userId, "", data.get(it.next().toString()));
+			}
+			return true;
+		}
+		*/
 		String key = getDocumentKey(path);
-		path.remove(path.size() -1);
+		if (path.size() > 0) path.remove(path.size() -1);
 		String id = getDocumentId(userId, path);
-		updateDocumentValue(appId, id, key, data);
-		return updateAscendents(appId, userId, path, (JSONObject)getDocumentInPath(appId, userId, path));
+		if (!existsDocument(appId, id))
+			insert(appId, userId, path, new JSONObject());
+		if ("".equals(key))
+			return updateDocumentValues(appId, id, key, data);
+		else {
+			updateDocumentValue(appId, id, key, data);
+			return updateAscendents(appId, userId, path, (JSONObject)getDocumentInPath(appId, userId, path));
+		}
 	}
 	
 	
@@ -227,7 +298,7 @@ public abstract class ModelAbstract {
 			dbRemove.append(_ID, id);  
 			coll.remove(dbRemove); 
 		} catch (Exception e) {
-			Log.error("", this, "deleteDocumentInPath", "An error ocorred.", e); 
+			Log.error("", this, "deleteDocument", "An error ocorred.", e); 
 			return false;
 		}
 		return true;		
@@ -238,13 +309,18 @@ public abstract class ModelAbstract {
 		String auxKey = getDocumentKey(path);
 		key = auxKey + ((key == null || "".equals(key)) ? "" : "." + key);
 		path.remove(path.size() -1);
-		String id = getDocumentId(userId, path);
+		String id = getDocumentId(userId, path); 
 		
-		Boolean aux = deleteDocument(appId, id);
-		if(aux)
-			return removeKeyFromAscendents(appId, userId, key, path);
-		else 
-			return false;
+		DBCollection coll = getAppCollection(appId);
+		BasicDBObject ob = new BasicDBObject();
+		BasicDBObject dbRemove = new BasicDBObject();
+		ob.append(key, "");
+		dbRemove.append("$unset", ob);
+		BasicDBObject dbQuery = new BasicDBObject();
+		dbQuery.append(_ID, id); 		
+		coll.update(dbQuery, dbRemove);
+		
+		return removeKeyFromAscendents(appId, userId, key, path);
 	}
 	
 	// *** GET LIST *** //
@@ -253,7 +329,7 @@ public abstract class ModelAbstract {
 		String strParentPathQuery = getParentPathQueryString(path);
 		String strQuery = getQueryString(appId, path, query, orderType);
 		String searchQuery = getAndQueryString(strParentPathQuery, strQuery); 
-		DBCollection coll = getAppCollection(appId);
+		DBCollection coll = getAppCollection(appId);     //searchQuery="{\"_parentPath\": \"a\", x: 1}"
 		DBObject queryObj = (DBObject)JSON.parse(searchQuery);
 		BasicDBObject projection = new BasicDBObject();
 		//XPTO: na projection só deve vir o ID jm
@@ -302,6 +378,10 @@ public abstract class ModelAbstract {
 	}
 	
 	private static String getAndQueryString(String oper1, String oper2) {
+		if (oper1.startsWith("{")) oper1 = oper1.substring(1);
+		if (oper1.endsWith("}")) oper1 = oper1.substring(0, oper1.length() - 1);
+		if (oper2.startsWith("{")) oper2 = oper2.substring(1);
+		if (oper2.endsWith("}")) oper2 = oper2.substring(0, oper2.length() - 1);
 		return String.format(AND_QUERY_FORMAT, oper1, oper2);
 	}
 	
@@ -329,42 +409,25 @@ public abstract class ModelAbstract {
 
 	// *** GET *** //
 
-	public Object getDocumentInPath(String appId, String userId, List<String> path) {
+	public Object getDocumentInPath(String appId, String userId, List<String> path) throws JSONException {
 		String id = getDocumentId(userId, path);
 		DBCollection coll = getAppCollection(appId);
-		//XPTO alterar a query para pesquisa _id = id jm
+		//XPTO alterar a query para pesquisa _id = id
 		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.append(_ID,id);
-		
-		/*
-		BasicDBObject existsQuery = new BasicDBObject();
-		existsQuery.append("$exists", true);
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.append(id, existsQuery);
-		BasicDBObject projection = new BasicDBObject();
-		projection.append(id, "\"_id\":0");
-		DBCursor cursor = coll.find(searchQuery, projection);*/
-		
-		DBCursor cursor = coll.find(searchQuery);
-		
+		searchQuery.append(_ID, id);
+		BasicDBObject projection = getDataProjection();
+		DBCursor cursor = coll.find(searchQuery, projection);
 		if (cursor.hasNext()) {
-			return cursor.next();
-		} else {
+			return new JSONObject(JSON.serialize(cursor.next()));
+		} else if (path != null && path.size() > 0) {
 			String key = getDocumentKey(path);
 			List<String> newPath = new ArrayList<String>();
 			newPath.addAll(path);
 			newPath.remove(path.size() -1);
 			id = getDocumentId(userId, newPath);
-			//XPTO: pesquisar se existe um document com _id=id e que key exists jm
-			
-			BasicDBObject existsQuery = new BasicDBObject();
-			existsQuery.append("$exists", true);
-			BasicDBObject searchQuery2 = new BasicDBObject();
-			searchQuery2.append(key, existsQuery);
-			searchQuery2.append(_ID,id);
-			return coll.find(searchQuery2);
+			//XPTO: pesquisar se existe um document com _id=id e que key exists
 		}
-		//return null;
+		return null;
 	}
 	
 	private List<DBObject> getDocumentAndChilds(String appId, String path) {		
@@ -372,10 +435,12 @@ public abstract class ModelAbstract {
 		try {
 			DBCollection coll = getAppCollection(appId);
 			BasicDBObject regexQuery = new BasicDBObject();
-			regexQuery.append("$regex", path+"\\.");
+			regexQuery.append("$regex", path + "*");
 			BasicDBObject dbQuery = new BasicDBObject();
 			dbQuery.append(_ID, regexQuery);
-			DBCursor cursor = coll.find(dbQuery);
+			BasicDBObject projection = new BasicDBObject();
+			projection.append(_ID, 1);
+			DBCursor cursor = coll.find(dbQuery, projection);
 			res = cursor.toArray();
 		}catch (Exception e) {
 			Log.error("", this, "getDocumentAndChilds", "Error quering mongoDB.", e);
