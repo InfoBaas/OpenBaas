@@ -12,6 +12,7 @@ public class QueryParameters {
 	public static final String ATTR_VALUE = "value";
 
 	private String appId = null;
+	private String userId = null;
 	private JSONObject query = null;
 	private Double radius = null;
 	private Double latitude = null;
@@ -27,17 +28,18 @@ public class QueryParameters {
 	private QueryParameters() {
 	}
 
-	public static QueryParameters getQueryParameters(String appId, JSONObject query, String radiusStr, String latitudeStr, 
+	public static QueryParameters getQueryParameters(String appId, String userId, JSONObject query, String radiusStr, String latitudeStr, 
 			String longitudeStr, String pageNumberStr, String pageSizeStr, String orderByStr, String orderTypeStr, ModelEnum type) {
-		return getQueryParameters(appId, query, radiusStr, latitudeStr, longitudeStr, pageNumberStr, pageSizeStr,
+		return getQueryParameters(appId, userId, query, radiusStr, latitudeStr, longitudeStr, pageNumberStr, pageSizeStr,
 				orderByStr, orderTypeStr, null, type); 
 	}
 
-	public static QueryParameters getQueryParameters(String appId, JSONObject query, String radiusStr, String latitudeStr, 
+	public static QueryParameters getQueryParameters(String appId, String userId, JSONObject query, String radiusStr, String latitudeStr, 
 			String longitudeStr, String pageNumberStr, String pageSizeStr, String orderByStr, String orderTypeStr, String url, ModelEnum type) {
 		QueryParameters retObj = new QueryParameters();
 
 		retObj.setAppId(appId);
+		retObj.setUserId(userId);
 		retObj.setQuery(query);
 		try {
 			retObj.setRadius(Double.parseDouble(radiusStr));
@@ -75,6 +77,14 @@ public class QueryParameters {
 
 	public void setAppId(String appId) {
 		this.appId = appId;
+	}
+
+	public String getUserId() {
+		return this.userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 
 	public JSONObject getQuery() {

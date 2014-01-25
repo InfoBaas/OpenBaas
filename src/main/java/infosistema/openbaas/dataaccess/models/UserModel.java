@@ -56,8 +56,9 @@ public class UserModel extends ModelAbstract {
 						obj.put(key, value);
 					}
 				}
-				super.insertDocumentInPath(appId, userId, null, obj);
-				
+				obj.put(_USER_ID, userId);
+				obj.put(_ID, userId);
+				super.insert(appId, obj);
 				res = true;
 			}
 		} catch (Exception e) {
@@ -100,10 +101,10 @@ public class UserModel extends ModelAbstract {
 							jedis.set(getKey(appId, key, value), userId);
 						}
 						jedis.hset(userKey, key, value);
+						super.updateDocumentValue(appId, userId, key, value);
 						obj.put(key, value);
 					}
 				}
-				super.updateDocumentInPath(appId, userId, null, obj);
 			}
 			res = true;
 		} catch (Exception e) {

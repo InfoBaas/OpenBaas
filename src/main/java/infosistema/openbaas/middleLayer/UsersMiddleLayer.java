@@ -287,7 +287,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	// *** GET LIST *** //
 
 	@Override
-	protected List<String> getAllSearchResults(String appId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
+	protected List<String> getAllSearchResults(String appId, String userId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
 		if(query==null){
 			query = new JSONObject();
 			JSONObject jAux= new JSONObject();
@@ -296,8 +296,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			query.put("hash", jAux);
 			query.put("salt", jAux); 
 		}
-			
-		return docModel.getDocuments(appId, url, query, orderType);
+		return docModel.getDocuments(appId, userId, url, query, orderType);
 	}
 
 	
@@ -443,7 +442,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			}
 			if(location!=null){
 				Map<String, String> fields = getUserFields(null, null, null, null, null, null, null, null, null, null, null, location);
-				userModel.updateUser(appId,userId, fields);
+				userModel.updateUser(appId, userId, fields);
 			}
 		}catch(Exception e){
 			Log.error("", this, "updateUserLocation", "updateUserLocation exception.", e); 
