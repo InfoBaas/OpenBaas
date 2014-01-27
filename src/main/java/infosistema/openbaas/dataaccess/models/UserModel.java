@@ -10,6 +10,7 @@ import java.util.Map;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -27,12 +28,13 @@ public class UserModel extends ModelAbstract {
 
 	// *** PRIVATE *** //
 	
-	protected static final String _SN_SOCIALNETWORK_ID = "SN_SocialNetwork_ID";
-	protected static final String _BASE_LOCATION_OPTION = "baseLocationOption";
-	protected static final String _HASH = "hash";
-	protected static final String _EMAIL = "email";
-	protected static final String _ALIVE = "alive";
-	protected static final String _SALT = "salt";
+	private static final String _SN_SOCIALNETWORK_ID = "SN_SocialNetwork_ID";
+	private static final String _BASE_LOCATION_OPTION = "baseLocationOption";
+	private static final String _HASH = "hash";
+	private static final String _EMAIL = "email";
+	private static final String _ALIVE = "alive";
+	private static final String _SALT = "salt";
+	private static final String APP_DATA_COLL_FORMAT = "app%sdata";
 		
 	private static final String USER_FIELD_KEY_FORMAT = "app:%s:user:%s:%s";
 	private static final String ALL = "all";
@@ -45,7 +47,16 @@ public class UserModel extends ModelAbstract {
 		return getKey(appId, ALL, userId); 
 	}
 
-	private static BasicDBObject dataProjection = null; 	
+	private static BasicDBObject dataProjection = null;
+
+	// *** PROTECTED *** //
+
+	@Override
+	protected DBCollection getCollection(String appId) {
+		return super.getCollection(String.format(APP_DATA_COLL_FORMAT, appId));
+	}
+	
+
 	protected BasicDBObject getDataProjection() {
 		if (dataProjection == null) {
 			dataProjection = super.getDataProjection(new BasicDBObject());

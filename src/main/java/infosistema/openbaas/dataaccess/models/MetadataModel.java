@@ -36,7 +36,6 @@ public class MetadataModel {
 			}
 		} finally {
 			pool.returnResource(jedis);
-			//pool.destroy();
 		}
 		return true;
 	}

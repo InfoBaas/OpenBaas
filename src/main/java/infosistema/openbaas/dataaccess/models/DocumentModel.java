@@ -18,11 +18,11 @@ public class DocumentModel extends ModelAbstract {
 
 	// *** CONSTANTS *** //
 
-	protected static final String DATA = "data";
+	private static final String DATA = "data";
 	private static final String _PARENT_PATH = "_parentPath"; 
-	protected static final String _KEY = "_key";
+	private static final String _KEY = "_key";
 	private static final String PARENT_PATH_QUERY_FORMAT = "{\"" + _PARENT_PATH + "\": \"%s\"}";
-	public static final String APP_DATA_COLL_FORMAT = "app%sdata";
+	private static final String APP_DATA_COLL_FORMAT = "app%sdata";
 
 	
 	// *** VARIABLES *** //

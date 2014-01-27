@@ -2,7 +2,6 @@ package infosistema.openbaas.dataaccess.models;
 
 import infosistema.openbaas.data.QueryParameters;
 import infosistema.openbaas.data.enums.OperatorEnum;
-import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 
