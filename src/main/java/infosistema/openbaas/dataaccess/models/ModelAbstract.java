@@ -30,17 +30,7 @@ public abstract class ModelAbstract {
 
 	protected static final int ZERO = 0; 
 	protected static final String _ID = "_id"; 
-	protected static final String _PARENT_PATH = "_parentPath"; 
-	protected static final String _KEY = "_key";
 	protected static final String _USER_ID = "_userId";
-	
-	protected static final String _SN_SOCIALNETWORK_ID = "SN_SocialNetwork_ID";
-	protected static final String _BASE_LOCATION_OPTION = "baseLocationOption";
-	protected static final String _HASH = "hash";
-	protected static final String _EMAIL = "email";
-	protected static final String _ALIVE = "alive";
-	protected static final String _SALT = "salt";
-		
 		
 	private static final String AND_QUERY_FORMAT = "{%s, %s}";
 	private static final String OR_QUERY_FORMAT = "{$or: [%s, %s]}";
@@ -53,8 +43,6 @@ public abstract class ModelAbstract {
 	private static final String ID_QUERY_FORMAT = "{\"" + _ID +"\": \"%s\"}";
 	private static final String USER_ID_QUERY_FORMAT = "{\"" + _USER_ID +"\": \"%s\"}";
 	private static final String CHILD_IDS_TO_REMOVE_QUERY_FORMAT = "{\"" + _ID +"\":  {$regex: \"%s.\"}}";
-
-	protected BasicDBObject dataProjection = null; 	
 
 	// *** VARIABLES *** //
 	
@@ -73,21 +61,10 @@ public abstract class ModelAbstract {
 	
 	// *** PROTECTED *** //
 
-	protected BasicDBObject getDataProjection() {
-		if (dataProjection == null) {
-			dataProjection = new BasicDBObject();
-			dataProjection.append(_ID, ZERO);
-			dataProjection.append(_KEY, ZERO);
-			dataProjection.append(_USER_ID, ZERO);
-			dataProjection.append(_PARENT_PATH, ZERO);
-			
-			dataProjection.append(_SN_SOCIALNETWORK_ID, ZERO);
-			dataProjection.append(_BASE_LOCATION_OPTION, ZERO);
-			dataProjection.append(_HASH, ZERO);
-			dataProjection.append(_EMAIL, ZERO);
-			dataProjection.append(_ALIVE, ZERO);
-			dataProjection.append(_SALT, ZERO);
-		}
+	protected abstract BasicDBObject getDataProjection();
+
+	protected BasicDBObject getDataProjection(BasicDBObject dataProjection) {
+		dataProjection.append(_ID, ZERO);
 		return dataProjection;
 	}
 

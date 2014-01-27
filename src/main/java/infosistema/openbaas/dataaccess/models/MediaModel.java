@@ -1,25 +1,28 @@
 package infosistema.openbaas.dataaccess.models;
 
 import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.data.enums.OperatorEnum;
+import infosistema.openbaas.utils.Log;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
-public class MediaModel {
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+
+public class MediaModel extends ModelAbstract {
 
 	// request types
+	public static final String APP_MEDIA_COLL_FORMAT = "app.%s.media";
+	protected static final String _TYPE = "_type";
+	private static final String TYPE_QUERY_FORMAT = "{" + _TYPE + ": \"%s\"";
 	private static final String ID_FORMAT = "%s:%s";
-	private static final String APP_ID_FORMAT = "app:%s:%s";
-	private JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
-	
+
+	private static BasicDBObject dataProjection = null; 	
+
 	public MediaModel() {
 	}
 
@@ -27,106 +30,75 @@ public class MediaModel {
 	
 	// *** PRIVATE *** //
 	
-	private String getId(ModelEnum type, String objId) {
-		return String.format(ID_FORMAT, type.toString(), objId);
-	}
-
-	private String getAppObjectId(ModelEnum type, String appId) {
-		return String.format(APP_ID_FORMAT, type.toString(), appId);
+	@Override
+	protected DBCollection getCollection(String appId) {
+		return super.getCollection(String.format(APP_MEDIA_COLL_FORMAT, appId));
 	}
 	
+	protected BasicDBObject getDataProjection() {
+		if (dataProjection == null) {
+			dataProjection = super.getDataProjection(new BasicDBObject());
+			dataProjection.append(_TYPE, ZERO);
+		}
+		return dataProjection;
+	}
+
+	private String getMediaId(ModelEnum type, String objId) {
+		return String.format(ID_FORMAT, type.toString(), objId);
+	}
+	
+	private String getTypeQuery(ModelEnum type) {
+		if (type == null) return "";
+		return String.format(TYPE_QUERY_FORMAT, type.toString());
+	}
+
 	// *** CREATE *** //
 	
 	public Boolean createMedia(String appId, ModelEnum type, String objId, Map<String, String> fields) {
-		Jedis jedis = pool.getResource();
-		Boolean sucess = false;
-		String appObjectId = getAppObjectId(type, appId);
-		try {
-			for (String key : fields.keySet()) {
-				if(fields.get(key)!=null)
-					jedis.hset(objId, key, fields.get(key));
+		try{
+			if (type == null) {
+				Log.error("", this, "createMedia", "Media as no type.");
+				return false;
 			}
-			jedis.sadd(appObjectId, objId);
-			sucess = true;
-		} finally {
-			pool.returnResource(jedis);
+			JSONObject data = getJSonObject(fields);
+			data.put(_ID, getMediaId(type, objId));
+			data.put(_TYPE, type.toString());
+			super.insert(appId, data);
+		} catch (Exception e) {
+			Log.error("", this, "createMedia", "An error ocorred.", e);
+			return false;
 		}
-		return sucess;
+		return true;
 	}
 	
 	
 	// *** UPDATE *** //
 
-	
 	// *** GET LIST *** //
-
-	public List<String> getOperation(String appId, String attribute, String value, ModelEnum type) throws Exception {
-		Jedis jedis = pool.getResource();
-		List<String> listRes = new ArrayList<String>();
-		try{
-			Set<String> setUsers = jedis.smembers("app:"+type+":"+appId);
-			Iterator<String> iter = setUsers.iterator();
-			while(iter.hasNext()){
-				String userId = iter.next();
-				Map<String, String> mapMedia = getMedia(appId,type, userId);
-				if(mapMedia.containsKey(attribute)){
-					if(mapMedia.get(attribute).equals(value))
-						listRes.add(userId);
-				}
-			}
+	
+	public List<String> getMedia(String appId, ModelEnum type, JSONObject query, String orderType) throws Exception {
+		JSONObject finalQuery = new JSONObject();
+		if (type != null) {
+			finalQuery.append(OperatorEnum.oper.toString(), OperatorEnum.and.toString());
+			finalQuery.append(OperatorEnum.op1.toString(), getTypeQuery(type));
+			finalQuery.append(OperatorEnum.op2.toString(), query.toString());
+		} else {
+			finalQuery = query;
 		}
-		catch (Exception e) {
-			throw e;
-		}
-		return listRes;
+		return super.getDocuments(appId, null, null, finalQuery, orderType);
 	}
 
-	
 	// *** GET *** //
 
-	public ArrayList<String> getAllMediaIds(String appId, ModelEnum type) {
-		Jedis jedis = pool.getResource();
-		ArrayList<String> mediaIds = new ArrayList<String>();
-		try {
-			String id = null;
-			if (type == null || type == ModelEnum.audio) {
-				id = getAppObjectId(ModelEnum.audio, appId);
-				mediaIds.addAll(jedis.smembers(id));
-			}
-			if (type == null || type == ModelEnum.image) {
-				id = getAppObjectId(ModelEnum.image, appId);
-				mediaIds.addAll(jedis.smembers(id));
-			}
-			if (type == null || type == ModelEnum.video) {
-				id = getAppObjectId(ModelEnum.video, appId);
-				mediaIds.addAll(jedis.smembers(id));
-			}
-			if (type == ModelEnum.storage) {
-				id = getAppObjectId(ModelEnum.storage, appId);
-				mediaIds.addAll(jedis.smembers(id));
-			}
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return mediaIds;		
-	}
-	
 	public Map<String, String> getMedia(String appId, ModelEnum type, String objId) {
-		Jedis jedis = pool.getResource();
-		Map<String, String> fields = null;
+		//CACHE
+		String id = getMediaId(type, objId);
 		try {
-			Set<String> imagesInApp = jedis.smembers(getAppObjectId(type, appId));
-			Iterator<String> it = imagesInApp.iterator();
-			Boolean imageExistsForApp = false;
-			while (it.hasNext())
-				if (it.next().equalsIgnoreCase(objId))
-					imageExistsForApp = true;
-			if (imageExistsForApp)
-				fields = jedis.hgetAll(objId);
-		} finally {
-			pool.returnResource(jedis);
+			return getObjectFields(super.getDocument(appId, id));
+		} catch (JSONException e) {
+			Log.error("", this, "getMedia", "Error getting Media.", e);
 		}
-		return fields;
+		return null;
 	}
 
 	/**
@@ -139,57 +111,32 @@ public class MediaModel {
 	 * @return
 	 */
 	public String getMediaField(String appId, ModelEnum type, String objId, String field) {
-		Jedis jedis = pool.getResource();
-		String fileDirectory = null;
+		//CACHE
 		try {
-			fileDirectory = jedis.hget(getAppObjectId(type, appId), field);
-		} finally {
-			pool.returnResource(jedis);
+			return getMedia(appId, type, objId).get(field).toString();
+		} catch (Exception e) {
+			return null;
 		}
-		return fileDirectory;
 	}
 
 
 	// *** DELETE *** //
 	
 	public Boolean deleteMedia(String appId, ModelEnum type, String objId) {
-		Jedis jedis = pool.getResource();
-		Boolean sucess = false;
-		try {
-			jedis.srem(getAppObjectId(type, appId));
-			jedis.del(getId(type, objId));
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return sucess;
+		//CACHE
+		String id = getMediaId(type, objId);
+		return super.deleteDocument(appId, id);		
 	}
 
 	
 	// *** EXISTS *** //
 	
 	public Boolean mediaExists(String appId, ModelEnum type, String objId) {
-		Jedis jedis = pool.getResource();
-		Boolean sucess = false;
-		try {
-			Set<String> audioInApp = jedis.smembers(getAppObjectId(type, appId));
-			Iterator<String> it = audioInApp.iterator();
-			while (it.hasNext())
-				if (it.next().equalsIgnoreCase(objId)){
-					sucess = true;
-					break;
-				}
-					
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return sucess;
+		//CACHE
+		String id = getMediaId(type, objId);
+		return super.existsNode(appId, id);
 	}
-
 
 	// *** OTHERS *** //
 
-	public Integer countAllMedia(String appId, ModelEnum type) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

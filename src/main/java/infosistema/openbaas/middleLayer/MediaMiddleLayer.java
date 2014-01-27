@@ -7,13 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.jettison.json.JSONObject;
+
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.identitymanagement.model.NoSuchEntityException;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 
 import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.data.enums.OperatorEnum;
 import infosistema.openbaas.data.models.Audio;
 import infosistema.openbaas.data.models.Image;
 import infosistema.openbaas.data.models.Media;
@@ -162,17 +163,12 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	// *** GET LIST *** //
 
 	@Override
-	protected List<String> getOperation(OperatorEnum oper, String url, String appId, String path, String attribute, String value, ModelEnum type) throws Exception {
-		return mediaModel.getOperation(appId, attribute, value, type);
+	protected List<String> getAllSearchResults(String appId, String userId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
+		return mediaModel.getMedia(appId, type, query, orderType);
 	}
 	
-
 	
 	// *** GET *** //
-	protected List<String> getAll(String appId, ModelEnum type) throws Exception {
-		return mediaModel.getAllMediaIds(appId, type);
-	}
-	
 	public Media getMedia(String appId, ModelEnum type, String id) {
 		Map<String, String> fields = mediaModel.getMedia(appId, type, id);
 		fields.put(Media.ID, id);
@@ -201,6 +197,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		return media;
 	}
 
+	
 	// *** DOWNLOAD *** //
 
 	public byte[] download(String appId, ModelEnum type, String id,String ext) {
@@ -213,9 +210,6 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		return null;
 	}
 
-	// *** EXISTS *** //
-
-
 
 	// *** EXISTS *** //
 
@@ -224,15 +218,6 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	}
 
 
-
 	// *** OTHERS *** //
-	
-	// *** OTHERS *** //
-	
-	public Integer countAllMedia(String appId, ModelEnum type) {
-		return mediaModel.countAllMedia(appId, type);
-	}
-
-
 
 }

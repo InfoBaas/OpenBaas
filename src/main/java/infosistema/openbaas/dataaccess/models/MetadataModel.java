@@ -27,12 +27,12 @@ public class MetadataModel {
 	
 	// *** UPDATE *** //
 	
-	public boolean createUpdateMetadata(String key, Map<String, String> fields) {
+	public boolean createUpdateMetadata(String id, Map<String, String> fields) {
 		Jedis jedis = pool.getResource();
 		try {
 			for (String field: fields.keySet()) {
 				if(fields.get(field) != null)
-					jedis.hset(key, field, fields.get(field));
+					jedis.hset(id, field, fields.get(field));
 			}
 		} finally {
 			pool.returnResource(jedis);
@@ -44,24 +44,23 @@ public class MetadataModel {
 
 	// *** DELETE *** //
 	
-	public boolean deleteMetadata(String key) {
-		return deleteMetadata(key, false);
+	public boolean deleteMetadata(String id) {
+		return deleteMetadata(id, false);
 	}
 
-	public boolean deleteMetadata(String key, boolean deleteSub) {
+	public boolean deleteMetadata(String id, boolean deleteSub) {
 		Jedis jedis = pool.getResource();
 		try {
 			if (!deleteSub) {
-				jedis.del(key);
+				jedis.del(id);
 			} else {
-				Set<String> keys = jedis.keys(key + "*");
+				Set<String> keys = jedis.keys(id + "*");
 				for (String k : keys) {
 					jedis.del(k);
 				}
 			}
 		} finally {
 			pool.returnResource(jedis);
-			//pool.destroy();
 		}
 		return true;
 	}
@@ -71,11 +70,11 @@ public class MetadataModel {
 	
 	// *** GET *** //
 	
-	public Map<String, String> getMetadata(String key) {
+	public Map<String, String> getMetadata(String id) {
 		Jedis jedis = pool.getResource();
 		Map<String, String> res;
 		try {
-			res = jedis.hgetAll(key);
+			res = jedis.hgetAll(id);
 		} finally {
 			pool.returnResource(jedis);
 			//pool.destroy();
@@ -86,11 +85,11 @@ public class MetadataModel {
 	
 	// *** EXISTS *** //
 	
-	public boolean existsMetadata(String key) {
+	public boolean existsMetadata(String id) {
 		Jedis jedis = pool.getResource();
 		Boolean res = null;
 		try {
-			res = jedis.exists(key);
+			res = jedis.exists(id);
 		} finally {
 			pool.returnResource(jedis);
 			//pool.destroy();

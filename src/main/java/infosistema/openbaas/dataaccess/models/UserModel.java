@@ -9,6 +9,8 @@ import java.util.Map;
 
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -25,6 +27,13 @@ public class UserModel extends ModelAbstract {
 
 	// *** PRIVATE *** //
 	
+	protected static final String _SN_SOCIALNETWORK_ID = "SN_SocialNetwork_ID";
+	protected static final String _BASE_LOCATION_OPTION = "baseLocationOption";
+	protected static final String _HASH = "hash";
+	protected static final String _EMAIL = "email";
+	protected static final String _ALIVE = "alive";
+	protected static final String _SALT = "salt";
+		
 	private static final String USER_FIELD_KEY_FORMAT = "app:%s:user:%s:%s";
 	private static final String ALL = "all";
 	
@@ -34,6 +43,22 @@ public class UserModel extends ModelAbstract {
 
 	private String getUserKey(String appId, String userId) {
 		return getKey(appId, ALL, userId); 
+	}
+
+	private static BasicDBObject dataProjection = null; 	
+	protected BasicDBObject getDataProjection() {
+		if (dataProjection == null) {
+			dataProjection = super.getDataProjection(new BasicDBObject());
+			dataProjection.append(_USER_ID, ZERO);
+			//Users
+			dataProjection.append(_SN_SOCIALNETWORK_ID, ZERO);
+			dataProjection.append(_BASE_LOCATION_OPTION, ZERO);
+			dataProjection.append(_HASH, ZERO);
+			dataProjection.append(_EMAIL, ZERO);
+			dataProjection.append(_ALIVE, ZERO);
+			dataProjection.append(_SALT, ZERO);
+		}
+		return dataProjection;
 	}
 
 	
