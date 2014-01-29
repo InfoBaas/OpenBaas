@@ -7,7 +7,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class QueryParameters {
 
-	public static final String ATTR_PATH = "path";
 	public static final String ATTR_ATTRIBUTE = "attribute";
 	public static final String ATTR_VALUE = "value";
 

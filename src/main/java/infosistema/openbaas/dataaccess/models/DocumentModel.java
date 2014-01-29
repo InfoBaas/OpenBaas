@@ -3,7 +3,6 @@ package infosistema.openbaas.dataaccess.models;
 import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.utils.Log;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,6 +31,7 @@ public class DocumentModel extends ModelAbstract {
 	private static final String PARENT_PATH_QUERY_FORMAT = "{\"" + _PARENT_PATH + "\": \"%s\"}";
 	private static final String APP_DATA_COLL_FORMAT = "app%sdata";
 
+	
 	// *** VARIABLES *** //
 	
 	Geolocation geo;
@@ -52,7 +52,7 @@ public class DocumentModel extends ModelAbstract {
 		if (path == null) return "";
 		StringBuilder sb = new StringBuilder();
 		for(int i = 0; i < path.size(); i++)
-			if (!"".equals(path.get(i))) sb.append(path.get(i)).append('.');
+			if (!"".equals(path.get(i))) sb.append(path.get(i)).append("/");
 		if (sb.length() > 0) sb.deleteCharAt(sb.length()-1);
 		return sb.toString();
 	}
@@ -61,20 +61,18 @@ public class DocumentModel extends ModelAbstract {
 		if (path == null) return "";
 		StringBuilder sb = new StringBuilder();
 		for(int i = 0; i < path.size() - 1; i++)
-			if (!"".equals(path.get(i))) sb.append(path.get(i)).append('.');
+			if (!"".equals(path.get(i))) sb.append(path.get(i)).append("/");
 		if (sb.length() > 0) sb.deleteCharAt(sb.length()-1);
 		return sb.toString();
 	}
 
 	public String getDocumentId(String userId, List<String> path) {
 		StringBuilder sb = new StringBuilder();
-		if (userId == null)
-			sb.append("data.");
-		else
-			sb.append(userId).append(".");
+		if (userId != null) sb.append(userId).append("/");
+		sb.append("data/");
 		if (path != null) {
 			for(int i = 0; i < path.size(); i++)
-				if (!"".equals(path.get(i))) sb.append(path.get(i)).append('.');
+				if (!"".equals(path.get(i))) sb.append(path.get(i)).append("/");
 		}
 		sb.deleteCharAt(sb.length()-1);
 		return sb.toString();
@@ -139,8 +137,8 @@ public class DocumentModel extends ModelAbstract {
 		JSONObject  data = new JSONObject(value.toString());
 		data.put(_KEY, getDocumentKey(path));
 		data.put(_ID, id);
-		if (userId == null)  userId = DATA;
-		data.put(_USER_ID, userId);
+		if (userId != null && !"".equals(userId))
+			data.put(_USER_ID, userId);
 		data.put(_PARENT_PATH, getDocumentParentPath(path));
 		if(!existsDocument(appId, userId, path) || !getDocumentId(userId, path).equals(userId))
 			return super.insert(appId, data);
@@ -160,8 +158,8 @@ public class DocumentModel extends ModelAbstract {
 				Object value = data.get(key);
 				if (value instanceof JSONObject) {
 					List<String> newPath = addPath(path, key);
-					if(existsNode(appId, id+"."+key)){
-						deleteDocument(appId, id+"."+key);
+					if(existsNode(appId, id + "/" + key)){
+						deleteDocument(appId, id + "/" + key);
 					}
 					insertDocument(appId, userId, newPath, (JSONObject)value);
 				} 
@@ -177,7 +175,7 @@ public class DocumentModel extends ModelAbstract {
 	}
 	
 	private Boolean updateDocumentValues(String appId, String id, String key, JSONObject value) throws JSONException{
-		Iterator it = value.keys();
+		Iterator<?> it = value.keys();
 		while (it.hasNext()) {
 			String k = it.next().toString();
 			Object v = value.get(k);
@@ -187,15 +185,17 @@ public class DocumentModel extends ModelAbstract {
 	}
 	
 	private Boolean updateAscendents(String appId, String userId, List<String> path, JSONObject data) throws JSONException{
-		if (userId == null || "".equals(userId)) userId = DATA; 
 		String key = getDocumentKey(path);
 		path = removeLast(path);
 		String id = getDocumentId(userId, path);
 		if (!existsNode(appId, id))
 			insert(appId, userId, path, new JSONObject());
-		if ("".equals(key))
-			return updateDocumentValues(appId, id, key, data);
-		else {
+		if ("".equals(key)) {
+			if (userId != null && !"".equals(userId))
+				return updateDocumentValue(appId, userId, DATA, (JSONObject)getDocumentInPath(appId, userId, path));
+			else 
+				return true;
+		} else {
 			updateDocumentValue(appId, id, key, data);
 			return updateAscendents(appId, userId, path, (JSONObject)getDocumentInPath(appId, userId, path));
 		}

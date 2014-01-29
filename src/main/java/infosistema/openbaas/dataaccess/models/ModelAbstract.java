@@ -83,7 +83,7 @@ public abstract class ModelAbstract {
 	
 	protected Map<String, String> getObjectFields(JSONObject obj) throws JSONException  {
 		Map<String, String> fields = new HashMap<String, String>();
-		Iterator it = obj.keys();
+		Iterator<?> it = obj.keys();
 		while (it.hasNext()) {
 			String key = it.next().toString();
 			fields.put(key, obj.getString(key));
@@ -204,13 +204,12 @@ public abstract class ModelAbstract {
 					String oper1 = getQueryString(appId, path, (JSONObject)(query.get(OperatorEnum.op1.toString())), orderType);
 					return getNotQueryString(oper1);
 				} else {
-					String value = null; 
-					try { value = query.getString(QueryParameters.ATTR_VALUE); } catch (Exception e) {}
-					String attribute = null;
-					try { attribute = query.getString(QueryParameters.ATTR_ATTRIBUTE); } catch (Exception e) {}
-					if (attribute == null) {
-						try { attribute = query.getString(QueryParameters.ATTR_PATH); } catch (Exception e) {}
-					}
+					String value = null;
+                    Object obj = query.get(QueryParameters.ATTR_VALUE);
+                    if (obj instanceof String) value = "\"" + obj + "\"";
+                    else value = "" + obj;
+                    String attribute = null;
+					attribute = query.getString(QueryParameters.ATTR_ATTRIBUTE);
 					return getOperationQueryString(oper, attribute, value);
 				}
 			}else
