@@ -184,7 +184,7 @@ public class AppDataResource {
 			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
-			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
+			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_TYPE) String orderTypeStr) {
 		return findDocument(null, ui, hh, query, radiusStr, latitudeStr, longitudeStr, pageNumberStr, pageSizeStr, orderByStr, orderTypeStr);
 	}
 	
@@ -202,16 +202,8 @@ public class AppDataResource {
 			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
-			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
+			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_TYPE) String orderTypeStr) {
 		Response response = null;
-		if(query!=null){
-			try {
-				String a = java.net.URLDecoder.decode(query.toString(), "ISO-8859-1");
-				String b = java.net.URLEncoder.encode(query.toString(), "ISO-8859-1");
-			} catch (UnsupportedEncodingException e1) {
-				return Response.status(Status.NOT_ACCEPTABLE).entity(new Error("UnsupportedEncodingException in query")).build();
-			}
-		}
 		
 		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();

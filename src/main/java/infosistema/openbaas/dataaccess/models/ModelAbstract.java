@@ -28,6 +28,7 @@ public abstract class ModelAbstract {
 	// *** CONSTANTS *** //
 
 	protected static final String _ID = "_id"; 
+	protected static final String DESC = "desc";
 	protected static final String _USER_ID = "_userId";
 		
 	private static final String AND_QUERY_FORMAT = "{%s, %s}";
@@ -168,17 +169,18 @@ public abstract class ModelAbstract {
 	
 	// *** GET LIST *** //
 
-	public List<String> getDocuments(String appId, String userId, String path, JSONObject query, String orderType) throws Exception {
+	public List<String> getDocuments(String appId, String userId, String path, JSONObject query, String orderType,String orderBy) throws Exception {
 		String strParentPathQuery = getParentPathQueryString(path);
 		String strQuery = getQueryString(appId, path, query, orderType);
 		String searchQuery = getAndQueryString(strParentPathQuery, strQuery);
+		DBObject sortQuery = getSortQuery(orderBy, orderType);
 		if (userId != null && !"".equals(userId))
 			searchQuery = getAndQueryString(searchQuery, getUserIdQueryString(userId));
 		DBCollection coll = getCollection(appId);
 		DBObject queryObj = (DBObject)JSON.parse(searchQuery);
 		BasicDBObject projection = new BasicDBObject();
 		projection.append(_ID, 1);
-		DBCursor cursor = coll.find(queryObj, projection);
+		DBCursor cursor = coll.find(queryObj, projection).sort(sortQuery);
 		List<String> retObj = new ArrayList<String>();
 		while (cursor.hasNext()) {
 			retObj.add(cursor.next().get(_ID).toString());
@@ -186,6 +188,17 @@ public abstract class ModelAbstract {
 		return retObj;
 	}
 	
+	private DBObject getSortQuery(String orderBy, String orderType) {
+		//{"d":-1}
+		Integer order = 1;
+		if(orderType.equals(DESC)) 
+			order = -1;
+		BasicDBObject sortQuery = new BasicDBObject();
+		sortQuery.put(orderBy.replace("/", "."), order);
+		return sortQuery;
+	}
+
+
 	protected String getQueryString(String appId, String path, JSONObject query, String orderType) throws Exception {
 		if (query!=null) {
 			if(query.has(OperatorEnum.oper.toString())){

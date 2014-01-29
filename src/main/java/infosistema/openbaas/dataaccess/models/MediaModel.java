@@ -76,7 +76,7 @@ public class MediaModel extends ModelAbstract {
 
 	// *** GET LIST *** //
 	
-	public List<String> getMedia(String appId, ModelEnum type, JSONObject query, String orderType) throws Exception {
+	public List<String> getMedia(String appId, ModelEnum type, JSONObject query, String orderType,String orderBy) throws Exception {
 		JSONObject finalQuery = new JSONObject();
 		if (type != null) {
 			finalQuery.append(OperatorEnum.oper.toString(), OperatorEnum.and.toString());
@@ -85,7 +85,7 @@ public class MediaModel extends ModelAbstract {
 		} else {
 			finalQuery = query;
 		}
-		return super.getDocuments(appId, null, null, finalQuery, orderType);
+		return super.getDocuments(appId, null, null, finalQuery, orderType,orderBy);
 	}
 
 	// *** GET *** //

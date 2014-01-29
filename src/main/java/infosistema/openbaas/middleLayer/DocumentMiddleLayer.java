@@ -118,8 +118,8 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	// *** GET LIST *** //
 
 	@Override
-	protected List<String> getAllSearchResults(String appId, String userId, String url, JSONObject query, String orderType, ModelEnum type) throws Exception {
-		return docModel.getDocuments(appId, userId, url, query, orderType);
+	protected List<String> getAllSearchResults(String appId, String userId, String url, JSONObject query, String orderType, ModelEnum type, String orderBy) throws Exception {
+		return docModel.getDocuments(appId, userId, url, query, orderType,orderBy);
 	}
 
 	
