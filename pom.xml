@@ -56,7 +56,12 @@
 		</dependency>
 		<!-- END JERSEY DEPENDENCIES -->
 
-
+		<dependency>
+			<groupId>com.github.fernandospr</groupId>
+			<artifactId>javapns-jdk16</artifactId>
+			<version>2.2.1</version>
+		</dependency>
+            
 
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>

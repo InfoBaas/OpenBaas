@@ -68,7 +68,7 @@ public class UserRecoveryResource {
 				Log.error("", this, "makeRecoveryRequest", "Error parsing the JSON.", e); 
 			}
 			String newPass="aaa";
-			boolean opOk = usersMid.recoverUser(appId, userId, email, ui, newPass, null, null);
+			boolean opOk = usersMid.recoverUser(appId, userId, email, ui, newPass, null, null, null);
 			if(opOk)
 				response = Response.status(Status.OK).entity(Const.getEmailConfirmationSended()).build();
 			else
@@ -94,7 +94,7 @@ public class UserRecoveryResource {
 		String dbRecoveryCode = usersMid.getRecoveryCode(appId, userId);
 	
 		if(dbRecoveryCode.equalsIgnoreCase(recoveryCode)){
-			this.usersMid.updateUserPassword(appId, userId, password);
+			this.usersMid.updateUserPassword(appId, userId, password, null);
 			response = Response.status(Status.OK).entity("Your password has been changed.").build();
 		}else{
 			Response.status(Status.BAD_REQUEST).entity("Error handling the request.").build();

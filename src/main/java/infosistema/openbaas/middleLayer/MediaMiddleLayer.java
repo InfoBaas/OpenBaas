@@ -3,17 +3,22 @@ package infosistema.openbaas.middleLayer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.identitymanagement.model.NoSuchEntityException;
+import com.mongodb.DBObject;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 
+import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Audio;
 import infosistema.openbaas.data.models.Image;
@@ -22,6 +27,7 @@ import infosistema.openbaas.data.models.Storage;
 import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.dataaccess.files.FileInterface;
 import infosistema.openbaas.dataaccess.models.MediaModel;
+import infosistema.openbaas.dataaccess.models.ModelAbstract;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
@@ -90,8 +96,8 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	
 	// *** CREATE *** //
 
-	public String createMedia(InputStream stream, FormDataContentDisposition fileDetail, String appId,
-			ModelEnum type, String location) {
+	public Result createMedia(InputStream stream, FormDataContentDisposition fileDetail, String appId, String userId,
+			ModelEnum type, String location, Map<String, String> extraMetadata) {
 
 		String id = createFileId(appId, type);
 		
@@ -121,16 +127,83 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 			Log.error("", this, "upload", "An error ocorred.", e); 
 			return null;
 		}
-		if (location != null){
-			String[] splitted = location.split(":");
-			geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), type, appId, id);
-		}
-
 		
-		if (mediaModel.createMedia(appId, type, id, fields))
-			return id;
-		else 
+		Metadata metadata = null;
+		Object data = null;
+		data = mediaModel.createMedia(appId, userId, type, id, fields, extraMetadata);
+		if (data != null) {
+			try {
+				metadata = Metadata.getMetadata(new JSONObject(((JSONObject) data).getString(ModelAbstract._METADATA)));
+			} catch (JSONException e) {
+				Log.error("", this, "createMedia", "Error gettin metadata.", e);
+			}
+			((JSONObject) data).remove(ModelAbstract._METADATA);
+			
+			((JSONObject) data).remove(ModelAbstract._TYPE);
+			
+			Media media = null;
+			if (type == ModelEnum.audio) {
+				media = new Audio();
+				//((Audio)media).setDefaultBitRate(obj.get(Audio.BITRATE));
+			} else if (type == ModelEnum.image) {
+				media = new Image();
+				//((Image)media).setResolution(obj.get(Image.RESOLUTION));
+			} else if (type == ModelEnum.storage) {
+				media = new Storage();
+			} else if (type == ModelEnum.video) {
+				media = new Video();
+				//((Video)media).setResolution(obj.get(Video.RESOLUTION));
+			}
+			
+			try {
+				media.set_id(((JSONObject) data).getString(ModelAbstract._ID));
+				((JSONObject) data).remove(ModelAbstract._ID);
+				media.setSize(((JSONObject) data).getLong(Media.SIZE));
+				media.setDir(((JSONObject) data).getString(Media.PATH));
+				media.setFileName(((JSONObject) data).getString(Media.FILENAME));
+				media.setFileExtension(((JSONObject) data).getString(Media.FILEEXTENSION));
+				if(((JSONObject) data).has(Media.LOCATION))
+					media.setLocation(((JSONObject) data).getString(Media.LOCATION));
+				//data = (DBObject)JSON.parse(data.toString());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return new Result(media, metadata);
+		} else {
 			return null;
+		}
+	}
+	
+	public Boolean createLog(InputStream stream, FormDataContentDisposition fileDetail, String appId,
+			String userId) {
+        String date = Utils.printDate(new Date());
+		String id = appId + userId + date;
+		Boolean res = false;
+		///// OLD
+		String filePath = "";
+		///// OLD /////
+
+		// Get data from file
+		Map<String, String> fields = getFileFields(stream, fileDetail, null, ModelEnum.log);
+		
+		//Upload File
+		FileInterface fileModel = getAppFileInterface(appId);
+		try{
+			filePath = fileModel.upload(appId, ModelEnum.log, id, fields.get(Media.FILEEXTENSION), stream);
+			if(filePath!=null)
+				res = true;
+		} catch(AmazonServiceException e) {
+			Log.error("", this, "upload", "Amazon Service error.", e);
+			return null;
+		} catch(AmazonClientException e) {
+			Log.error("", this, "upload", "Amazon Client error.", e); 
+			return null;
+		} catch(Exception e) {
+			Log.error("", this, "upload", "An error ocorred.", e); 
+			return null;
+		}
+		return res;
 	}
 
 
@@ -140,7 +213,6 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	
 	public boolean deleteMedia(String appId, ModelEnum type, String id) {
 		String extension = mediaModel.getMediaField(appId, type, id, Media.FILEEXTENSION);
-		String location = mediaModel.getMediaField(appId, type, id, Media.LOCATION);
 		FileInterface fileModel = getAppFileInterface(appId);
 		Boolean res = false;
 		try{
@@ -151,11 +223,17 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		}
 		res = mediaModel.deleteMedia(appId, type, id);
 				
-		if (location != null){
-			String[] splitted = location.split(":");
-			geo.deleteObjectFromGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), type, appId, id);
-		}
-		
+		return res ;
+	}
+	
+	public boolean deleteMediaByResolution(String appId, ModelEnum type, List<String> filesRes) {
+		Boolean res = false;
+		FileInterface fileModel = getAppFileInterface(appId);
+		try{
+			res = fileModel.delFilesResolution(appId, type, filesRes);
+		}catch(Exception e){
+			Log.error("", this, "deleteMediaByResolution", "Delete file with list of images res.", e); 
+		}	
 		return res ;
 	}
 
@@ -163,57 +241,63 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	// *** GET LIST *** //
 
 	@Override
-	protected List<String> getAllSearchResults(String appId, String userId, String url, JSONObject query, String orderType, ModelEnum type, String orderBy) throws Exception {
-		if(query==null){
+	protected List<DBObject> getAllSearchResults(String appId, String userId, String url, Double latitude, Double longitude, Double radius, JSONObject query, String orderType, String orderBy, ModelEnum type, List<String> toShow) throws Exception {
+		if(query==null||query.length()==0){
 			query = new JSONObject();
 			JSONObject jAux= new JSONObject();
 			jAux.put("$exists",1);
-			query.put("fileExtension", jAux); 
-			query.put("imageId", jAux);
-			query.put("pixelsSize", jAux);
-			query.put("fileName", jAux); 
+			query.put(Media.FILENAME, jAux); 
 		}
-		return docModel.getDocuments(appId, userId, url, query, orderType,orderBy);
-		//return mediaModel.getMedia(appId, type, query, orderType);
+		return docModel.getDocuments(appId, userId, url, latitude, longitude, radius, query, orderType, orderBy,toShow);
 	}
 	
 	
 	// *** GET *** //
-	public Media getMedia(String appId, ModelEnum type, String id) {
-		Map<String, String> fields = mediaModel.getMedia(appId, type, id);
-		fields.put(Media.ID, id);
+	public Result getMedia(String appId, ModelEnum type, String id, boolean getMetadata) {
+		JSONObject obj = mediaModel.getMedia(appId, type, id, getMetadata);
 
 		Media media = null;
+		Metadata metadata = null;
 		
-		if (type == ModelEnum.audio) {
-			media = new Audio();
-			//((Audio)media).setDefaultBitRate(fields.get(Audio.BITRATE));
-		} else if (type == ModelEnum.image) {
-			media = new Image();
-			//((Image)media).setResolution(fields.get(Image.RESOLUTION));
-		} else if (type == ModelEnum.storage) {
-			media = new Storage();
-		} else if (type == ModelEnum.video) {
-			media = new Video();
-			//((Video)media).setResolution(fields.get(Video.RESOLUTION));
+		try {
+			obj.put(Media._ID, id);
+			if (type == ModelEnum.audio) {
+				media = new Audio();
+				//((Audio)media).setDefaultBitRate(obj.get(Audio.BITRATE));
+			} else if (type == ModelEnum.image) {
+				media = new Image();
+				//((Image)media).setResolution(obj.get(Image.RESOLUTION));
+			} else if (type == ModelEnum.storage) {
+				media = new Storage();
+			} else if (type == ModelEnum.video) {
+				media = new Video();
+				//((Video)media).setResolution(obj.get(Video.RESOLUTION));
+			}
+			media.set_id(obj.getString(Media._ID));
+			media.setSize(obj.getLong(Media.SIZE));
+			media.setDir(obj.getString(Media.PATH));
+			media.setFileName(obj.getString(Media.FILENAME));
+			media.setFileExtension(obj.getString(Media.FILEEXTENSION));
+			if(obj.has(Media.LOCATION))
+				media.setLocation(obj.getString(Media.LOCATION));
+			if (getMetadata) {
+				metadata = Metadata.getMetadata(new JSONObject(obj.getString(ModelAbstract._METADATA)));
+			}
+		} catch (JSONException e) {
+			Log.error("", this, "getMedia", "Error getting Media.", e);
 		}
-		media.setId(fields.get(Media.ID));
-		media.setSize(Long.parseLong(fields.get(Media.SIZE)));
-		media.setDir(fields.get(Media.PATH));
-		media.setFileName(fields.get(Media.FILENAME));
-		media.setFileExtension(fields.get(Media.FILEEXTENSION));
-		media.setLocation(fields.get(Media.LOCATION));
 
-		return media;
+		return new Result(media, metadata);
+
 	}
 
 	
 	// *** DOWNLOAD *** //
 
-	public byte[] download(String appId, ModelEnum type, String id,String ext) {
+	public byte[] download(String appId, ModelEnum type, String id,String ext,String quality, String bars) {
 		FileInterface fileModel = getAppFileInterface(appId);
 		try {
-			return fileModel.download(appId, type, id,ext);
+			return fileModel.download(appId, type, id, ext, quality,bars);
 		} catch (IOException e) {
 			Log.error("", this, "download", "An error ocorred.", e); 
 		}

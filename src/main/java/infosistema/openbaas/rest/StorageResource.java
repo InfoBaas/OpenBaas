@@ -37,6 +37,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.io.FilenameUtils;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
@@ -74,7 +75,7 @@ public class StorageResource {
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response uploadStorageFile(@Context UriInfo ui, @Context HttpHeaders hh, @FormDataParam(Const.FILE) InputStream uploadedInputStream,
-			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @PathParam("appId") String appId, @HeaderParam(value = Const.LOCATION) String location) {
+			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @PathParam(Const.APP_ID) String appId, @HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -82,14 +83,11 @@ public class StorageResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			String storageId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.storage, location);
-			if (storageId == null) { 
+			Result res = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, userId, ModelEnum.storage,location, Metadata.getNewMetadata(location));
+			if (res == null || res.getData() == null) 
 				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
-			} else {
-				Metadata meta = mediaMid.createMetadata(appId, null, storageId, userId, ModelEnum.storage, location);
-				Result res = new Result(storageId, meta);
+			else
 				response = Response.status(Status.OK).entity(res).build();
-			}
 		} else if(code == -2) {
 			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if(code == -1)
@@ -116,9 +114,7 @@ public class StorageResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (SessionMiddleLayer.getInstance().sessionTokenExists(sessionToken)) {
 			if (mediaMid.mediaExists(appId, ModelEnum.storage, storageId)) {
-				this.mediaMid.deleteMedia(appId, ModelEnum.storage, storageId);
-				Boolean meta = mediaMid.deleteMetadata(appId, null, storageId, ModelEnum.storage);
-				if(meta)
+				if(mediaMid.deleteMedia(appId, ModelEnum.storage, storageId))
 					response = Response.status(Status.OK).entity("").build();
 				else
 					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("Del Meta")).build();
@@ -139,13 +135,14 @@ public class StorageResource {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
+	public Response find(@Context UriInfo ui, @Context HttpHeaders hh, @QueryParam("show") JSONArray arrayShow,
 			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
+			@QueryParam(Const.ELEM_COUNT) String pageCount, @QueryParam(Const.ELEM_INDEX) String pageIndex,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
 		QueryParameters qp = QueryParameters.getQueryParameters(appId, null, query, radiusStr, latitudeStr, longitudeStr, 
-				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.storage);
+				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.storage,pageCount,pageIndex);
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
@@ -154,7 +151,7 @@ public class StorageResource {
 		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
 			try {
-				ListResult res = mediaMid.find(qp);
+				ListResult res = mediaMid.find(qp,arrayShow);
 				response = Response.status(Status.OK).entity(res).build();
 			} catch (Exception e) {
 				response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
@@ -180,7 +177,7 @@ public class StorageResource {
 	@GET
 	@Path("{storageId}")
 	@Produces("application/octet-stream")
-	public Response downloadStorageUsingId(@PathParam("storageId") final String storageId,
+	public Response downloadStorageUsingId(@PathParam("storageId") final String storageId, @PathParam("quality") String quality,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		ResponseBuilder builder = Response.status(Status.OK);
 		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
@@ -206,7 +203,7 @@ public class StorageResource {
 			File file = new File(url);
 			extension = FilenameUtils.getExtension(url);
 			if (!file.exists()) {
-				found = mediaMid.download(appId, ModelEnum.storage, storageId, null);
+				found = mediaMid.download(appId, ModelEnum.storage, storageId, null,quality,null);
 			} else if(file.exists()){
 				FileInputStream fis = new FileInputStream(file);
 				ByteArrayOutputStream bos = new ByteArrayOutputStream();

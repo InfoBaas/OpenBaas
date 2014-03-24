@@ -2,7 +2,6 @@ package infosistema.openbaas.rest;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -55,15 +54,13 @@ public class AclResource {
 		Cookie sessionToken = null;
 		Map<String, Cookie> cookiesParams = hh.getCookies();
 		// iterate cookies
-		for (Entry<String, Cookie> entry : cookiesParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(Const.SESSION_TOKEN))
-				sessionToken = entry.getValue();
-		}
-		if (!(sessionToken == null))
+		try {
+			sessionToken = cookiesParams.get(Const.SESSION_TOKEN);
+		} catch (Exception e) { }
+		if (sessionToken != null)
 			return SessionMiddleLayer.getInstance().getUserIdUsingSessionToken(sessionToken.getValue());
-		else {
+		else
 			return null;
-		}
 	}
 
 	@GET

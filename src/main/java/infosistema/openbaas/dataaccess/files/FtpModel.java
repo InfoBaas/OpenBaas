@@ -4,6 +4,7 @@ import infosistema.openbaas.data.enums.ModelEnum;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 public class FtpModel implements FileInterface {
 
@@ -45,7 +46,7 @@ public class FtpModel implements FileInterface {
 	// *** DOWNLOAD *** //
 	
 	@Override
-	public byte[] download(String appId, ModelEnum type, String id, String extension) throws IOException {
+	public byte[] download(String appId, ModelEnum type, String id, String extension, String quality, String bars) throws IOException {
 		//TODO
 		return null;
 	}
@@ -62,6 +63,12 @@ public class FtpModel implements FileInterface {
 	@Override
 	public void deleteUser(String appId, String userId) throws Exception {
 		//TODO
+	}
+
+	@Override
+	public Boolean delFilesResolution(String appId, ModelEnum type,	List<String> filesRes) {
+		// TODO 
+		return null;
 	}
 	
 }

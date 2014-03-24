@@ -10,73 +10,102 @@ import java.util.Map;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 
 public class MediaModel extends ModelAbstract {
 
-	// request types
-	public static final String APP_MEDIA_COLL_FORMAT = "app%sdata";
-	protected static final String _TYPE = "_type";
-	private static final String TYPE_QUERY_FORMAT = "{" + _TYPE + ": \"%s\"";
-	private static final String ID_FORMAT = "%s:%s";
-
-	private static BasicDBObject dataProjection = null; 	
+	// *** CONTRUCTORS *** //
 
 	public MediaModel() {
 	}
 
-	// *** *** MEDIA *** *** //
-	
+
 	// *** PRIVATE *** //
+
+	private static BasicDBObject dataProjection = null; 	
+	private static BasicDBObject dataProjectionMetadata = null; 	
+
+	
+	// *** PROTECTED *** //
 	
 	@Override
 	protected DBCollection getCollection(String appId) {
 		return super.getCollection(String.format(APP_MEDIA_COLL_FORMAT, appId));
 	}
 	
-	protected BasicDBObject getDataProjection() {
-		if (dataProjection == null) {
-			dataProjection = super.getDataProjection(new BasicDBObject());
-			dataProjection.append(_TYPE, 0);
+	@Override
+	protected BasicDBObject getDataProjection(boolean getMetadata, List<String> toShow, List<String> toHide) {
+		if (getMetadata) {
+			if (dataProjectionMetadata == null) {
+				dataProjectionMetadata = super.getDataProjection(new BasicDBObject(), true);
+				dataProjectionMetadata.append(_TYPE, 0);
+			}
+			return dataProjectionMetadata;
+		} else {
+			if (dataProjection == null) {
+				dataProjection = super.getDataProjection(new BasicDBObject(), false);
+				dataProjection.append(_TYPE, 0);
+			}
+			return dataProjection;
 		}
-		return dataProjection;
 	}
 
-	private String getMediaId(ModelEnum type, String objId) {
-		return String.format(ID_FORMAT, type.toString(), objId);
-	}
+
+	// *** CONSTANTS *** //
+
+	protected static final String _TYPE = "_type";
 	
+	
+	// *** KEYS *** //
+
+	public static final String APP_MEDIA_COLL_FORMAT = "app%sdata";
+	private static final String TYPE_QUERY_FORMAT = "{" + _TYPE + ": \"%s\"";
+
 	private String getTypeQuery(ModelEnum type) {
 		if (type == null) return "";
 		return String.format(TYPE_QUERY_FORMAT, type.toString());
 	}
 
+
 	// *** CREATE *** //
 	
-	public Boolean createMedia(String appId, ModelEnum type, String objId, Map<String, String> fields) {
+	public JSONObject createMedia(String appId, String userId, ModelEnum type, String objId, Map<String, String> mediaFields, Map<String, String> extraMetadata) {
 		try{
 			if (type == null) {
 				Log.error("", this, "createMedia", "Media as no type.");
-				return false;
+				return null;
 			}
-			JSONObject data = getJSonObject(fields);
+			JSONObject data = getJSonObject(mediaFields);
 			data.put(_ID, objId);
 			data.put(_TYPE, type.toString());
-			super.insert(appId, data);
+			JSONObject metadata = getMetadaJSONObject(getMetadataCreate(userId, extraMetadata));
+			JSONObject geolocation = getGeolocation(metadata);
+			Map<?, ?> metaMap = convertJsonToMap(metadata);
+			Map<?, ?>  metaGeo = convertJsonToMap(geolocation);
+			if(metadata!=null){
+				data.put(_METADATA, metaMap);
+				//jedis.hset(userKey, _METADATA, metadata.toString());
+			}
+			if(geolocation!=null){
+				data.put(_GEO, metaGeo);
+				//jedis.hset(userKey, _METADATA, metadata.toString());
+			}
+			return super.insert(appId, data, metadata, geolocation);
 		} catch (Exception e) {
 			Log.error("", this, "createMedia", "An error ocorred.", e);
-			return false;
 		}
-		return true;
+		return null;
 	}
-	
 	
 	// *** UPDATE *** //
 
 	// *** GET LIST *** //
 	
-	public List<String> getMedia(String appId, ModelEnum type, JSONObject query, String orderType,String orderBy) throws Exception {
+	public List<DBObject> getMedia(String appId, ModelEnum type, Double latitude, Double longitude, Double radius, JSONObject query, String orderType, String orderBy, List<String> toShow) throws Exception {
 		JSONObject finalQuery = new JSONObject();
 		if (type != null) {
 			finalQuery.append(OperatorEnum.oper.toString(), OperatorEnum.and.toString());
@@ -85,15 +114,16 @@ public class MediaModel extends ModelAbstract {
 		} else {
 			finalQuery = query;
 		}
-		return super.getDocuments(appId, null, null, finalQuery, orderType,orderBy);
+		return super.getDocuments(appId, null, null, latitude, longitude, radius, finalQuery, orderType, orderBy, toShow);
 	}
 
+	
 	// *** GET *** //
 
-	public Map<String, String> getMedia(String appId, ModelEnum type, String objId) {
+	public JSONObject getMedia(String appId, ModelEnum type, String objId, boolean getMetadata) {
 		//CACHE
 		try {
-			return getObjectFields(super.getDocument(appId, objId));
+			return super.getDocument(appId, objId, getMetadata, null, null);
 		} catch (JSONException e) {
 			Log.error("", this, "getMedia", "Error getting Media.", e);
 		}
@@ -112,7 +142,7 @@ public class MediaModel extends ModelAbstract {
 	public String getMediaField(String appId, ModelEnum type, String objId, String field) {
 		//CACHE
 		try {
-			return getMedia(appId, type, objId).get(field).toString();
+			return getMedia(appId, type, objId, false).get(field).toString();
 		} catch (Exception e) {
 			return null;
 		}
@@ -123,8 +153,7 @@ public class MediaModel extends ModelAbstract {
 	
 	public Boolean deleteMedia(String appId, ModelEnum type, String objId) {
 		//CACHE
-		String id = getMediaId(type, objId);
-		return super.deleteDocument(appId, id);		
+		return super.deleteDocument(appId, objId);		
 	}
 
 	
@@ -132,9 +161,10 @@ public class MediaModel extends ModelAbstract {
 	
 	public Boolean mediaExists(String appId, ModelEnum type, String objId) {
 		//CACHE
-		String id =objId;
-		return super.existsNode(appId, id);
+		return super.existsNode(appId, objId);
 	}
+
+	
 
 	// *** OTHERS *** //
 

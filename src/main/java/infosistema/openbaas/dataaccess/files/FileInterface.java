@@ -2,6 +2,7 @@ package infosistema.openbaas.dataaccess.files;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import infosistema.openbaas.data.enums.ModelEnum;
 
@@ -21,7 +22,7 @@ public interface FileInterface {
 	
 	// *** DOWNLOAD *** //
 	
-	public byte[] download(String appId, ModelEnum type, String id, String extension) throws IOException;
+	public byte[] download(String appId, ModelEnum type, String id, String extension, String quality, String bars) throws IOException;
 
 	
 	// *** DETETE *** //
@@ -29,5 +30,7 @@ public interface FileInterface {
 	public boolean deleteFile(String appId, ModelEnum type, String id, String extension);
 	
 	public void deleteUser(String appId, String userId) throws Exception;
+
+	public Boolean delFilesResolution(String appId, ModelEnum type, List<String> filesRes);
 	
 }

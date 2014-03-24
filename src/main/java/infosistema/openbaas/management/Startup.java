@@ -44,9 +44,9 @@ public class Startup implements ServletContextListener {
 			Log.debug("", this, "contextInitialized", "*****************Creating user***************");
 			Log.debug("", this, "contextInitialized", "userId: " + AdminId + " email: " + AdminEmail);
 			Log.debug("", this, "contextInitialized", "********************************************");
-			usersMid.createUser(this.AdminAppId, AdminId,OPENBAASADMIN,"NOK", "NOK", AdminEmail, salt, hash, null, null, null,false,null,null);
+			usersMid.createUser(this.AdminAppId, AdminId,OPENBAASADMIN,"NOK", "NOK", AdminEmail, salt, hash, null, null, null, false, null, null, null);
 			// Output a simple message to the server's console
-			System.out
+			/*System.out
 					.println("***********************************************");
 			System.out
 					.println("*********************WELCOME!******************");
@@ -55,10 +55,13 @@ public class Startup implements ServletContextListener {
 			System.out
 					.println("*******************Login to start**************");
 			System.out
-					.println("***********************************************");
+					.println("***********************************************");*/
 		}
-		if(sessionMid.createSession(AdminSessionId, AdminAppId,AdminId, ADMINPASSWORD))
+		if(sessionMid.createSession(AdminSessionId, AdminAppId,AdminId, ADMINPASSWORD)){
 			Log.debug("", this, "contextInitialized", "Admin Session created. Id: ");
+			FeedBackSchedule.startManager();
+			NotificationsThread.startManager();
+		}
 		else{
 			Log.warning("", this, "contextInitialized", "No admin Session created.");
 		}

@@ -1,5 +1,7 @@
 package infosistema.openbaas.middleLayer;
 
+import infosistema.openbaas.data.enums.ModelEnum;
+import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.dataaccess.email.Email;
 import infosistema.openbaas.dataaccess.models.SessionModel;
 import infosistema.openbaas.utils.Log;
@@ -8,7 +10,12 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+
+import org.codehaus.jettison.json.JSONObject;
+
+import com.mongodb.DBObject;
 
 public class SessionMiddleLayer extends MiddleLayerAbstract {
 
@@ -42,7 +49,6 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 		try{
 			sucess = authenticateUser(appId, userId, attemptedPassword);
 			sessions.createSession(sessionId, appId, userId);
-			sucess = true;
 		}catch (Exception e1){
 			sucess = false;
 		}
@@ -90,18 +96,13 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 	
 	public Boolean authenticateUser(String appId, String userId, String attemptedPassword) {
 		try {
-			Map<String, String> userFields = userModel.getUser(appId, userId);
+			JSONObject user = userModel.getUser(appId, userId, false);
 			PasswordEncryptionService service = new PasswordEncryptionService();
 			byte[] salt = null;
 			byte[] hash = null;
 			boolean authenticated = false;
-			for (Map.Entry<String, String> entry : userFields.entrySet()) {
-				if (entry.getKey().equalsIgnoreCase("salt")) {
-					salt = entry.getValue().getBytes("ISO-8859-1");
-				} else if (entry.getKey().equalsIgnoreCase("hash")) {
-					hash = entry.getValue().getBytes("ISO-8859-1");
-				}
-			}
+			salt = user.getString(User.SALT).getBytes("ISO-8859-1");
+			hash = user.getString(User.HASH).getBytes("ISO-8859-1");
 			authenticated = service.authenticate(attemptedPassword, hash, salt);
 			return authenticated;
 		} catch (UnsupportedEncodingException e) {
@@ -110,6 +111,8 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 			Log.error("", this, "authenticateUser", "Hashing Algorithm failed, please review the PasswordEncryptionService.", e); 
 		} catch (InvalidKeySpecException e) {
 			Log.error("", this, "authenticateUser", "Invalid Key.", e); 
+		} catch (Exception e) {
+			Log.error("", this, "authenticateUser", "An error occorred.", e); 
 		}
 		return false;
 	}
@@ -132,6 +135,11 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 	}
 
 	// *** GET LIST *** //
+
+	protected List<DBObject> getAllSearchResults(String appId, String userId, String url, Double latitude, Double longitude, Double radius, JSONObject query, String orderType, String orderBy, ModelEnum type, List<String> toShow) throws Exception {
+		return null;
+	}
+
 
 	// *** GET *** //
 	
@@ -158,7 +166,7 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 				sessionAppId = sessions.getAppIdForSessionToken(sessionToken);
 			return appId != null && appId.equals(sessionAppId);
 		} catch (Exception e) {
-			Log.error("", this, "checkAppForToken", "Error checking App dor Session.", e);
+			Log.error("", this, "checkAppForToken", "Error checking App for Session.", e);
 			return false;
 		}
 	}

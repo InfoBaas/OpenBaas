@@ -37,6 +37,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response.Status;
 
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
 //@Path("/apps/{appId}/media/audio")
@@ -72,7 +73,7 @@ public class AudioResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response uploadAudio(@Context HttpServletRequest request, @Context UriInfo ui, @Context HttpHeaders hh,
 			@FormDataParam(Const.FILE) InputStream uploadedInputStream, @FormDataParam(Const.FILE) FormDataContentDisposition fileDetail,
-			@PathParam("appId") String appId, @HeaderParam(value = Const.LOCATION) String location) {
+			@PathParam(Const.APP_ID) String appId, @HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -80,15 +81,11 @@ public class AudioResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			String audioId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.audio, location);
-			if (audioId == null) { 
+			Result res = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, userId, ModelEnum.audio, location, Metadata.getNewMetadata(location));
+			if (res == null || res.getData() == null)
 				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
-			} else {
-				Metadata meta = mediaMid.createMetadata(appId, null, audioId, userId, ModelEnum.audio, location);
-				Result res = new Result(audioId, meta);
-				
+			else
 				response = Response.status(Status.OK).entity(res).build();
-			}
 		} else if(code == -2) {
 			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if(code == -1)
@@ -120,9 +117,7 @@ public class AudioResource {
 		if (code == 1) {
 			Log.debug("", this, "deleteAudio", "***********Deleting Audio***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.audio, audioId)) {
-				this.mediaMid.deleteMedia(appId, ModelEnum.audio, audioId);
-				Boolean meta = mediaMid.deleteMetadata(appId, null, audioId, ModelEnum.audio);
-				if(meta)
+				if(mediaMid.deleteMedia(appId, ModelEnum.audio, audioId))
 					response = Response.status(Status.OK).entity("").build();
 				else
 					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("Del Meta")).build();
@@ -146,13 +141,14 @@ public class AudioResource {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
+	public Response find(@Context UriInfo ui, @Context HttpHeaders hh, @QueryParam("show") JSONArray arrayShow,
 			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
+			@QueryParam(Const.ELEM_COUNT) String pageCount, @QueryParam(Const.ELEM_INDEX) String pageIndex,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
 		QueryParameters qp = QueryParameters.getQueryParameters(appId, null, query, radiusStr, latitudeStr, longitudeStr, 
-				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.audio);
+				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.audio,pageCount,pageIndex);
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
@@ -161,7 +157,7 @@ public class AudioResource {
 		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
 			try {
-				ListResult res = mediaMid.find(qp);
+				ListResult res = mediaMid.find(qp,arrayShow);
 				response = Response.status(Status.OK).entity(res).build();
 			} catch (Exception e) {
 				response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
@@ -193,13 +189,9 @@ public class AudioResource {
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			Log.debug("", this, "findAudioById", "********Finding Audio Meta**********");
-			Audio temp = null;
 			if (appsMid.appExists(this.appId)) {
 				if (mediaMid.mediaExists(this.appId, ModelEnum.audio, audioId)) {
-					temp = (Audio)(mediaMid.getMedia(appId, ModelEnum.audio, audioId));
-					Metadata meta = mediaMid.getMetadata(appId, null, audioId, ModelEnum.audio);
-					Result res = new Result(temp, meta);
-					
+					Result res = mediaMid.getMedia(appId, ModelEnum.audio, audioId, true);
 					response = Response.status(Status.OK).entity(res).build();
 				} else {
 					response = Response.status(Status.NOT_FOUND).entity(new Error("")).build();
@@ -224,7 +216,7 @@ public class AudioResource {
 	@Path("{audioId}/{quality}/download")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response downloadAudio(@PathParam("audioId") String audioId,
+	public Response downloadAudio(@PathParam("audioId") String audioId, @PathParam("quality") String quality,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
 		byte[] sucess = null;
@@ -234,8 +226,8 @@ public class AudioResource {
 		if (code == 1) {
 			Log.debug("", this, "downloadAudio", "*********Downloading Audio**********");
 			if (this.mediaMid.mediaExists(appId, ModelEnum.audio, audioId)) {
-				Audio audio = (Audio)(mediaMid.getMedia(appId, ModelEnum.audio, audioId));
-				sucess = mediaMid.download(appId, ModelEnum.audio, audioId,audio.getFileExtension());
+				Audio audio = (Audio)(mediaMid.getMedia(appId, ModelEnum.audio, audioId, false).getData());
+				sucess = mediaMid.download(appId, ModelEnum.audio, audioId,audio.getFileExtension(),quality,null);
 				if (sucess!=null)
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
 							.header("content-disposition","attachment; filename = "+audio.getFileName()+"."+audio.getFileExtension()).build();

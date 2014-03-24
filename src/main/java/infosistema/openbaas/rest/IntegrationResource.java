@@ -1,24 +1,30 @@
+
 package infosistema.openbaas.rest;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
-import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.data.enums.OperatorEnum;
+import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.data.models.User;
-//import infosistema.openbaas.dataaccess.models.DocumentModel;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
+import infosistema.openbaas.utils.ApplePushNotifications;
+
+import javapns.communication.exceptions.CommunicationException;
+import javapns.communication.exceptions.KeystoreException;
+import javapns.devices.Device;
+import javapns.devices.exceptions.InvalidDeviceTokenFormatException;
+import javapns.devices.implementations.basic.BasicDevice;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -52,7 +58,14 @@ public class IntegrationResource {
 	private String appId;
 	private SessionMiddleLayer sessionMid;
 	private AppsMiddleLayer appsMid;
+ 
 
+    // iPhone's UDID (64-char device token)
+     
+     private static String CERTIFICATE = "/home/administrator/baas/apps/8917/media/storage/storage:d302.p12";
+     private static String PASSWORD = "qkqd8ur9vfur";
+
+	 
 	@Context
 	UriInfo uriInfo;
 	
@@ -66,26 +79,97 @@ public class IntegrationResource {
     
 	@Path("/test")
 	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response test(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
-		/*DocumentModel m = new DocumentModel();
-		List<String> contains = m.getOperation(null, OperatorEnum.contains, null, "restaurante.nome", null, "es");
-		List<String> notContains = m.getOperation(null, OperatorEnum.notContains, null, "restaurante.idade", null, "11");
-		List<String> equals = m.getOperation(null, OperatorEnum.equals, null, "restaurante.nome", null, "rest2");
-		List<String> diferent = m.getOperation(null, OperatorEnum.diferent, null, "restaurante.nome", null, "rest1");
-		List<String> greater = m.getOperation(null, OperatorEnum.greater, null, "restaurante.idade", null, "16");
-		List<String> greaterOrEqual = m.getOperation(null, OperatorEnum.greaterOrEqual, null, "restaurante.idade", null, "18");
-		List<String> lesser = m.getOperation(null, OperatorEnum.lesser, null, "restaurante.idade", null, "19");
-		List<String> lesserOrEqual = m.getOperation(null, OperatorEnum.lesserOrEqual, null, "restaurante.idade", null, "11");
-		*/
+	public Response test(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh){
+
+		List<Device> list = new ArrayList<Device>();
+		try {
+			list.add(new BasicDevice("d287e62da2550ea8163dd0733711bb0a17743e678d3d5a637cb01d04ce33668e"));
+			list.add(new BasicDevice("d287e62da2550ea8163dd0733711bb0a17743e678d3d5a637cb01d04ce33668e"));
+			list.add(new BasicDevice("d287e62da2550ea8163dd0733711bb0a17743e678d3d5a637cb01d04ce33668e"));
+			list.add(new BasicDevice("d287e62da2550ea8163dd0733711bb0a17743e678d3d5a637cb01d04ce33668e"));
+			list.add(new BasicDevice("d287e62da2550ea8163dd0733711bb0a17743e678d3d5a637cb01d04ce33668e"));
+			list.add(new BasicDevice("d287e62da2550ea8163dd0733711bb0a17743e678d3d5a637cb01d04ce33668e"));
+			list.add(new BasicDevice("d287e62da2550ea8163dd0733711bb0a17743e678d3d5a637cb01d04ce33668e"));
+			list.add(new BasicDevice("d287e62da2550ea8163dd0733711bb0a17743e678d3d5a637cb01d04ce33668e"));
+			list.add(new BasicDevice("d287e62da2550ea8163dd0733711bb0a17743e678d3d5a637cb01d04ce33668e"));
+			list.add(new BasicDevice("d287e62da2550ea8163dd0733711bb0a17743e678d3d5a637cb01d04ce33668e"));
+			list.add(new BasicDevice("d287e62da2550ea8163dd0733711bb0a17743e678d3d5a637cb01d04ce33668e"));
+		} catch (InvalidDeviceTokenFormatException e1) {
+			Log.error("", this, "CommunicationException", "Error Communication Exception0.", e1); 
+		}
+		
+		try {
+			ApplePushNotifications.pushCombineNotification("test", 0, CERTIFICATE,PASSWORD,false,list);
+		} catch (CommunicationException e) {
+			Log.error("", this, "CommunicationException", "Error Communication Exception1.", e); 
+		} catch (KeystoreException e) {
+			Log.error("", this, "KeystoreException", "Error Keystore Exception.", e);
+		}
+		
+		/*
+		System.out.println( "Setting up Push notification" );
+		 
+
+	       try {
+	             // Setup up a simple message
+	             !PayLoad aPayload = new !PayLoad();
+	             aPayload.addBadge( BADGE );
+	             System.out.println( "Payload setup successfull." );
+	 
+
+	            System.out.println ( aPayload );
+	 
+
+	            // Get !PushNotification Instance
+	             !PushNotificationManager pushManager = !PushNotificationManager.getInstance();
+	 
+
+	            // Link iPhone's UDID (64-char device token) to a stringName
+	             pushManager.addDevice("iPhone", iPhoneId);
+	             System.out.println( "iPhone UDID taken." );
+	 
+
+	            System.out.println( "Token: " + pushManager.getDevice( "iPhone" ).getToken() );
+	 
+
+	            // Get iPhone client
+	             Device client = pushManager.getDevice( "iPhone" );
+	             System.out.println( "Client setup successfull." );
+	 
+
+	            // Initialize connection
+	             pushManager.initializeConnection( HOST, PORT, certificate, passwd, SSLConnectionHelper.KEYSTORE_TYPE_PKCS12);
+	             System.out.println( "Connection initialized..." );
+	 
+
+	            // Send message
+	             pushManager.sendNotification( client, aPayload );
+	             System.out.println( "Message sent!" );
+	 
+
+	            System.out.println( "# of attempts: " + pushManager.getRetryAttempts() );
+	             pushManager.stopConnection();
+	 
+
+	            System.out.println( "done" );
+	 
+
+	        } catch (Exception e) {
+	             e.printStackTrace();
+	         }
+	     }
+*/
+		/*
 		//Serve para apagar coisas do redis
 		
-		//JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(),Const.getRedisSessionPort());
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
+		//JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(),Const.getRedisSessionPort());
 		
 		Jedis jedis = pool.getResource();
 		try {
-			Set<String> a = jedis.keys("sessions*");
+			Set<String> a = jedis.keys("app:2be9*");
 			Iterator<String> it =  a.iterator();
 			while(it.hasNext()){
 				String s = it.next();
@@ -94,11 +178,45 @@ public class IntegrationResource {
 			}
 		} finally {
 			pool.returnResource(jedis);
-		}		
+		}
+		*/
+		
+		
+		
 		return Response.status(Status.OK).entity("DEL OK").build();
 	}
 	
-	
+	@Path("/test2")
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response test2(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh){
+		//Serve para apagar coisas do redis
+		String delKey = null;
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisChatServer(),Const.getRedisChatPort());
+		//JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(),Const.getRedisSessionPort());
+		try {
+			delKey = inputJsonObj.getString("key");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Jedis jedis = pool.getResource();
+		try {
+			Set<String> a = jedis.keys(delKey+"*");
+			Iterator<String> it =  a.iterator();
+			while(it.hasNext()){
+				String s = it.next();
+				jedis.del(s);
+				System.out.println(s);
+			}
+		} finally {
+			pool.returnResource(jedis);
+		}
+
+		
+		return Response.status(Status.OK).entity("DEL OK").build();
+	}
 	
 	
 	/**
@@ -113,40 +231,36 @@ public class IntegrationResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createOrLoginFacebookUser(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
+		Date startDate = Utils.getDate();
 		Response response = null;
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		String email = null;
 		String name = null;
 		String socialNetwork = null;
 		String socialId = null;
-		String userSocialId = null;
+		//String userSocialId = null;
 		String userName = null;
-		List<String> locationList = null;
-		List<String> userAgentList = null;
 		String userAgent = null;
 		String location = null;
 		String appKey = null;
 		String fbToken = null;
+		String lastLocation = null;
 		User outUser = new User();
 		String userId =null;
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
-				locationList = entry.getValue();
-			if (entry.getKey().equalsIgnoreCase("user-agent")){
-				userAgentList = entry.getValue();
-			}	
-			if (entry.getKey().equalsIgnoreCase(Const.APP_KEY))
-				appKey = entry.getValue().get(0);
-		}
+		try {
+			location = headerParams.getFirst(Const.LOCATION);
+		} catch (Exception e) { }
+		try {
+			userAgent = headerParams.getFirst(Const.USER_AGENT);
+		} catch (Exception e) { }
+		try {
+			appKey = headerParams.getFirst(Application.APP_KEY);
+		} catch (Exception e) { }
 		if(appKey==null)
 			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
 		if(!appsMid.authenticateApp(appId,appKey))
 			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
 		
-		if (locationList != null)
-			location = locationList.get(0);
-		if (userAgentList != null)
-			userAgent = userAgentList.get(0);
 		try {
 			fbToken = (String) inputJsonObj.get("fbToken");
 			JSONObject jsonReqFB = getFBInfo(fbToken);
@@ -171,25 +285,42 @@ public class IntegrationResource {
 			
 		}
 		userId = usersMid.getUserIdUsingEmail(appId, email);
-		userSocialId = usersMid.socialUserExists(appId, socialId, socialNetwork);
-		if (userId==null) {
+		//userSocialId = usersMid.socialUserExists(appId, socialId, socialNetwork);
+		if (userId == null) {
+			Log.debug("", this, "signup with FB", "********signup with FB ************ email: "+email);
 			if (uriInfo == null) uriInfo=ui;
-			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
-			Metadata meta = usersMid.createMetadata(appId, userId, null, userId, ModelEnum.users, location);
-			Result res = new Result(outUser, meta);
+			Result res = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork, Metadata.getNewMetadata(location));
+			Date endDate = Utils.getDate();
+			Log.info(((User)res.getData()).getReturnToken(), this, "signup fb", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			response = Response.status(Status.CREATED).entity(res).build();
 		} else {
+			Log.debug("", this, "signin with FB", "********signin with FB ************ email: "+email);
 			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
 			if(validation){
 				sessionMid.refreshSession(sessionToken, location, userAgent);
-				outUser.setUserID(userId);
+				Result data = usersMid.getUserInApp(appId, userId);
+				User user = (User) data.getData();
+				outUser.setBaseLocation(user.getBaseLocation());
+				outUser.setBaseLocationOption(user.getBaseLocationOption());
+				if(location!=null){
+					if(user.getBaseLocationOption().equals("true")){
+						lastLocation = user.getBaseLocation();
+					}
+					else
+						lastLocation = location;
+					usersMid.updateUserLocation(userId, appId, lastLocation, Metadata.getNewMetadata(lastLocation));
+				}else
+					lastLocation = user.getLocation();
+				outUser.setLocation(lastLocation);
+				outUser.set_id(userId);
 				outUser.setReturnToken(sessionToken);
 				outUser.setEmail(email);
 				outUser.setUserName(userName);
-				Metadata meta = usersMid.createMetadata(appId, userId, null, userId, ModelEnum.users, location);
-				Result res = new Result(outUser, meta);
+				Result res = new Result(outUser, data.getMetadata());
 				response = Response.status(Status.OK).entity(res).build();
+				Date endDate = Utils.getDate();
+				Log.info(((User)res.getData()).getReturnToken(), this, "signin fb", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			}
 		}
 		return response;
@@ -229,29 +360,24 @@ public class IntegrationResource {
 		String socialId = null;
 		String userSocialId = null;
 		String userName = null;
-		List<String> locationList = null;
-		List<String> userAgentList = null;
 		String userAgent = null;
 		String location = null;
 		User outUser = new User();
 		String appKey = null;
 		String userId =null;
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
-				locationList = entry.getValue();
-			if (entry.getKey().equalsIgnoreCase("user-agent"))
-				userAgentList = entry.getValue();
-			if (entry.getKey().equalsIgnoreCase(Const.APP_KEY))
-				appKey = entry.getValue().get(0);
-		}
+		try {
+			location = headerParams.getFirst(Const.LOCATION);
+		} catch (Exception e) { }
+		try {
+			userAgent = headerParams.getFirst(Const.USER_AGENT);
+		} catch (Exception e) { }
+		try {
+			appKey = headerParams.getFirst(Application.APP_KEY);
+		} catch (Exception e) { }
 		if(appKey==null)
 			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
 		if(!appsMid.authenticateApp(appId,appKey))
 			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
-		if (locationList != null)
-			location = locationList.get(0);
-		if (userAgentList != null)
-			userAgent = userAgentList.get(0);
 		try {
 			email = (String) inputJsonObj.get("email");
 			socialNetwork = "LinkedIn";
@@ -274,21 +400,18 @@ public class IntegrationResource {
 		
 		if (userId==null) {
 			if (uriInfo == null) uriInfo=ui;
-			outUser = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork);
-			Metadata meta = usersMid.createMetadata(appId, userId, null, userId, ModelEnum.users, location);
-			Result res = new Result(outUser, meta);
+			Result res = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork, Metadata.getNewMetadata(location));
 			response = Response.status(Status.CREATED).entity(res).build();
 		} else {
 			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
 			if(validation){
 				sessionMid.refreshSession(sessionToken, location, userAgent);
-				outUser.setUserID(userId);
+				outUser.set_id(userId);
 				outUser.setReturnToken(sessionToken);
 				outUser.setEmail(email);
 				outUser.setUserName(userName);
-				Metadata meta = usersMid.createMetadata(appId, userId, null, userId, ModelEnum.users, location);
-				Result res = new Result(outUser, meta);
+				Result res = new Result(outUser, null);
 				response = Response.status(Status.OK).entity(res).build();
 			}
 		}

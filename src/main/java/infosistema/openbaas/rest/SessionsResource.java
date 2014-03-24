@@ -107,7 +107,7 @@ public class SessionsResource {
 	@PATCH
 	@Path("{sessionToken}")
 	@Consumes({ MediaType.APPLICATION_JSON })
-	public Response patchSession( @HeaderParam("user-agent") String userAgent, @HeaderParam(value = Const.LOCATION) String location,
+	public Response patchSession( @HeaderParam(Const.USER_AGENT) String userAgent, @HeaderParam(value = Const.LOCATION) String location,
 			@PathParam(Const.SESSION_TOKEN) String sessionToken, @CookieParam(value = Const.SESSION_TOKEN) String sessionTokenCookie) {
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {

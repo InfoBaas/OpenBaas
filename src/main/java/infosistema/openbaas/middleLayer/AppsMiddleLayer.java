@@ -1,15 +1,24 @@
 package infosistema.openbaas.middleLayer;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+
+import org.codehaus.jettison.json.JSONObject;
+
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.identitymanagement.model.EntityAlreadyExistsException;
+import com.mongodb.DBObject;
 
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.Application;
+import infosistema.openbaas.data.models.Certificate;
 import infosistema.openbaas.dataaccess.files.FileInterface;
 import infosistema.openbaas.dataaccess.models.AppModel;
 import infosistema.openbaas.dataaccess.models.MediaModel;
+import infosistema.openbaas.dataaccess.models.NotificationsModel;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
@@ -18,7 +27,9 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	// *** MEMBERS *** //
 
 	AppModel appModel = new AppModel();	
+	NotificationsModel noteModel = new NotificationsModel();	
 	MediaModel mediaModel = new MediaModel();	
+	MediaMiddleLayer mediaMiddleLayer = MediaMiddleLayer.getInstance();
 	// *** INSTANCE *** //
 	
 	private static AppsMiddleLayer instance = null;
@@ -41,20 +52,34 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	 * @param appName
 	 * @return
 	 */
-	public boolean createApp(String appId, String appKey, String appName, boolean userEmailConfirmation,
-			boolean AWS,boolean FTP,boolean FileSystem) {
+	public Application createApp(String appId, String appKey, String appName, boolean userEmailConfirmation,
+			boolean AWS,boolean FTP,boolean FileSystem, JSONObject ImageRes,JSONObject ImageBars,
+			JSONObject videoRes,JSONObject AudioRes, List<String> clientsList) {
 		byte[] salt = null;
 		byte[] hash = null;
-		Boolean res= false;
 		PasswordEncryptionService service = new PasswordEncryptionService();
+		Application app = null;
+		
 		try {
 			salt = service.generateSalt();
 			hash = service.getEncryptedPassword(appKey, salt);
-			res = appModel.createApp(appId,appKey, hash, salt, appName, new Date().toString(), userEmailConfirmation,AWS,FTP,FileSystem);
+			app = appModel.createApp(appId,appKey, hash, salt, appName, new Date().toString(), userEmailConfirmation,AWS,FTP,FileSystem,clientsList);
+			if(ImageBars!=null && ImageBars.length()>0){
+				appModel.createAppResolutions(ImageRes,appId,ModelEnum.bars);
+			}
+			if(ImageRes!=null && ImageRes.length()>0){
+				appModel.createAppResolutions(ImageRes,appId,ModelEnum.image);
+			}
+			if(videoRes!=null && videoRes.length()>0){
+				appModel.createAppResolutions(videoRes,appId,ModelEnum.video);
+			}
+			if(AudioRes!=null && AudioRes.length()>0){
+				appModel.createAppResolutions(AudioRes,appId,ModelEnum.audio);
+			}
 		} catch (Exception e) {
 			Log.error("", this, "createApp Login","", e); 
 		}
-		return res;
+		return app;
 	}
 
 	public boolean createAppFileSystem(String appId) {
@@ -74,14 +99,44 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 
 	// *** UPDATE *** //
 	
-	public Application updateAllAppFields(String appId, String alive, String newAppName, boolean confirmUsersEmail,boolean AWS,boolean FTP,boolean FILESYSTEM) {
+	public Application updateAllAppFields(String appId, String alive, String newAppName, boolean confirmUsersEmail,
+			boolean AWS,boolean FTP,boolean FILESYSTEM, List<String> clientsList) {
 		if (appModel.appExists(appId)) {
-			appModel.updateAppFields(appId, alive, newAppName, confirmUsersEmail,AWS,FTP,FILESYSTEM);
+			appModel.updateAppFields(appId, alive, newAppName, confirmUsersEmail,AWS,FTP,FILESYSTEM, clientsList);
 			return appModel.getApplication(appId);
 		}
 		return null;
 	}
 
+	public void updateFilesRes(JSONObject imageRes,JSONObject imageBars,JSONObject videoRes,JSONObject audioRes, String appId, 
+			List<String> oldImageRes, List<String> oldVideoRes,List<String> oldAudioRes) {
+		Boolean flag = false;
+		if(imageRes!=null && imageRes.length()>0){
+			appModel.createAppResolutions(imageRes,appId,ModelEnum.image);
+			flag =true;
+		}
+		if(imageBars!=null && imageBars.length()>0){
+			appModel.createAppResolutions(imageBars,appId,ModelEnum.bars);
+			flag =true;
+		}
+		if(flag){
+			if(oldImageRes.size()>0){
+				mediaMiddleLayer.deleteMediaByResolution(appId, ModelEnum.image,oldImageRes);
+			}
+		}
+		if(videoRes!=null && videoRes.length()>0){
+			appModel.createAppResolutions(videoRes,appId,ModelEnum.video);
+			if(oldVideoRes.size()>0){
+				mediaMiddleLayer.deleteMediaByResolution(appId, ModelEnum.video,oldVideoRes);
+			}
+		}
+		if(audioRes!=null && audioRes.length()>0){
+			appModel.createAppResolutions(audioRes,appId,ModelEnum.audio);
+			if(oldAudioRes.size()>0){
+				mediaMiddleLayer.deleteMediaByResolution(appId, ModelEnum.audio, oldAudioRes);
+			}
+		}
+	}
 
 	// *** DELETE *** //
 	
@@ -91,6 +146,11 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 
 
 	// *** GET LIST *** //
+
+	protected List<DBObject> getAllSearchResults(String appId, String userId, String url, Double latitude, Double longitude, Double radius, JSONObject query, String orderType, String orderBy, ModelEnum type, List<String> toShow) throws Exception {
+		return null;
+	}
+
 
 	// *** GET *** //
 	
@@ -122,13 +182,12 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 
 	public Boolean authenticateApp(String appId, String appKey) {
 		try {
-			AppsMiddleLayer appsMid = AppsMiddleLayer.getInstance();
-			HashMap<String, String> fieldsAuth = appsMid.getAuthApp(appId);
+			HashMap<String, String> fieldsAuth = getAuthApp(appId);
 			byte[] salt = null;
 			byte[] hash = null;
-			if(fieldsAuth.containsKey("hash") && fieldsAuth.containsKey("salt")){
-				salt = fieldsAuth.get("salt").getBytes("ISO-8859-1");
-				hash = fieldsAuth.get("hash").getBytes("ISO-8859-1");
+			if(fieldsAuth.containsKey(Application.HASH) && fieldsAuth.containsKey(Application.SALT)){
+				salt = fieldsAuth.get(Application.SALT).getBytes("ISO-8859-1");
+				hash = fieldsAuth.get(Application.HASH).getBytes("ISO-8859-1");
 			}
 			PasswordEncryptionService service = new PasswordEncryptionService();
 			Boolean authenticated = false;
@@ -139,5 +198,19 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 		} 	
 		return false;
 	}
+
+	public Certificate createCertificate(String appId, String certificatePath, String aPNSPassword, String clientId) {
+		Certificate cert = new Certificate();
+		cert.setAPNSPassword(aPNSPassword);
+		cert.setCertificatePath(certificatePath);
+		cert.setClientId(clientId);
+		cert.setCreatedDate(new Timestamp(new Date().getTime()));
+		Boolean flag = noteModel.createUpdateCertificate(appId, cert);
+		if(flag)
+			return cert;
+		return null;
+	}
+
+	
 
 }

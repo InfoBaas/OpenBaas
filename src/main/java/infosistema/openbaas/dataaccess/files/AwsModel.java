@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 
@@ -163,7 +164,7 @@ public class AwsModel implements FileInterface {
 	 * @throws IOException
 	 */
 	@Override
-	public byte[] download(String appId, ModelEnum type, String id, String extension) throws IOException {
+	public byte[] download(String appId, ModelEnum type, String id, String extension, String quality, String bars) throws IOException {
 		OutputStream soutputStream=null;
 		byte[] byteArray = null;
 		try{
@@ -210,6 +211,12 @@ public class AwsModel implements FileInterface {
 		} catch(Exception e) {
 			Log.error("", this, "deleteUser", "An error ocorred.", e); 
 		}
+	}
+
+	@Override
+	public Boolean delFilesResolution(String appId, ModelEnum type,	List<String> filesRes) {
+		// TODO 
+		return null;
 	}
 
 }

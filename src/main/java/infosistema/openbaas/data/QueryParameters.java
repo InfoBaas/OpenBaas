@@ -21,6 +21,8 @@ public class QueryParameters {
 	private String orderBy = Const.getOrderBy();
 	private String orderType = Const.getOrderType();
 	private String url = "";
+	private Integer pageCount = null;
+	private Integer pageIndex = null;
 	
 	private ModelEnum type = null;
 
@@ -28,13 +30,13 @@ public class QueryParameters {
 	}
 
 	public static QueryParameters getQueryParameters(String appId, String userId, JSONObject query, String radiusStr, String latitudeStr, 
-			String longitudeStr, String pageNumberStr, String pageSizeStr, String orderByStr, String orderTypeStr, ModelEnum type) {
+			String longitudeStr, String pageNumberStr, String pageSizeStr, String orderByStr, String orderTypeStr, ModelEnum type, String pageCount, String pageIndex) {
 		return getQueryParameters(appId, userId, query, radiusStr, latitudeStr, longitudeStr, pageNumberStr, pageSizeStr,
-				orderByStr, orderTypeStr, null, type); 
+				orderByStr, orderTypeStr, null, type,pageCount,pageIndex); 
 	}
 
 	public static QueryParameters getQueryParameters(String appId, String userId, JSONObject query, String radiusStr, String latitudeStr, 
-			String longitudeStr, String pageNumberStr, String pageSizeStr, String orderByStr, String orderTypeStr, String url, ModelEnum type) {
+			String longitudeStr, String pageNumberStr, String pageSizeStr, String orderByStr, String orderTypeStr, String url, ModelEnum type, String pageCount, String pageIndex) {
 		QueryParameters retObj = new QueryParameters();
 
 		retObj.setAppId(appId);
@@ -54,6 +56,12 @@ public class QueryParameters {
 		} catch (Exception e) { }
 		try {
 			retObj.setPageSize(Integer.parseInt(pageSizeStr));
+		} catch (Exception e) { }
+		try {
+			retObj.setPageCount(Integer.parseInt(pageCount));
+		} catch (Exception e) { }
+		try {
+			retObj.setPageIndex(Integer.parseInt(pageIndex));
 		} catch (Exception e) { }
 		if(orderByStr!=null)
 			retObj.setOrderBy(orderByStr);
@@ -165,4 +173,22 @@ public class QueryParameters {
 	public void setType(ModelEnum type) {
 		this.type = type;
 	}
+
+	public Integer getPageCount() {
+		return pageCount;
+	}
+
+	public void setPageCount(Integer pageCount) {
+		this.pageCount = pageCount;
+	}
+
+	public Integer getPageIndex() {
+		return pageIndex;
+	}
+
+	public void setPageIndex(Integer pageIndex) {
+		this.pageIndex = pageIndex;
+	}
+
+	
 }

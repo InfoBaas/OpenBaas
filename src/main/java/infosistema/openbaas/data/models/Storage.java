@@ -29,7 +29,7 @@ import org.codehaus.jettison.json.JSONObject;
  */
 public class Storage extends Media {
 
-	private String id;
+	private String _id;
 	private String creationDate;
 	private long size;
 	private String dir;
@@ -39,16 +39,16 @@ public class Storage extends Media {
 	 * Constructor
 	 * 
 	 */
-	public Storage(String id, String dir, long size, String location){
-		this.id = id;
+	public Storage(String _id, String dir, long size, String location){
+		this._id = _id;
 		this.dir = dir;
 		this.size = size;
 		creationDate = new Date().toString();
 		this.location = location;
 	}
 
-	public Storage(String id) {
-		this.id = id;
+	public Storage(String _id) {
+		this._id = _id;
 	}
 	public Storage(){
 		
@@ -74,7 +74,7 @@ public class Storage extends Media {
 	 * @return String Image ID.
 	 */
 	public String getID() {
-		return this.id;
+		return this._id;
 	}
 	public String getDir(){
 		return this.dir;
@@ -164,6 +164,6 @@ public class Storage extends Media {
 		this.location = location;
 	}
 	public void setId(String id){
-		this.id = id;
+		this._id = id;
 	}
 }

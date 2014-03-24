@@ -38,7 +38,7 @@ public class UserConfirmationResource {
 			if (registrationCodeFromDB != null) {
 				if (registrationCodeFromDB.equalsIgnoreCase(registrationCode)) {
 					usersMid.removeUrlToUserId(appId, userId);
-					usersMid.confirmUserEmail(appId, userId);
+					usersMid.confirmUserEmail(appId, userId, null);
 					response = Response.status(Status.OK).entity("User confirmed, you can now perform operations").build();
 				}
 			}

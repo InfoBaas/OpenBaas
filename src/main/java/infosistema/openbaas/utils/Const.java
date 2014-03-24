@@ -6,17 +6,26 @@ public class Const {
 
 	//CONSTANTS
 	
-	public static final String SESSION_TOKEN = "sessionToken";	
+	public static final String SEMICOLON = ";";
+	public static final String SESSION_TOKEN = "sessionToken";
+	public static final String MESSAGE = "message";
 	public static final String FILE = "file";	
+	public static final String AUDIO = "audio";
+	public static final String VIDEO = "video";
+	public static final String IMAGE = "image";
 	public static final String LOCATION = "location";	
 	public static final String LAT = "lat";	
 	public static final String LONG = "long";	
 	public static final String RADIUS = "radius";
 	public static final String PAGE_NUMBER = "pageNumber";
 	public static final String PAGE_SIZE = "pageSize";
+	public static final String ELEM_COUNT = "elemCount";
+	public static final String ELEM_INDEX = "elemIndex";
 	public static final String ORDER_BY = "orderBy";
 	public static final String ORDER_TYPE = "orderType";
-	public static final String APP_KEY = "appKey";
+	public static final String USER_AGENT = "user-agent";
+	public static final String USER_ID = "userId";
+	public static final String APP_ID = "appId";
 	public static final String QUERY = "query";
 	
 	
@@ -27,22 +36,40 @@ public class Const {
 	public static String DEFAULT_ORDER_BY = "_id";
 	public static String DEFAULT_ORDER_TYPE = "desc";
 
+	private static String REDIS_GENERAL_USER = "openbaas";
+	private static String REDIS_GENERAL_PASS = "redisdbpwd";
 	private static String REDIS_GENERAL_SERVER = "localhost";
 	private static Integer REDIS_GENERAL_PORT = 6382;
 
+	private static String REDIS_SESSION_USER = "openbaas";
+	private static String REDIS_SESSION_PASS = "redisdbpwd";
 	private static Integer REDIS_SESSION_PORT = 6380;
 	private static String REDIS_SESSION_SERVER = "localhost";
 
+	private static String REDIS_GEO_USER = "openbaas";
+	private static String REDIS_GEO_PASS = "redisdbpwd";
 	private static String REDIS_GEO_SERVER = "localhost";
 	private static Integer REDIS_GEO_PORT = 6381;
 
-	private static Integer REDIS_METADATA_PORT = 6383;
-	private static String REDIS_METADATA_SERVER = "localhost";
+	private static String REDIS_CHAT_USER = "openbaas";
+	private static String REDIS_CHAT_PASS = "redisdbpwd";
+	private static Integer REDIS_CHAT_PORT = 6383;
+	private static String REDIS_CHAT_SERVER = "localhost";
 
+	
 	private static String MONGO_SERVER = "localhost";
 	private static Integer MONGO_PORT = 27017;
 	private static String MONGO_DB = "openbaas";
-
+	private static String MONGO_USER = null;
+	private static String MONGO_PASS = null;
+	
+	private static Boolean APNS_PROD = false;
+	
+	private static int APNS_FEEDBACK_CICLE = -1;
+	private static int APNS_PUSH_CICLE = -1;
+	
+	
+	
 	private static String EMAIL_CONFIRMATION_ERROR = "Please confirm your email first.";
 	private static String EMAIL_CONFIRMATION_SENDED = "Email sent with recovery details.";
 
@@ -119,22 +146,64 @@ public class Const {
 				REDIS_GEO_PORT = Integer.parseInt(props.getProperty("REDIS_GEO_PORT"));
 			} catch (Exception e) {}
 
-			stmp = props.getProperty("REDIS_METADATA_SERVER");
-			if (stmp != null) REDIS_METADATA_SERVER = stmp;
+			stmp = props.getProperty("REDIS_CHAT_SERVER");
+			if (stmp != null) REDIS_CHAT_SERVER = stmp;
 
 			try {
-				REDIS_METADATA_PORT = Integer.parseInt(props.getProperty("REDIS_METADATA_PORT"));
+				REDIS_CHAT_PORT = Integer.parseInt(props.getProperty("REDIS_CHAT_PORT"));
 			} catch (Exception e) {}
 
+			stmp = props.getProperty("REDIS_GENERAL_USER");
+			if (stmp != null) REDIS_GENERAL_USER = stmp;
+			
+			stmp = props.getProperty("REDIS_GENERAL_PASS");
+			if (stmp != null) REDIS_GENERAL_PASS = stmp;
+			
+			stmp = props.getProperty("REDIS_GEO_USER");
+			if (stmp != null) REDIS_GEO_USER = stmp;
+			
+			stmp = props.getProperty("REDIS_GEO_PASS");
+			if (stmp != null) REDIS_GEO_PASS = stmp;
+			
+			stmp = props.getProperty("REDIS_SESSIONS_USER");
+			if (stmp != null) REDIS_SESSION_USER = stmp;
+			
+			stmp = props.getProperty("REDIS_SESSIONS_PASS");
+			if (stmp != null) REDIS_SESSION_PASS = stmp;
+			
+			stmp = props.getProperty("REDIS_CHAT_USER");
+			if (stmp != null) REDIS_CHAT_USER = stmp;
+			
+			stmp = props.getProperty("REDIS_CHAT_PASS");
+			if (stmp != null) REDIS_CHAT_PASS = stmp;
+			
 			stmp = props.getProperty("MONGO_SERVER");
 			if (stmp != null) MONGO_SERVER = stmp;
 
 			try {
 				MONGO_PORT = Integer.parseInt(props.getProperty("MONGO_PORT"));
 			} catch (Exception e) {}
-
+			
+			try {
+				setAPNS_PROD(Boolean.parseBoolean(props.getProperty("APNS_PROD")));
+			} catch (Exception e) {}
+			
+			try {
+				setAPNS_FEEDBACK_CICLE(Integer.parseInt(props.getProperty("APNS_FEEDBACK_CICLE")));
+			} catch (Exception e) {}
+			
+			try {
+				setAPNS_PUSH_CICLE(Integer.parseInt(props.getProperty("APNS_PUSH_CICLE")));
+			} catch (Exception e) {}
+			
 			stmp = props.getProperty("MONGO_DB");
 			if (stmp != null) MONGO_DB = stmp;
+			
+			stmp = props.getProperty("MONGO_USER");
+			if (stmp != null) MONGO_USER = stmp;
+			
+			stmp = props.getProperty("MONGO_PASS");
+			if (stmp != null) MONGO_PASS = stmp;
 
 			stmp = props.getProperty("EMAIL_CONFIRMATION_ERROR");
 			if (stmp != null) EMAIL_CONFIRMATION_ERROR = stmp;
@@ -254,12 +323,12 @@ public class Const {
 		return REDIS_GEO_PORT;
 	}
 
-	public static String getRedisMetadataServer() {
-		return REDIS_METADATA_SERVER;
+	public static String getRedisChatServer() {
+		return REDIS_CHAT_SERVER;
 	}
 
-	public static Integer getRedisMetadataPort() {
-		return REDIS_METADATA_PORT;
+	public static Integer getRedisChatPort() {
+		return REDIS_CHAT_PORT;
 	}
 
 
@@ -273,6 +342,65 @@ public class Const {
 
 	public static String getMongoDb() {
 		return MONGO_DB;
+	}
+	
+	public static String getMongoUser() {
+		return MONGO_USER;
+	}
+	
+	public static String getMongoPass() {
+		return MONGO_PASS;
+	}
+	
+	public static String getRedisChatUser() {
+		return REDIS_CHAT_USER;
+	}
+	
+	public static String getRedisChatPass() {
+		return REDIS_CHAT_PASS;
+	}
+	
+	public static String getRedisSessionUser() {
+		return REDIS_SESSION_USER;
+	}
+	
+	public static String getRedisSessionPass() {
+		return REDIS_SESSION_PASS;
+	}
+	public static String getRedisGeoUser() {
+		return REDIS_GEO_USER;
+	}
+	
+	public static String getRedisGEOPass() {
+		return REDIS_GEO_PASS;
+	}
+	public static String getRedisGeneralUser() {
+		return REDIS_GENERAL_USER;
+	}
+	
+	public static String getRedisGeneralPass() {
+		return REDIS_GENERAL_PASS;
+	}
+	
+	public static Boolean getMongoAuth() {
+		if(getMongoPass()!=null && getMongoUser() != null)
+			return true;
+		else
+			return false;
+	}
+	
+	public static Boolean getRedisGeneralAuth() {
+		if(getRedisGeneralPass() !=null && getRedisGeneralUser() != null)
+			return true;
+		else
+			return false;
+	}
+	
+	public static Boolean getRedisSessionAuth() {
+		if(getRedisSessionPass() !=null && getRedisSessionUser() != null)
+			return true;
+		else
+			return false;
 	}
 
 	public static String getEmailConfirmationError() {
@@ -367,4 +495,26 @@ public class Const {
 		ADMIN_TOKEN = aDMIN_TOKEN;
 	}
 
+	public static Boolean getAPNS_PROD() {
+		return APNS_PROD;
+	}
+
+	public static void setAPNS_PROD(Boolean aPNS_PROD) {
+		APNS_PROD = aPNS_PROD;
+	}
+	
+	public static int getAPNS_FEEDBACK_CICLE() {
+		return APNS_FEEDBACK_CICLE;
+	}
+	public static int getAPNS_PUSH_CICLE() {
+		return APNS_PUSH_CICLE;
+	}
+
+	public static void setAPNS_FEEDBACK_CICLE(int aPNS_FEEDBACK_CICLE) {
+		APNS_FEEDBACK_CICLE = aPNS_FEEDBACK_CICLE;
+	}
+	public static void setAPNS_PUSH_CICLE(int aPNS_PUSH_CICLE) {
+		APNS_PUSH_CICLE = aPNS_PUSH_CICLE;
+	}
+	
 }

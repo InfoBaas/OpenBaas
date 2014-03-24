@@ -10,17 +10,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 
-
-/**
- * Contains all the user information and possible actions.
- * 
- * @author Miguel Aniceto
- * 
- */
 @XmlRootElement
 public class User {
 	
+	public static final String DATA = "data";
 	public static final String USER_NAME = "userName";
+	public static final String _ID = "_id";
 	public static final String EMAIL = "email";
 	public static final String USER_FILE = "userFile";
 	public static final String SALT = "salt";
@@ -31,11 +26,12 @@ public class User {
 	public static final String BASE_LOCATION_OPTION = "baseLocationOption";
 	public static final String BASE_LOCATION = "baseLocation";
 	public static final String LOCATION = "location";
+	public static final String ONLINE = "online";
 	private static final String SN_PREFIXO = "SN_";
 	private static final String SN_SUFIXO = "_ID";
 	private static final String SOCIAL_NETWORK_ID_FORMAT = SN_PREFIXO +"%s" + SN_SUFIXO;
 	
-	private String userId;
+	private String _id;
 	private String email;
 	private String emailConfirmed;
 	private String userName;
@@ -48,25 +44,26 @@ public class User {
 	private String returnToken;
 	private String baseLocationOption;
 	private String baseLocation;
-	private String lastLocation;
+	private String location;
+	private String online;
 
-	public User(String userId){
-		this.userId = userId;
+	public User(String _id){
+		this._id = _id;
 	}
 	public User() {
 		this.setAlive("true");
 	}
 
-	public boolean equals(String id) {
-		return this.userId.equalsIgnoreCase(id);
+	public boolean equals(String _id) {
+		return this._id.equalsIgnoreCase(_id);
 	}
 
-	public void setUserID(String userId) {
-		this.userId = userId;
+	public void set_id(String _id) {
+		this._id = _id;
 	}
 
-	public String getUserId() {
-		return this.userId;
+	public String get_id() {
+		return this._id;
 	}
 
 	public void setEmail(String email) {
@@ -143,14 +140,6 @@ public class User {
 		this.baseLocationOption = baseLocationOption;
 	}
 	
-	public String getLastLocation() {
-		return lastLocation;
-	}
-	
-	public void setLastLocation(String lastLocation) {
-		this.lastLocation = lastLocation;
-	}
-	
 	public String getBaseLocation() {
 		return baseLocation;
 	}
@@ -165,6 +154,18 @@ public class User {
 	
 	public static boolean isIndexedField(String key) {
 		return key!=null && (key.equals(EMAIL) || key.equals(USER_NAME) || (key.startsWith(SN_PREFIXO) && key.endsWith(SN_SUFIXO))); 
+	}
+	public String getOnline() {
+		return online;
+	}
+	public void setOnline(String online) {
+		this.online = online;
+	}
+	public String getLocation() {
+		return location;
+	}
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 }

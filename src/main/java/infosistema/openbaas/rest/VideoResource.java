@@ -30,6 +30,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
+
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
@@ -69,14 +71,11 @@ public class VideoResource {
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String userId = sessionMid.getUserIdUsingSessionToken(Utils.getSessionToken(hh));
-			String videoId = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, ModelEnum.video, location);
-			if (videoId == null) { 
+			Result res = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, userId, ModelEnum.video, location, Metadata.getNewMetadata(location));
+			if (res == null || res.getData() == null)
 				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
-			} else {
-				Metadata meta = mediaMid.createMetadata(appId, null, videoId, userId, ModelEnum.video, location);
-				Result res = new Result(videoId, meta);	
+			else
 				response = Response.status(Status.OK).entity(res).build();
-			}
 		} else if(code == -2) {
 			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if(code == -1)
@@ -107,9 +106,7 @@ public class VideoResource {
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "deleteVideo", "***********Deleting Video***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
-				mediaMid.deleteMedia(appId, ModelEnum.video, videoId);
-				Boolean meta = mediaMid.deleteMetadata(appId, null, videoId, ModelEnum.video);
-				if(meta)
+				if (mediaMid.deleteMedia(appId, ModelEnum.video, videoId))
 					response = Response.status(Status.OK).entity("").build();
 				else
 					response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("Del Meta")).build();
@@ -130,13 +127,14 @@ public class VideoResource {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
+	public Response find(@Context UriInfo ui, @Context HttpHeaders hh, @QueryParam("show") JSONArray arrayShow,
 			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
+			@QueryParam(Const.ELEM_COUNT) String elemCount, @QueryParam(Const.ELEM_INDEX) String elemIndex,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
 		QueryParameters qp = QueryParameters.getQueryParameters(appId, null, query, radiusStr, latitudeStr, longitudeStr, 
-				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.video);
+				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.video,elemCount,elemIndex);
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
@@ -145,7 +143,7 @@ public class VideoResource {
 		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
 			try {
-				ListResult res = mediaMid.find(qp);
+				ListResult res = mediaMid.find(qp,arrayShow);
 				response = Response.status(Status.OK).entity(res).build();
 			} catch (Exception e) {
 				response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
@@ -178,10 +176,7 @@ public class VideoResource {
 			Log.debug("", this, "findById", "********Finding Video Meta**********");
 			if (AppsMiddleLayer.getInstance().appExists(appId)) {
 				if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
-					Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId));
-					Metadata meta = mediaMid.getMetadata(appId, null, videoId, ModelEnum.video);
-					Result res = new Result(video, meta);
-					
+					Result res = mediaMid.getMedia(appId, ModelEnum.video, videoId, true);
 					response = Response.status(Status.OK).entity(res).build();
 				} else
 					response = Response.status(Status.NOT_FOUND).entity(new Error(videoId)).build();
@@ -204,7 +199,7 @@ public class VideoResource {
 	@Path("{videoId}/{quality}/download")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response downloadVideo(@PathParam("videoId") String videoId,
+	public Response downloadVideo(@PathParam("videoId") String videoId, @PathParam("quality") String quality,
 			@HeaderParam(value = Const.SESSION_TOKEN) String sessionToken) {
 		Response response = null;
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
@@ -213,8 +208,8 @@ public class VideoResource {
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			Log.debug("", this, "updateUser", "*********Downloading Video**********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
-				Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId));
-				sucess = mediaMid.download(appId, ModelEnum.video, videoId, video.getFileExtension());
+				Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId, false).getData());
+				sucess = mediaMid.download(appId, ModelEnum.video, videoId, video.getFileExtension(),quality,null);
 				if (sucess!=null)
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
 							.header("content-disposition","attachment; filename = "+video.getFileName()+"."+video.getFileExtension()).build();

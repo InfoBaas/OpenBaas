@@ -7,6 +7,7 @@ import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.utils.Const;
+import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import javax.ws.rs.GET;
@@ -19,6 +20,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
 
@@ -56,14 +58,16 @@ public class MediaResource {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
+	public Response find(@Context UriInfo ui, @Context HttpHeaders hh, @QueryParam("show") JSONArray arrayShow,
 			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
+			@QueryParam(Const.ELEM_COUNT) String pageCount, @QueryParam(Const.ELEM_INDEX) String pageIndex,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_BY) String orderTypeStr) {
 		QueryParameters qp = QueryParameters.getQueryParameters(appId, null, query, radiusStr, latitudeStr, longitudeStr, 
-				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.media);
+				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.media,pageCount,pageIndex);
 		Response response = null;
+		Log.debug("", this, "get media", "********get media ************");
 		String sessionToken = Utils.getSessionToken(hh);
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
@@ -71,7 +75,7 @@ public class MediaResource {
 		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
 			try {
-				ListResult res = mediaMid.find(qp);
+				ListResult res = mediaMid.find(qp,arrayShow);
 				response = Response.status(Status.OK).entity(res).build();
 			} catch (Exception e) {
 				response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();

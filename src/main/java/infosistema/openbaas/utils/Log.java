@@ -30,7 +30,7 @@ public class Log {
 		String sClass = asCallerObject;
 		String sMethod = (asMethodName == null || "".equals(asMethodName)) ? "none" : asMethodName;
 		String sUser = (asUser == null || "".equals(asUser)) ? "anonymous" : asUser + " in ";
-		String sMessage = (sClass == null) ? asMessage : ("[" + sUser + sMethod + "@" + sClass + "] - " + asMessage);
+		String sMessage = (sClass == null) ? asMessage : ("[" + sUser + ", "+ sMethod + "@" + sClass + "] - " + asMessage);
 
 		if (logger == null) {
 			System.out.println(logLevel+" "+sMessage);

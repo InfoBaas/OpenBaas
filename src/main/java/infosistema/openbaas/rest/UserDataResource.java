@@ -15,7 +15,7 @@ import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
-import java.util.Iterator;
+import java.util.Date;
 import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -34,11 +34,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
-
-import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
 
 public class UserDataResource {
 
@@ -49,6 +46,7 @@ public class UserDataResource {
 	private UsersMiddleLayer usersMid;
 	private String appId;
 	private SessionMiddleLayer sessionMid;
+	private String userId;
 
 	public UserDataResource(UriInfo uriInfo, String appId, String userId) {
 		this.appsMid = AppsMiddleLayer.getInstance();
@@ -57,6 +55,7 @@ public class UserDataResource {
 		this.sessionMid = SessionMiddleLayer.getInstance();
 		this.appId = appId;
 		this.uriInfo = uriInfo;
+		this.userId = userId;
 	}
 
 	// *** CREATE *** //
@@ -76,25 +75,22 @@ public class UserDataResource {
 	public Response createOrReplaceDocument(JSONObject inputJson,  @PathParam("pathId") List<PathSegment> path,
 			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
+		Date startDate = Utils.getDate();
+		Log.debug("", this, "put user data", "********put user data ************");
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String sessionToken = Utils.getSessionToken(hh);
-			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			if (appsMid.appExists(appId) && usersMid.userIdExists(appId, userId)) {
-				if (docMid.insertDocumentInPath(appId, userId, path, inputJson, location)) {
-					Metadata meta = null;
-					Iterator<?> it = inputJson.keys();
-					while (it.hasNext()) { 
-						String key = it.next().toString();
-						meta = docMid.createMetadata(appId, userId, key, userId, location, inputJson);
-					}
-					Result res = new Result(inputJson.toString(), meta);		
+				Result res = docMid.insertDocumentInPath(appId, userId, path, inputJson, Metadata.getNewMetadata(location));
+				if (res != null){
 					response = Response.status(Status.OK).entity(res).build();
-				} else {
-					response = Response.status(Status.BAD_REQUEST).entity(new Error(inputJson.toString())).build();
+					Date endDate = Utils.getDate();
+					Log.info(sessionToken, this, "put user data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 				}
+				else
+					response = Response.status(Status.BAD_REQUEST).entity(new Error(inputJson.toString())).build();
 			} else {
 				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
@@ -119,24 +115,24 @@ public class UserDataResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response patchDataInElement(JSONObject inputJson, @PathParam("pathId") List<PathSegment> path,
 			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION) String location) {
+		Date startDate = Utils.getDate();
 		Response response = null;
+		Log.debug("", this, "patch user data", "********patch user data ************");
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String sessionToken = Utils.getSessionToken(hh);
-			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
-			if (docMid.existsDocumentInPath(appId, null, path)) {
-				if (docMid.updateDocumentInPath(appId, userId, path, inputJson, location)){
-					Metadata meta = docMid.updateMetadata(appId, userId, docMid.convertPathToString(path), userId, location, inputJson);
-					Result res = new Result(inputJson.toString(), meta);		
-					response = Response.status(Status.OK).entity(res).build();
-				}
-				else
-					response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
-			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
+			
+			Result res = docMid.updateDocumentInPath(appId, userId, path, inputJson, Metadata.getNewMetadata(location));
+			if (res != null){
+				response = Response.status(Status.OK).entity(res).build();
+				Date endDate = Utils.getDate();
+				Log.info(sessionToken, this, "patch user data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			}
+			else
+				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
+		
 		} else if (code == -2) {
 			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if (code == -1)
@@ -148,25 +144,26 @@ public class UserDataResource {
 	@Path("/{pathId:.+}")
 	public Response deleteDataInElement(@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
 			@Context HttpHeaders hh) {
+		Date startDate = Utils.getDate();
 		Response response = null;
-		String sessionToken = Utils.getSessionToken(hh);
-		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
+		Log.debug("", this, "del user data", "********del user data ************");
 		int code = Utils.treatParameters(ui, hh);
 		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (code == 1) {
+			String sessionToken = Utils.getSessionToken(hh);
 			if (docMid.existsDocumentInPath(appId, userId, path)) {
 				if (docMid.deleteDocumentInPath(appId, userId, path)){
-					Boolean meta = docMid.deleteMetadata(appId, userId, docMid.convertPathToString(path), ModelEnum.data);
-					if(meta)
-						response = Response.status(Status.OK).entity("").build();
-					else
-						response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(new Error("Del Meta")).build();
+					response = Response.status(Status.OK).entity("").build();
+					Date endDate = Utils.getDate();
+					Log.info(sessionToken, this, "delete user data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 				}
 				else
 					response = Response.status(Status.BAD_REQUEST).entity(new Error(path.toString())).build();
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
+				response = Response.status(Status.OK).entity(new Error("not exits")).build();
+				Date endDate = Utils.getDate();
+				Log.info(sessionToken, this, "delete user data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			}
 		} else if (code == -2) {
 			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
@@ -185,12 +182,13 @@ public class UserDataResource {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,
-			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
+	public Response find(@Context UriInfo ui, @Context HttpHeaders hh,@QueryParam("show") JSONArray arrayShow,
+			@QueryParam("hide") JSONArray arrayHide,@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
+			@QueryParam(Const.ELEM_COUNT) String pageCount, @QueryParam(Const.ELEM_INDEX) String pageIndex,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_TYPE) String orderTypeStr) {
-		return findDocument(null, ui, hh, query, radiusStr, latitudeStr, longitudeStr, pageNumberStr, pageSizeStr, orderByStr, orderTypeStr);
+		return findDocument(null, ui, hh, arrayShow,arrayHide, query, radiusStr, latitudeStr, longitudeStr, pageCount,pageIndex,pageNumberStr, pageSizeStr, orderByStr, orderTypeStr);
 	}
 
 	// *** GET *** //
@@ -206,14 +204,16 @@ public class UserDataResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response findDocument(@PathParam("pathId") List<PathSegment> path, 
-			@Context UriInfo ui, @Context HttpHeaders hh,
-			@QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
+			@Context UriInfo ui, @Context HttpHeaders hh,@QueryParam("show") JSONArray arrayShow,
+			@QueryParam("hide") JSONArray arrayHide, @QueryParam("query") JSONObject query, @QueryParam(Const.RADIUS) String radiusStr,
 			@QueryParam(Const.LAT) String latitudeStr, @QueryParam(Const.LONG) String longitudeStr,
+			@QueryParam(Const.ELEM_COUNT) String pageCount, @QueryParam(Const.ELEM_INDEX) String pageIndex,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_TYPE) String orderTypeStr) {
+		Date startDate = Utils.getDate();
 		Response response = null;
+		Log.debug("", this, "get user data", "********get user data ************");
 		String sessionToken = Utils.getSessionToken(hh);
-		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
@@ -221,31 +221,28 @@ public class UserDataResource {
 			if ((latitudeStr != null && longitudeStr != null && radiusStr != null) || query != null) {
 				String url = docMid.getDocumentPath(userId, path);
 				QueryParameters qp = QueryParameters.getQueryParameters(appId, userId, query, radiusStr, latitudeStr, longitudeStr, 
-						pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, url, ModelEnum.data);
+						pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, url, ModelEnum.data,pageCount,pageIndex);
 				try {
-					ListResult res = docMid.find(qp);
+					ListResult res = docMid.find(qp,arrayShow);
 					response = Response.status(Status.OK).entity(res).build();
+					Date endDate = Utils.getDate();
+					Log.info(sessionToken, this, "delete user data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 				} catch (Exception e) {
 					Log.error("", this, "findDocument", "Error ocorred", e);
 					response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
 				}
 				return response;
 			} else if (docMid.existsDocumentInPath(appId, userId, path)) {
-				Object data = docMid.getDocumentInPath(appId, userId, path);
-				if (data == null)
+				Result res = docMid.getDocumentInPath(appId, userId, path, true,arrayShow,arrayHide);
+				if (res == null || res.getData() == null)
 					response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 				else{
-					try {
-						if (data instanceof JSONObject) data = (DBObject)JSON.parse(data.toString());
-						Metadata meta = docMid.getMetadata(appId, userId, docMid.convertPathToString(path), ModelEnum.data);
-						Result res = new Result(data, meta);
-						response = Response.status(Status.OK).entity(res).build();
-					} catch (Exception e) {
-						response = Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
-					}	
+					response = Response.status(Status.OK).entity(res).build();
+					Date endDate = Utils.getDate();
+					Log.info(sessionToken, this, "delete user data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 				}
 			} else {
-				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
+				response = Response.status(Status.NOT_FOUND).entity(new Error("data not exists for userId: "+userId)).build();
 			}
 		} else if (code == -2) {
 			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();

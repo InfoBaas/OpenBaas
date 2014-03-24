@@ -1,8 +1,11 @@
 package infosistema.openbaas.middleLayer;
 
+import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.dataaccess.email.Email;
+import infosistema.openbaas.dataaccess.models.ModelAbstract;
 import infosistema.openbaas.dataaccess.models.SessionModel;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
@@ -13,14 +16,18 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 public class UsersMiddleLayer extends MiddleLayerAbstract {
 
@@ -83,14 +90,14 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	
 	// *** CREATE *** //
 
-	public User createUserAndLogin(MultivaluedMap<String, String> headerParams, UriInfo uriInfo, String appId, String userName, 
-			String email, String password, String userFile, Boolean baseLocationOption, String baseLocation) {
+	public Result createUserAndLogin(MultivaluedMap<String, String> headerParams, UriInfo uriInfo, String appId,
+			String userName, String email, String password, String userFile, Boolean baseLocationOption,
+			String baseLocation, Map<String, String> extraMetadata) {
 		User outUser = new User();
-
+		Result res = null;
+		
 		if (baseLocationOption == null) baseLocationOption = false;
 		String userId = null;
-		List<String> userAgentList = null;
-		List<String> locationList = null;
 		String userAgent = null;
 		String location = null;
 		String lastLocation =null;
@@ -108,63 +115,62 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		} catch (InvalidKeySpecException e) {
 			Log.error("", this, "createUserAndLogin", "Invalid Key.", e); 
 		}
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
-				locationList = entry.getValue();
-			else if (entry.getKey().equalsIgnoreCase("user-agent")){
-				userAgentList = entry.getValue();
-			}	
-		}
-		if (locationList != null)
-			location = locationList.get(0);
+		try {
+			location = headerParams.getFirst(Const.LOCATION);
+		} catch (Exception e) { }
+		try {
+			userAgent = headerParams.getFirst(Const.USER_AGENT);
+		} catch (Exception e) { }
 		if(baseLocationOption)
 			if(location!=null)
 				location = baseLocation;
 		if (!getConfirmUsersEmailOption(appId)) {
 			SessionMiddleLayer sessionMid = SessionMiddleLayer.getInstance();
-			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt, hash, userFile, null, null, baseLocationOption, baseLocation, location);
+			res = createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt, hash, userFile, null, null,
+					baseLocationOption, baseLocation, location, extraMetadata);
 			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, password);
-			if (userAgentList != null)
-				userAgent = userAgentList.get(0);
 			
 			Boolean refresh = sessionMid.refreshSession(sessionToken, location, userAgent);
-			lastLocation = updateUserLocation(userId,appId,location);
+			lastLocation = updateUserLocation(userId, appId, location, extraMetadata);
 			if(lastLocation==null)
-				lastLocation = outUser.getLastLocation();
+				lastLocation = outUser.getLocation();
 			if (validation && refresh) {
-				outUser.setUserID(userId);
+				outUser.set_id(userId);
 				outUser.setReturnToken(sessionToken);
 				outUser.setEmail(email);
 				outUser.setUserName(userName);
 				outUser.setUserFile(userFile);
 				outUser.setBaseLocation(baseLocation);
 				outUser.setBaseLocationOption(baseLocationOption.toString());
-				outUser.setLastLocation(lastLocation);
+				outUser.setLocation(lastLocation);
+				outUser.setOnline("true");
 			}
 		} else if (getConfirmUsersEmailOption(appId)) {
 			boolean emailConfirmed = false;
-			createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt,hash, userFile, emailConfirmed, uriInfo,baseLocationOption,baseLocation,location);
-			outUser.setUserID(userId);
+			res = createUser(appId, userId, userName, "NOK", "SocialNetwork", email, salt,hash, userFile, emailConfirmed,
+					uriInfo, baseLocationOption, baseLocation, location, extraMetadata);
+			outUser.set_id(userId);
 			outUser.setEmail(email);
 			outUser.setUserName(userName);
 			outUser.setUserFile(userFile);
 			outUser.setBaseLocation(baseLocation);
 			outUser.setBaseLocationOption(baseLocationOption.toString());
-			outUser.setLastLocation(location);
+			outUser.setLocation(location);
+			outUser.setOnline("true");
 		}
-		return outUser;
+		return new Result(outUser,res.getMetadata());
 		
 	}
 	
-	public User createSocialUserAndLogin(MultivaluedMap<String, String> headerParams, String appId, 
-			String userName, String email, String socialId, String socialNetwork) {
+	public Result createSocialUserAndLogin(MultivaluedMap<String, String> headerParams, String appId, 
+			String userName, String email, String socialId, String socialNetwork, Map<String, String> extraMetadata) {
 		User outUser = new User();
 		String userId = null;
-		List<String> userAgentList = null;
-		List<String> locationList = null;
 		String userAgent = null;
 		String location = null;
+		String lastLocation =null;
+		Result res = null; 
 		
 		userId = Utils.getRandomString(Const.getIdLength());
 		while (userModel.userIdExists(appId, userId))
@@ -182,32 +188,31 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		}
 
 		SessionMiddleLayer sessionMid = SessionMiddleLayer.getInstance();
-		createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash, null, null, null, false,null,null);
+		res = createUser(appId, userId, userName, socialId, socialNetwork, email, salt, hash, null, null, null, false, null, null, extraMetadata);
 		String sessionToken = Utils.getRandomString(Const.getIdLength());
 		boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
-		for (Entry<String, List<String>> entry : headerParams.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(Const.LOCATION))
-				locationList = entry.getValue();
-			else if (entry.getKey().equalsIgnoreCase("user-agent")){
-				userAgentList = entry.getValue();
-			}	
-		}
-		if (locationList != null)
-			location = locationList.get(0);
-		if (userAgentList != null)
-			userAgent = userAgentList.get(0);
+		try {
+			location = headerParams.getFirst(Const.LOCATION);
+		} catch (Exception e) { }
+		try {
+			userAgent = headerParams.getFirst(Const.USER_AGENT);
+		} catch (Exception e) { }
 		
 		sessionMid.refreshSession(sessionToken, location, userAgent);
+		lastLocation = updateUserLocation(userId, appId, location, extraMetadata);
+		if(lastLocation==null)
+			lastLocation = outUser.getLocation();
 
 		if (validation) {
-			outUser.setUserID(userId);
-			outUser.setReturnToken(sessionToken);
+			outUser.set_id(userId);
 			outUser.setEmail(email);
 			outUser.setUserName(userName);
+			outUser.setBaseLocationOption("false");
+			outUser.setLocation(lastLocation);
+			outUser.setReturnToken(sessionToken);
+			outUser.setOnline("true");
 		}
-		
-		return outUser;
-		
+		return new Result(outUser,res.getMetadata());
 	}
 
 	/**
@@ -221,54 +226,70 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	 * @param password
 	 * @return
 	 */
-	public boolean createUser(String appId, String userId, String userName, String socialId, String socialNetwork,
-			String email, byte[] salt, byte[] hash,	String userFile, Boolean emailConfirmed, UriInfo uriInfo, Boolean baseLocationOption, String baseLocation, String location) {
-		boolean sucessModel = false;
+	public Result createUser(String appId, String userId, String userName, String socialId, String socialNetwork,
+			String email, byte[] salt, byte[] hash,	String userFile, Boolean emailConfirmed, UriInfo uriInfo,
+			Boolean baseLocationOption, String baseLocation, String location, Map<String, String> extraMetadata) {
 		try {
+			Metadata metadata = null;
+			Object data = null;
 			Map<String, String> fields = getUserFields(userName, socialId, socialNetwork, email, userFile, salt, hash, emailConfirmed,
 					baseLocationOption, baseLocation, true, location);
-			userModel.createUser(appId, userId, fields);
+			data = userModel.createUser(appId, userId, fields, extraMetadata);			
+			metadata = Metadata.getMetadata(new JSONObject(((JSONObject) data).getString(ModelAbstract._METADATA)));
+			
+			((JSONObject) data).remove(ModelAbstract._METADATA);
+			data = (DBObject)JSON.parse(data.toString());
 			String ref = Utils.getRandomString(Const.getIdLength());
 			if (uriInfo != null) {
 				emailOp.sendRegistrationEmailWithRegistrationCode(appId, userId, userName, email, ref, uriInfo.getAbsolutePath().toASCIIString());
 			}
 			this.emailOp.addUrlToUserId(appId, userId, ref);
+			return new Result(data, metadata);
 		} catch (Exception e) {
 			Log.error("", this, "createUser", "An error ocorred.", e); 
 		}
-		return sucessModel;
+		return null;
 	}
 
 	// *** UPDATE *** //
-	public Boolean updateUser(String appId, String userId, String userName, String email,
-			String userFile, Boolean baseLocationOption, String baseLocation, String location) {
-		Boolean res = false;
+	public Result updateUser(String appId, String userId, String userName, String email, String userFile,
+			Boolean baseLocationOption, String baseLocation, String location, Map<String, String> extraMetadata) {
+		Metadata metadata = null;
+		Object data = null;
 		try {
 			Map<String, String> fields = getUserFields(userName, null, null, email, userFile, null, null, null, baseLocationOption, baseLocation, true, location);
-			res = userModel.updateUser(appId, userId, fields);
+			data = userModel.updateUser(appId, userId, fields, extraMetadata);
+			metadata = Metadata.getMetadata(new JSONObject(((JSONObject) data).getString(ModelAbstract._METADATA)));
+			((JSONObject) data).remove(ModelAbstract._METADATA);
+			data = (DBObject)JSON.parse(data.toString());
 		} catch (Exception e) {
 			Log.error("", this, "updateUser", "updateUser.", e); 
+			return null;
 		}
-		return res;
+		return new Result(data, metadata);
 	}
 	
-	public boolean updateUserPassword(String appId, String userId, String password) {
+	public Result updateUserPassword(String appId, String userId, String password, Map<String, String> extraMetadata) {
 		byte[] salt = null;
 		byte [] hash = null;
 		PasswordEncryptionService service = new PasswordEncryptionService();
-		boolean sucess = false;
 		try {
 			salt = service.generateSalt();
 			hash = service.getEncryptedPassword(password, salt);
 			if (appModel.appExists(appId) && userModel.userIdExists(appId, userId)) {
+				Metadata metadata = null;
+				Object data = null;
 				Map<String, String> fields = getUserFields(null, null, null, null, null, salt, hash, null, null, null, null, null);
-				userModel.updateUser(appId, userId, fields);
+				data = userModel.updateUser(appId, userId, fields, extraMetadata);
+				metadata = Metadata.getMetadata(new JSONObject(((JSONObject) data).getString(ModelAbstract._METADATA)));
+				((JSONObject) data).remove(ModelAbstract._METADATA);
+				data = (DBObject)JSON.parse(data.toString());
+				return new Result(data, metadata);
 			}
 		} catch (Exception e) {
 			Log.error("", this, "updateUserPassword", "Unsupported Encoding.", e); 
 		}
-
-		return sucess;
+		return null;
 	}
 
 	// *** DELETE *** //
@@ -277,7 +298,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		boolean operationOk = false;
 		try {
 			Map<String, String> fields = getUserFields(null, null, null, null, null, null, null, null, null, null, false, null);
-			operationOk = userModel.updateUser(appId, userId, fields);
+			operationOk = userModel.updateUser(appId, userId, fields, null) != null;
 		} catch (Exception e) {
 			Log.error("", this, "deleteUserInApp", "deleteUserInApp.", e); 
 		}
@@ -287,37 +308,67 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	// *** GET LIST *** //
 
 	@Override
-	protected List<String> getAllSearchResults(String appId, String userId, String url, JSONObject query, String orderType, ModelEnum type, String orderBy) throws Exception {
-		if(query==null){
+	protected List<DBObject> getAllSearchResults(String appId, String userId, String url, Double latitude, Double longitude, 
+			Double radius, JSONObject query, String orderType, String orderBy, ModelEnum type, List<String> toShow) throws Exception {
+		List<DBObject> result = null;
+		SessionModel sessionModel = new SessionModel();
+		Boolean online = false;
+		if (query == null || query.length() == 0) {
 			query = new JSONObject();
-			JSONObject jAux= new JSONObject();
+			JSONObject jAux = new JSONObject();
 			jAux.put("$exists",1);
-			query.put("email", jAux); 
-			query.put("hash", jAux);
-			query.put("salt", jAux); 
+			query.put(User.EMAIL, jAux); 
+			query.put(User.HASH, jAux);
+			query.put(User.SALT, jAux); 
 		}
-		return docModel.getDocuments(appId, userId, url, query, orderType,orderBy);
+		result = docModel.getDocuments(appId, userId, url, latitude, longitude, radius, query, orderType, orderBy, toShow);
+		if(toShow.contains(User.ONLINE)){
+			Iterator<DBObject> it = result.iterator();
+			while(it.hasNext()){
+				DBObject dbo = it.next();
+				String _id = (String) dbo.get(User._ID);
+				online = sessionModel.isUserOnline(_id);
+				((DBObject) dbo.get(User.DATA)).put("online", online.toString());
+			}
+		}
+		return result; 
 	}
 
 	
 	// *** GET *** //
 	
-	public User getUserInApp(String appId, String userId) {
-		Map<String, String> userFields = userModel.getUser(appId, userId);
-		if (userFields == null) return null;
-		User temp = new User(userId);
+	public Result getUserInApp(String appId, String userId) {
+		JSONObject user = userModel.getUser(appId, userId, true);
+		if (user == null) return null;
+		User data = new User(userId);
+		try {
+			if(user.has(User.USER_NAME))
+				data.setUserName(user.getString(User.USER_NAME));
+			if(user.has(User.USER_FILE))
+				data.setUserFile(user.getString(User.USER_FILE));
+			if(user.has(User.EMAIL))
+				data.setEmail(user.getString(User.EMAIL));
+			if(user.has(User.ALIVE))
+				data.setAlive(user.getString(User.ALIVE));
+			if(user.has(User.EMAIL_CONFIRMED))
+				data.setEmailConfirmed(user.getString(User.EMAIL_CONFIRMED));
+			if(user.has(User.BASE_LOCATION_OPTION))
+				data.setBaseLocationOption(user.getString(User.BASE_LOCATION_OPTION));
+			if(user.has(User.BASE_LOCATION))
+				data.setBaseLocation(user.getString(User.BASE_LOCATION));
+			if(user.has(User.LOCATION))
+				data.setLocation(user.getString(User.LOCATION));
+			if(user.has(User.ONLINE))
+				data.setOnline(user.getString(User.ONLINE));
+			Metadata metadata = null;
+			if (user.has(ModelAbstract._METADATA))
+				metadata = Metadata.getMetadata(new JSONObject(user.getString(ModelAbstract._METADATA)));
+			return new Result(data, metadata);
+		} catch (Exception e) {
+			Log.error("", this, "getUserInApp", "An error ocorred.", e);
+		}
 
-		
-		temp.setUserName(userFields.get(User.USER_NAME));
-		temp.setUserFile(userFields.get(User.USER_FILE));
-		temp.setEmail(userFields.get(User.EMAIL));
-		temp.setAlive(userFields.get(User.ALIVE));
-		temp.setEmailConfirmed(userFields.get(User.EMAIL_CONFIRMED));
-		temp.setBaseLocationOption(userFields.get(User.BASE_LOCATION_OPTION));
-		temp.setBaseLocation(userFields.get(User.BASE_LOCATION));
-		temp.setLastLocation(userFields.get(User.LOCATION));
-		
-		return temp;
+		return null;
 	}
 
 	public String getEmailUsingUserName(String appId, String userName) {
@@ -333,7 +384,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		return userModel.getUserIdUsingEmail(appId, email);
 	}
 	
-	public User getUserUsingEmail(String appId, String email) {
+	public Result getUserUsingEmail(String appId, String email) {
 		return getUserInApp(appId, userModel.getUserIdUsingEmail(appId, email));
 	}
 
@@ -373,10 +424,10 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		this.emailOp.removeUrlToUserId(appId, userId);
 	}
 
-	public void confirmUserEmail(String appId, String userId) {
+	public void confirmUserEmail(String appId, String userId, Map<String, String> extraMetadata) {
 		try {
 			Map<String, String> fields = getUserFields(null, null, null, null, null, null, null, true, null, null, null, null);
-			userModel.updateUser(appId, userId, fields); 
+			userModel.updateUser(appId, userId, fields, extraMetadata); 
 		} catch (UnsupportedEncodingException e) {
 		}
 	}
@@ -392,39 +443,37 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	public boolean updateConfirmUsersEmailOption(String appId, Boolean confirmUsersEmail) {
 		boolean sucess = false;
 		if (appModel.appExists(appId)) {
-			appModel.updateAppFields(appId, null, null, confirmUsersEmail, null, null, null);
+			appModel.updateAppFields(appId, null, null, confirmUsersEmail, null, null, null,null);
 			sucess = true;
 		}
 		return sucess;
 	}
 
-	public boolean recoverUser(String appId, String userId, String email, UriInfo uriInfo, String newPass, byte[] hash, byte[] salt) {
+	public boolean recoverUser(String appId, String userId, String email, UriInfo uriInfo, String newPass,
+			byte[] hash, byte[] salt, Map<String, String> extraMetadata) {
 		boolean opOk = false;
-		Map<String, String> user = userModel.getUser(appId, userId);
-		String dbEmail = null;
-		String userName = null;
-		for(Map.Entry<String,String> entry : user.entrySet()){
-			if(entry.getKey().equalsIgnoreCase("email")){
-				dbEmail = entry.getValue();
+		try {
+			JSONObject user = userModel.getUser(appId, userId, false);
+			String dbEmail = null;
+			String userName = null;
+				dbEmail = user.getString(User.EMAIL);
+			userName = user.getString(User.USER_NAME);
+			if (email != null && newPass != null) {
+				try {
+					Map<String, String> fields = getUserFields(null, null, null, email, null, salt, hash, null, null, null, null, null);
+					userModel.updateUser(appId, userId, fields, extraMetadata);
+				} catch (UnsupportedEncodingException e) {
+					Log.error("", this, "updateUser", "Unsupported Encoding.", e); 
+				}
 			}
-			else if(entry.getKey().equalsIgnoreCase("userName"))
-				userName = entry.getValue();
-		}
-		if (email != null && newPass != null) {
-			try {
-				Map<String, String> fields = getUserFields(null, null, null, email, null, salt, hash, null, null, null, null, null);
-				userModel.updateUser(appId, userId, fields);
-			} catch (UnsupportedEncodingException e) {
-				Log.error("", this, "updateUser", "Unsupported Encoding.", e); 
+			if(dbEmail.equalsIgnoreCase(email)){
+				boolean emailOk =emailOp.sendRecoveryEmail(appId, userName, userId, email, newPass, uriInfo.getAbsolutePath().toASCIIString());
+				if(emailOk) {
+					opOk = true;
+				}
 			}
-		}
-		if(dbEmail.equalsIgnoreCase(email)){
-			boolean emailOk =emailOp.sendRecoveryEmail(appId, userName, userId, email, newPass, 
-					uriInfo.getAbsolutePath().toASCIIString());
-			if(emailOk){
-
-				opOk = true;
-			}
+		} catch (JSONException e) {
+			Log.error("", this, "recoverUser", "An error ocorred.", e);
 		}
 		return opOk;
 	}
@@ -433,16 +482,15 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 		return this.emailOp.getRecoveryCodeOfUser(appId, userId);
 	}
 
-	public String updateUserLocation(String userId, String appId, String location) {
-		User user = getUserInApp(appId,userId);
-		
+	public String updateUserLocation(String userId, String appId, String location, Map<String, String> extraMetadata) {
 		try{
+			User user = (User)getUserInApp(appId,userId).getData();
 			if ("true".equalsIgnoreCase(user.getBaseLocationOption())) {
 				location = user.getBaseLocation();
 			}
 			if(location!=null){
 				Map<String, String> fields = getUserFields(null, null, null, null, null, null, null, null, null, null, null, location);
-				userModel.updateUser(appId, userId, fields);
+				userModel.updateUser(appId, userId, fields, extraMetadata);
 			}
 		}catch(Exception e){
 			Log.error("", this, "updateUserLocation", "updateUserLocation exception.", e); 

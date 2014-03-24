@@ -1,5 +1,8 @@
 package infosistema.openbaas.data.models;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 
@@ -7,9 +10,31 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class Application {
 
+	public final static String APNS_CERTIFICATION_PATH = "APNSCertificationPath";
+	public final static String APNS_PASSWORD = "APNSPassword";
+	public final static String APNS_CLIENT_ID = "APNSClientId";
+	public final static String CREATION_DATE = "creationdate";
+	public final static String ALIVE = "alive";
+	public final static String APP_NAME = "appName";
+	public final static String IMAGE_RES = "imageRes";
+	public final static String IMAGE_BARS = "imageBars";
+	public final static String VIDEO_RES = "videoRes";
+	public final static String AUDIO_RES = "audioRes";
+	public final static String CLIENTS_LIST = "clientsList";
+	public final static String CONFIRM_USERS_EMAIL = "confirmUsersEmail";
+	public final static String UPDATE_DATE = "updateDate";
+	public final static String APP_KEY = "appKey";
+	public final static String SALT = "salt";
+	public final static String HASH = "hash";
+	public final static String ORIGINAL = "original";
+	
+	
+	public final static String INCLUDEMISSES = "includeMisses";
+	public final static String USERS = "users";
+	 
 	private String createdAt;
 	private String updatedAt;
-	private String appId;
+	private String _id;
 	private String alive;
 	private String appName;
 	private String appKey;
@@ -17,6 +42,11 @@ public class Application {
 	private Boolean AWS;
 	private Boolean FTP;
 	private Boolean FileSystem;
+	private Map<String,String> imageResolutions;
+	private Map<String,String> videoResolutions;
+	private Map<String,String> audioResolutions;
+	private Map<String,String> barsColors;
+	private List<String> clients;
 	
 
 
@@ -27,12 +57,12 @@ public class Application {
 	public Application(){
 	}
 	
-	public Application(String appId){
-		this.appId = appId;
+	public Application(String _id){
+		this._id = _id;
 		this.alive = "true";
 	}
-	public Application(String appId, String date) {
-		this.appId = appId;
+	public Application(String _id, String date) {
+		this._id = _id;
 		createdAt = date;
 		this.alive = "true";
 	}
@@ -49,11 +79,11 @@ public class Application {
 	public void setUpdateDate(String updatedAt){
 		this.updatedAt = updatedAt;
 	}
-	public String getAppId() {
-		return this.appId;
+	public String get_id() {
+		return this._id;
 	}
-	public void setAppId(String appId){
-		this.appId = appId;
+	public void set_id(String _id){
+		this._id = _id;
 	}
 	public void setAlive(String alive){
 		this.alive = alive;
@@ -110,5 +140,45 @@ public class Application {
 
 	public void setAppKey(String appKey) {
 		this.appKey = appKey;
+	}
+
+	public Map<String,String> getAudioResolutions() {
+		return audioResolutions;
+	}
+
+	public void setAudioResolutions(Map<String,String> audioResolutions) {
+		this.audioResolutions = audioResolutions;
+	}
+
+	public Map<String,String> getVideoResolutions() {
+		return videoResolutions;
+	}
+
+	public void setVideoResolutions(Map<String,String> videoResolutions) {
+		this.videoResolutions = videoResolutions;
+	}
+
+	public Map<String,String> getImageResolutions() {
+		return imageResolutions;
+	}
+
+	public void setImageResolutions(Map<String,String> imageResolutions) {
+		this.imageResolutions = imageResolutions;
+	}
+
+	public Map<String,String> getBarsColors() {
+		return barsColors;
+	}
+
+	public void setBarsColors(Map<String,String> barsColors) {
+		this.barsColors = barsColors;
+	}
+
+	public List<String> getClients() {
+		return clients;
+	}
+
+	public void setClients(List<String> clients) {
+		this.clients = clients;
 	}
 }

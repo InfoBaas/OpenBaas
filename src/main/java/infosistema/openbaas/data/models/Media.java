@@ -27,14 +27,14 @@ import org.apache.commons.fileupload.FileItem;
  */
 public abstract class Media {
 
-	public final static String ID = "id";
+	public final static String _ID = "_id";
 	public final static String PATH = "dir";
 	public final static String FILENAME = "fileName";
 	public final static String FILEEXTENSION = "fileExtension";
 	public final static String SIZE = "size";
 	public final static String LOCATION = "location";
 
-	private String id;
+	private String _id;
 	private String fileExtension;
 	private long size;
 	private String dir;
@@ -44,16 +44,16 @@ public abstract class Media {
 	 * Constructor
 	 * 
 	 */
-	public Media(String id, String dir, long size, String fileExtension, String location){
-		this.id = id;
+	public Media(String _id, String dir, long size, String fileExtension, String location){
+		this._id = _id;
 		this.dir = dir;
 		this.size = size;
 		this.fileExtension = fileExtension;
 		this.location = location;
 	}
 
-	public Media(String id) {
-		this.id = id;
+	public Media(String _id) {
+		this._id = _id;
 	}
 	public Media(){
 		
@@ -78,8 +78,8 @@ public abstract class Media {
 	 * Returns the imager identifier.
 	 * @return String Image ID.
 	 */
-	public String getID() {
-		return this.id;
+	public String get_id() {
+		return this._id;
 	}
 	public String getDir(){
 		return this.dir;
@@ -166,7 +166,7 @@ public abstract class Media {
 	public void setLocation(String location){
 		this.location = location;
 	}
-	public void setId(String id){
-		this.id = id;
+	public void set_id(String _id){
+		this._id = _id;
 	}
 }

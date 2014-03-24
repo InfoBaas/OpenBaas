@@ -2,19 +2,23 @@ package infosistema.openbaas.middleLayer;
 
 
 import infosistema.openbaas.data.Metadata;
+import infosistema.openbaas.data.Result;
 import infosistema.openbaas.data.enums.ModelEnum;
+import infosistema.openbaas.dataaccess.models.ModelAbstract;
 import infosistema.openbaas.utils.Log;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.PathSegment;
 
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 public class DocumentMiddleLayer extends MiddleLayerAbstract {
 
@@ -53,44 +57,46 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 
 	// *** CREATE *** //
 	
-	public boolean insertDocumentInPath(String appId, String userId, List<PathSegment> path, JSONObject data, String location) {
+	public Result insertDocumentInPath(String appId, String userId, List<PathSegment> path, JSONObject document, Map<String, String> extraMetadata) {
 		try {
+			Metadata metadata = null;
+			Object data = null;
 			List<String> lPath = convertPath(path);
-			String id = docModel.getDocumentId(userId, lPath);
-			Boolean res =  docModel.insertDocumentInPath(appId, userId, lPath, data);
-			if (location != null && res){
-				String[] splitted = location.split(":");
-				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, id);
+			data = docModel.insertDocumentInPath(appId, userId, lPath, document, extraMetadata);
+			if(((JSONObject) data).has(ModelAbstract._METADATA)){
+				metadata = Metadata.getMetadata(new JSONObject(((JSONObject) data).getString(ModelAbstract._METADATA)));
+				((JSONObject) data).remove(ModelAbstract._METADATA);
 			}
-			return res;
+			data = (DBObject)JSON.parse(data.toString());
+			return new Result(data, metadata);
 		} catch (JSONException e) {
 			Log.error("", this, "insertDocumentInPath", "Error parsing the JSON.", e); 
-			return false;
 		} catch (Exception e) {
 			Log.error("", this, "insertDocumentInPath", "An error ocorred.", e); 
-			return false;
 		}
+		return null;
 	}
 
 
 	// *** UPDATE *** //
 	
-	public boolean updateDocumentInPath(String appId, String userId, List<PathSegment> path, JSONObject data, String location) {
+	public Result updateDocumentInPath(String appId, String userId, List<PathSegment> path, JSONObject document, Map<String, String> extraMetadata) {
 		try {
-			List<String> lPath = convertPath(path);
-			String id = docModel.getDocumentId(userId, lPath);
-			Boolean res =  docModel.updateDocumentInPath(appId, userId, lPath, data);
-			if (location != null){
-				String[] splitted = location.split(":");
-				geo.insertObjectInGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, id);
+			Metadata metadata = null;
+			Object data = null;
+			data = docModel.updateDocumentInPath(appId, userId, convertPath(path), document, extraMetadata);
+			if(((JSONObject) data).has(ModelAbstract._METADATA)){
+				metadata = Metadata.getMetadata(new JSONObject(((JSONObject) data).getString(ModelAbstract._METADATA)));
+				((JSONObject) data).remove(ModelAbstract._METADATA);
 			}
-			return res;
+			data = (DBObject)JSON.parse(data.toString());
+			return new Result(data, metadata);
 		} catch (JSONException e) {
 			Log.error("", this, "updateDocumentInPath", "Error parsing the JSON.", e); 
 		} catch (Exception e) {
 			Log.error("", this, "updateDocumentInPath", "An error ocorred.", e); 
 		}
-		return false;
+		return null;
 	}
 
 	
@@ -98,14 +104,7 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 
 	public boolean deleteDocumentInPath(String appId, String userId, List<PathSegment> path) {
 		Boolean res = false;
-		
 		try {
-			Metadata meta = getMetadata(appId, userId, convertPathToString(path), ModelEnum.data);
-			String location = meta.getLocation();
-			if (location != null){
-				String[] splitted = location.split(":");
-				geo.deleteObjectFromGrid(Double.parseDouble(splitted[0]),	Double.parseDouble(splitted[1]), ModelEnum.data, appId, docModel.getDocumentId(userId, convertPath(path)));
-			}
 			res = docModel.deleteDocumentInPath(appId, userId, convertPath(path));
 		} catch (Exception e) {
 			Log.error("", this, "deleteDocumentInPath", "An error ocorred.", e); 
@@ -118,23 +117,41 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 	// *** GET LIST *** //
 
 	@Override
-	protected List<String> getAllSearchResults(String appId, String userId, String url, JSONObject query, String orderType, ModelEnum type, String orderBy) throws Exception {
-		return docModel.getDocuments(appId, userId, url, query, orderType,orderBy);
+	protected List<DBObject> getAllSearchResults(String appId, String userId, String url, Double latitude, Double longitude, Double radius, JSONObject query, String orderType, String orderBy, ModelEnum type, List<String> toShow) throws Exception {
+		return docModel.getDocuments(appId, userId, url, latitude, longitude, radius, query, orderType, orderBy,toShow);
 	}
 
 	
 	// *** GET *** //
 	
-	public Object getDocumentInPath(String appId, String userId, List<PathSegment> path) {
+	public Result getDocumentInPath(String appId, String userId, List<PathSegment> path, boolean getMetadata, JSONArray arrayToShow, JSONArray arrayToHide) {
+		Metadata metadata = null;
+		Object data = null;
+		List<String> toShow = new ArrayList<String>();
+		List<String> toHide = new ArrayList<String>();
 		try {
-			return docModel.getDocumentInPath(appId, userId, convertPath(path));
+			toShow = convertJsonArray2ListString(arrayToShow);
+			toHide = convertJsonArray2ListString(arrayToHide);
+			data = docModel.getDocumentInPath(appId, userId, convertPath(path), getMetadata, toShow, toHide);
+			if (data instanceof JSONObject) {
+				if (getMetadata) {
+					if(((JSONObject) data).has(ModelAbstract._METADATA)){
+						metadata = Metadata.getMetadata(new JSONObject(((JSONObject) data).getString(ModelAbstract._METADATA)));
+						((JSONObject) data).remove(ModelAbstract._METADATA);
+					}
+					data = (DBObject)JSON.parse(data.toString());
+				}
+			}
 		} catch (Exception e) {
 			Log.error("", this, "getDocumentInPath", "An error ocorred.", e); 
 			return null;
 		}
+		return new Result(data, metadata);
 	}
 	
 	// *** EXISTS *** //
+
+	
 
 	public boolean existsDocumentInPath(String appId, String userId, List<PathSegment> path) {
 		try {
@@ -143,66 +160,6 @@ public class DocumentMiddleLayer extends MiddleLayerAbstract {
 			Log.error("", this, "existsDocumentInPath", "An error ocorred.", e); 
 			return false;
 		}
-	}
-
-	
-	// *** METADATA *** //
-	
-	public Metadata createMetadata(String appId, String userId, String path, String creatorId, String location, JSONObject input) {
-		String key = getMetaKey(appId, userId, path, ModelEnum.data);
-		Map<String, String> fields = new HashMap<String, String>();
-		fields.put(Metadata.CREATE_DATE, (new Date()).toString());
-		fields.put(Metadata.CREATE_USER, creatorId);
-		fields.put(Metadata.LAST_UPDATE_DATE, (new Date()).toString());
-		fields.put(Metadata.LAST_UPDATE_USER, creatorId);
-		fields.put(Metadata.LOCATION, location);
-		deleteMetadata(appId, userId, path, ModelEnum.data);
-		if (propagateMetadata(key, input, fields))
-			return getMetadata(appId, userId, path, ModelEnum.data);
-		else
-			return null;
-	}
-	
-	public Metadata updateMetadata(String appId, String userId, String path, String creatorId, String location, JSONObject input) {
-		String key = getMetaKey(appId, userId, path, ModelEnum.data);
-		Map<String, String> fields = new HashMap<String, String>();
-		fields.put(Metadata.LAST_UPDATE_DATE, (new Date()).toString());
-		fields.put(Metadata.LAST_UPDATE_USER, creatorId);
-		if (location != null && !"".equals(location))
-			fields.put(Metadata.LOCATION, location);
-		if (propagateMetadata(key, input, fields))
-			return getMetadata(appId, userId, path, ModelEnum.data);
-		else
-			return null;
-	}
-
-	public boolean propagateMetadata(String key, JSONObject input, Map<String, String> fields) {
-		if (metadataModel.existsMetadata(key)) {
-			fields.remove(Metadata.CREATE_DATE);
-			fields.remove(Metadata.CREATE_USER);
-		} else {
-			fields.put(Metadata.CREATE_DATE, fields.get(Metadata.LAST_UPDATE_DATE));
-			fields.put(Metadata.CREATE_USER, fields.get(Metadata.LAST_UPDATE_USER));
-		}
-		metadataModel.createUpdateMetadata(key, fields);
-		fields.remove(Metadata.LOCATION);
-		Iterator<?> it = input.keys();
-		while (it.hasNext()) { 
-			String k = (String)it.next();
-			try {
-				Object obj = input.get(k);
-				if (obj instanceof JSONObject) {
-					propagateMetadata(key + "." + k, (JSONObject)obj, fields);
-				}
-			} catch (Exception e) { }
-		}
-		return true;
-	}
-	
-	@Override
-	public Boolean deleteMetadata(String appId, String userId, String path, ModelEnum type) {
-		String key = getMetaKey(appId, userId, path, type);
-		return metadataModel.deleteMetadata(key, true);
 	}
 
 	

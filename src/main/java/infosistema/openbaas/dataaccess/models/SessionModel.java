@@ -1,16 +1,14 @@
 package infosistema.openbaas.dataaccess.models;
 
-import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.dataaccess.geolocation.Geolocation;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
+import infosistema.openbaas.utils.geolocation.Geo;
 
 import java.io.UnsupportedEncodingException;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -26,17 +24,24 @@ import redis.clients.jedis.JedisPoolConfig;
  */
 public class SessionModel {
 
-	// *** MEMBERS *** //
+	// *** CONTRUCTORS *** //
 
-	private Geolocation geo = Geolocation.getInstance();
-
-	
-	// *** CONSTRUCTOR *** //
-	
 	public SessionModel() {
+		userModel  = new UserModel();
+		geo = Geo.getInstance();
 	}
 	
+
+	// *** PRIVATE *** //
 	
+	private Geo geo;
+	private UserModel userModel;
+
+	
+	// *** CONSTANTS *** //
+
+	// *** KEYS *** //
+
 	// *** CREATE *** //
 	
 	public void createAdmin(String OPENBAASADMIN, byte[] adminSalt, byte[] adminHash) throws UnsupportedEncodingException {
@@ -63,42 +68,9 @@ public class SessionModel {
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.sadd("sessions:set", sessionId);
-			jedis.hset("sessions:" + sessionId, "userId", userId);
+			jedis.hset("sessions:" + sessionId, Const.USER_ID, userId);
 			jedis.expire("sessions:" + sessionId, Const.getSessionExpireTime());
 			jedis.sadd("user:sessions:" + userId, sessionId);
-		} finally {
-			pool.returnResource(jedis);
-		}
-		pool.destroy();
-	}
-
-	// *** AUX *** //
-
-	private void addLocationToSession(String location, String sessionToken, String userAgent, String appId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
-		Jedis jedis = pool.getResource();
-		try {
-			jedis.hset("sessions:" + sessionToken, Const.LOCATION, location);
-			jedis.hset("sessions:" + sessionToken, "userAgent", userAgent);
-			String[] locationArray = location.split(":");
-			
-			double latitude = Double.parseDouble(locationArray[0]);
-			double longitude = Double.parseDouble(locationArray[1]);
-			geo.insertObjectInGrid(latitude, longitude, ModelEnum.users, appId, userId);
-		} finally {
-			pool.returnResource(jedis);
-		}
-		pool.destroy();
-	}
-
-	private void updateLocationToSession(double previousLatitudeValue, double previousLongitudeValue, double currentLatitudeValue, double currentLongitudeValue,
-			String location, String sessionToken, String appId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
-		Jedis jedis = pool.getResource();
-		try {
-			jedis.hset("sessions:" + sessionToken, Const.LOCATION, location);
-			geo.updateObjectInGrid(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue,
-					currentLongitudeValue, ModelEnum.users, appId, userId);
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -113,8 +85,6 @@ public class SessionModel {
 	 * after we call refreshSession it will have EXPIRETIME until it is deleted
 	 * (by default 24 hours).
 	 */
-	// P1=(lat1, lon1) and P2=(lat2, lon2)
-	// dist = arccos(sin(lat1) · sin(lat2) + cos(lat1) · cos(lat2) · cos(lon1 - lon2)) · R
 	public boolean refreshSession(String sessionToken, String location, String date, String userAgent) {
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
@@ -122,41 +92,43 @@ public class SessionModel {
 			jedis.expire("sessions:" + sessionToken, Const.getSessionExpireTime());
 			jedis.hset("sessions:" + sessionToken, "date", date);
 			
+			boolean locationHasChange = false;
 			if (location != null && !"".equals(location)) {
 				String previousLocation = jedis.hget("sessions:" + sessionToken, Const.LOCATION);
+				if (previousLocation == null){
+					locationHasChange = true;
+					previousLocation = "0:0";
+				}
+
+				String[] previousLocationArray = previousLocation.split(":");
+				String[] currentLocationArray = location.split(":");
+				double previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue;
+				try{
+					previousLatitudeValue = Double.parseDouble(previousLocationArray[0]);
+					previousLongitudeValue = Double.parseDouble(previousLocationArray[1]);
+	
+					currentLatitudeValue = Double.parseDouble(currentLocationArray[0]);
+					currentLongitudeValue = Double.parseDouble(currentLocationArray[1]);
+				}catch (NumberFormatException e){
+					Log.error("", this, "refreshSession", "Wrong number format of " +
+							"previousLocationArray[0]=" + previousLocationArray[0] + " or " +
+							"previousLocationArray[1=]=" + previousLocationArray[1] + " or " +
+							"currentLocationArray[0]=" + currentLocationArray[0] + " or " +
+							"currentLocationArray[1]=" + currentLocationArray[1], e); 
+					return false;
+				}
+				// Test if distance < MAXIMUM DISTANCE Spherical Law of Cosines
+				double dist = geo.distance(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue);
+				locationHasChange = (dist >= 1);
+			}
+			if (locationHasChange) {
 				String userId = this.getUserIdUsingSessionToken(sessionToken);
 				String appId = this.getAppUsingSessionToken(sessionToken);
-				if (previousLocation == null) { // No previous Location, we simply add it.
-					addLocationToSession(location, sessionToken, userAgent, appId, userId);
-				} else { // Calculate the distances
-					// Split the data previous location
-					String[] previousLocationArray = previousLocation.split(":");
-					String[] currentLocationArray = location.split(":");
-					double previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue;
-					try{
-						previousLatitudeValue = Double.parseDouble(previousLocationArray[0]);
-						previousLongitudeValue = Double.parseDouble(previousLocationArray[1]);
-		
-						currentLatitudeValue = Double.parseDouble(currentLocationArray[0]);
-						currentLongitudeValue = Double.parseDouble(currentLocationArray[1]);
-					}catch (NumberFormatException e){
-						Log.error("", this, "refreshSession", "Wrong number format of " +
-								"previousLocationArray[0]=" + previousLocationArray[0] + " or " +
-								"previousLocationArray[1=]=" + previousLocationArray[1] + " or " +
-								"currentLocationArray[0]=" + currentLocationArray[0] + " or " +
-								"currentLocationArray[1]=" + currentLocationArray[1], e); 
-						return false;
-					}
-					// Test if distance < MAXIMUM DISTANCE Spherical Law of Cosines
-					double dist = geo.distance(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue);
-					if (dist >= 1) {
-						jedis.hset("sessions:" + sessionToken, Const.LOCATION, location);
-						updateLocationToSession(previousLatitudeValue, previousLongitudeValue, currentLatitudeValue, currentLongitudeValue, 
-								location, sessionToken, appId, userId);
-					}
-				}
+				updateLocationToSession(appId, userId, sessionToken, location);
+				jedis.hset("sessions:" + sessionToken, Const.LOCATION, location);
 			}
-			
+		}catch(Exception e){
+			Log.error("", "refreshSession", "refreshSession", e.toString());
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -164,9 +136,20 @@ public class SessionModel {
 		return true;
 	}
 	
+	private void updateLocationToSession(String appId, String userId, String sessionToken, String location) {
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
+		Jedis jedis = pool.getResource();
+		try {
+			jedis.hset("sessions:" + sessionToken, Const.LOCATION, location);
+			userModel.updateUserLocation(appId, userId, location);
+		} finally {
+			pool.returnResource(jedis);
+		}
+		pool.destroy();
+	}
+
 	
 	// *** DELETE *** //
-	
 	
 	// *** GET LIST *** //
 	
@@ -207,8 +190,8 @@ public class SessionModel {
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.sadd("sessions:set", sessionId);
-			jedis.hset("sessions:" + sessionId, "appId", appId);
-			jedis.hset("sessions:" + sessionId, "userId", userId);
+			jedis.hset("sessions:" + sessionId, Const.APP_ID, appId);
+			jedis.hset("sessions:" + sessionId, Const.USER_ID, userId);
 			jedis.expire("sessions:" + sessionId, Const.getSessionExpireTime());
 			jedis.sadd("user:sessions:" + userId, sessionId);
 		} finally {
@@ -281,16 +264,14 @@ public class SessionModel {
 			while (it.hasNext()) {
 				String id = it.next();
 				Map<String, String> sessionFields = jedis.hgetAll("sessions:" + id);
-				for (Entry<String, String> entry : sessionFields.entrySet()) {
-					if (entry.getKey().equalsIgnoreCase("userId")) {
-						if (entry.getKey().equalsIgnoreCase("userId")) {
-							if (entry.getValue().equalsIgnoreCase(adminId)) {
-								jedis.del("sessions:" + id);
-								jedis.srem("sessions", adminId);
-							}
-						}
+				String stmp = null;
+				try {
+					stmp = sessionFields.get(Const.USER_ID);
+					if (stmp.equalsIgnoreCase(adminId)) {
+						jedis.del("sessions:" + id);
+						jedis.srem("sessions", adminId);
 					}
-				}
+				} catch (Exception e) { }
 			}
 		} finally {
 			pool.returnResource(jedis);
@@ -344,11 +325,11 @@ public class SessionModel {
 			while (it.hasNext()) {
 				String id = it.next();
 				Map<String, String> sessionFields = jedis.hgetAll("sessions:" + id);
-				for (Entry<String, String> entry : sessionFields.entrySet()) {
-					if (entry.getKey().equalsIgnoreCase("userId") && jedis.exists("sessions:" + id))
-						if (entry.getValue().equalsIgnoreCase(userId))
-							sessionId = id;
-				}
+				try {
+					String stmp = sessionFields.get(Const.USER_ID);
+					if (stmp.equalsIgnoreCase(userId) && jedis.exists("sessions:" + id))
+						sessionId = id;
+				} catch (Exception e) { }
 			}
 		} finally {
 			pool.returnResource(jedis);
@@ -404,12 +385,32 @@ public class SessionModel {
 		return exists;
 	}
 	
+	public boolean isUserOnline(String userId) {
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
+		Jedis jedis = pool.getResource();
+		boolean exists = false;
+		try {
+			Set<String> sessionIds = jedis.smembers("user:sessions:" + userId);
+			Iterator<String> it = sessionIds.iterator();
+			while (it.hasNext()){
+				String sessionName = it.next();
+				Long userTime = jedis.ttl("sessions:"+sessionName);
+				if (userTime != -1)
+					exists = true;
+			}
+		} finally {
+			pool.returnResource(jedis);
+		}
+		pool.destroy();
+		return exists;
+	}
+	
 	public String getAppIdForSessionToken(String sessionToken) {
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
 		String retApp = null;
 		try {
-			retApp = jedis.hget("sessions:"+sessionToken, "appId");
+			retApp = jedis.hget("sessions:"+sessionToken, Const.APP_ID);
 		}finally {
 			pool.returnResource(jedis);
 		}
@@ -421,7 +422,7 @@ public class SessionModel {
 		Jedis jedis = pool.getResource();
 		String res = null;
 		try {
-			res = jedis.hget("sessions:" + sessionToken, "appId");
+			res = jedis.hget("sessions:" + sessionToken, Const.APP_ID);
 		}finally {
 			pool.returnResource(jedis);
 		}
@@ -433,7 +434,7 @@ public class SessionModel {
 		Jedis jedis = pool.getResource();
 		String res = null;
 		try {
-			res = jedis.hget("sessions:" + sessionToken, "userId");
+			res = jedis.hget("sessions:" + sessionToken, Const.USER_ID);
 		}finally {
 			pool.returnResource(jedis);
 		}
