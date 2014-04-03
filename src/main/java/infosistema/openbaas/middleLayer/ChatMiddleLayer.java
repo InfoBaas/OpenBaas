@@ -1,5 +1,6 @@
 package infosistema.openbaas.middleLayer;
 
+import infosistema.openbaas.comunication.bound.Outbound;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.ChatMessage;
 import infosistema.openbaas.data.models.ChatRoom;
@@ -65,7 +66,7 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 					String msgId = "Msg_EMPTY";
 					String chatRoomId = "Chat_"+Utils.getRandomString(Const.getIdLength());
 					
-					ChatMessage msg = new ChatMessage(msgId, new Date(), userIdCriador, "","","","","");
+					ChatMessage msg = new ChatMessage(msgId, new Date(), userIdCriador, "", "", "", "", "");
 					Boolean msgStorage = chatModel.createMsg(appId, msg);
 					Boolean msgRoomStorage = chatModel.createChatRoom(appId, msgId, chatRoomId, roomName, userIdCriador, flagNotification,strParticipants);
 					
@@ -79,6 +80,10 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 			return null;
 		}
 		return res;
+	}
+
+	public ChatRoom getChatRoom(String appId, String roomId) {
+		return chatModel.getChatRoom(appId, roomId);
 	}
 
 	private JSONArray orderJsonArray(JSONArray participants) {
@@ -106,19 +111,25 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 		participants = chatModel.getListParticipants(appId, chatRoomId);
 		if(participants.size()>0 && participants!=null){
 			try {
-				List<String> unReadUsers = new ArrayList<String>();
+				List<String> listUsers = new ArrayList<String>();
 				Iterator<String> it = participants.iterator();
 				while(it.hasNext()){
 					String curr = it.next();
 					if(!curr.equals(sender)){
-						unReadUsers.add(curr);
+						listUsers.add(curr);
 					}
 				}
 				String msgId = "Msg_"+Utils.getRandomString(Const.getIdLength());
 				ChatMessage msg = new ChatMessage(msgId, new Date(), sender, messageText, fileText, imageText, audioText, videoText);
 				Boolean msgStorage = chatModel.createMsg(appId, msg);
+				List<String> unReadUsers = new ArrayList<String>();
+				for (String userId: listUsers) {
+					Outbound outbound = Outbound.getUserOutbound(userId);
+					if (outbound == null || !outbound.sendRecvMessage(appId, chatRoomId, msg))
+						unReadUsers.add(userId);
+				}
 				Boolean addMsgRoom = chatModel.addMsg2Room(appId, msgId, chatRoomId, unReadUsers);
-				if(addMsgRoom && msgStorage)
+				if (addMsgRoom && msgStorage)
 					res = msg;
 			} catch (Exception e) {
 				Log.error("", this, "createChatRoom", "Error parsing the JSON.", e); 

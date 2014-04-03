@@ -1,6 +1,11 @@
 package infosistema.openbaas.data.models;
 
+import infosistema.openbaas.utils.Log;
+
 import java.util.Date;
+
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 public class ChatMessage {
 
@@ -119,5 +124,21 @@ public class ChatMessage {
 		this.read = read;
 	}
 
+	public JSONObject serialize() {
+		JSONObject retObj = new JSONObject();
+		try {
+			if (_id != null) retObj.append(_ID, _id);
+			if (date != null) retObj.append(DATE, date);
+			if (sender != null) retObj.append(SENDER, sender);
+			if (messageText != null) retObj.append(MESSAGE_TEXT, messageText);
+			if (fileId != null) retObj.append(FILE_TEXT, fileId);
+			if (imageId != null) retObj.append(IMAGE_TEXT, imageId);
+			if (audioId != null) retObj.append(AUDIO_TEXT, audioId);
+			if (videoId != null) retObj.append(VIDEO_TEXT, videoId);
+		} catch (JSONException e) {
+			Log.error("", this, "serialize", "Error Serializing Chat", e);
+		}
+		return retObj;
+	}
 	
 }

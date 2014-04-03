@@ -27,6 +27,7 @@ public class User {
 	public static final String BASE_LOCATION = "baseLocation";
 	public static final String LOCATION = "location";
 	public static final String ONLINE = "online";
+	public static final String SOCKET_PORT = "socketPort";
 	private static final String SN_PREFIXO = "SN_";
 	private static final String SN_SUFIXO = "_ID";
 	private static final String SOCIAL_NETWORK_ID_FORMAT = SN_PREFIXO +"%s" + SN_SUFIXO;
@@ -46,6 +47,7 @@ public class User {
 	private String baseLocation;
 	private String location;
 	private String online;
+	private String socketPort;
 
 	public User(String _id){
 		this._id = _id;
@@ -161,11 +163,21 @@ public class User {
 	public void setOnline(String online) {
 		this.online = online;
 	}
+	
 	public String getLocation() {
 		return location;
 	}
+
 	public void setLocation(String location) {
 		this.location = location;
 	}
 
+	public String getSocketPort() {
+		return socketPort;
+	}
+
+	public void setSocketPort(String socketPort) {
+		this.socketPort = socketPort;
+	}
+	
 }

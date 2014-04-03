@@ -58,36 +58,24 @@ public abstract class Media {
 	public Media(){
 		
 	}
-	/**
-	 * Retrieves Audio/Video File in MB.
-	 * @return audio File Size
-	 */
+
 	public long getSize() {
 		return size;
 	}
 	
-	/**
-	 * Upload the File to the server.
-	 * @return FileID
-	 */
 	public String uploadFile(){
 		return null;
 		//TO DO
 	}
-	/**
-	 * Returns the imager identifier.
-	 * @return String Image ID.
-	 */
+
 	public String get_id() {
 		return this._id;
 	}
+
 	public String getDir(){
 		return this.dir;
 	}
-	/**
-	 * Returns the time of creation for the image.
-	 * @return Date Time
-	 */
+
 	public String getFileExtension() {
 		return fileExtension;
 	}
@@ -145,27 +133,35 @@ public abstract class Media {
         }
         return resultStatus;
 	}
+
 	public void setDir(String dir){
 		this.dir = dir;
 	}
+
 	public void setSize(long size){
 		this.size = size;
 	}
+
 	public void setFileExtension(String fileExtension){
 		this.fileExtension = fileExtension;
 	}
+
 	public void setFileName(String fileName){
 		this.fileName = fileName;
 	}
+
 	public String getFileName(){
 		return this.fileName;
 	}
+
 	public String getLocation(){
 		return this.location;
 	}
+
 	public void setLocation(String location){
 		this.location = location;
 	}
+
 	public void set_id(String _id){
 		this._id = _id;
 	}

@@ -100,6 +100,9 @@ public class Const {
 	private static String LOCAL_STORAGE_PATH = "";
 	private static String ADMIN_TOKEN = "~session";
 
+	public static int SOCKET_PORT_MIN = 4000;
+	public static int SOCKET_PORT_MAX = 4010;
+
 	static {
 		loadConstants();
 	}
@@ -185,15 +188,15 @@ public class Const {
 			} catch (Exception e) {}
 			
 			try {
-				setAPNS_PROD(Boolean.parseBoolean(props.getProperty("APNS_PROD")));
+				APNS_PROD = Boolean.parseBoolean(props.getProperty("APNS_PROD"));
 			} catch (Exception e) {}
 			
 			try {
-				setAPNS_FEEDBACK_CICLE(Integer.parseInt(props.getProperty("APNS_FEEDBACK_CICLE")));
+				APNS_FEEDBACK_CICLE = Integer.parseInt(props.getProperty("APNS_FEEDBACK_CICLE"));
 			} catch (Exception e) {}
 			
 			try {
-				setAPNS_PUSH_CICLE(Integer.parseInt(props.getProperty("APNS_PUSH_CICLE")));
+				APNS_PUSH_CICLE = Integer.parseInt(props.getProperty("APNS_PUSH_CICLE"));
 			} catch (Exception e) {}
 			
 			stmp = props.getProperty("MONGO_DB");
@@ -279,6 +282,14 @@ public class Const {
 			stmp = props.getProperty("ADMIN_TOKEN");
 			if (stmp != null) ADMIN_TOKEN = stmp;
 			
+			try {
+				SOCKET_PORT_MIN = Integer.parseInt(props.getProperty("SOCKET_PORT_MIN"));
+			} catch (Exception e) {}
+
+			try {
+				SOCKET_PORT_MAX = Integer.parseInt(props.getProperty("SOCKET_PORT_MAX"));
+			} catch (Exception e) {}
+
 		} catch (Throwable t) {
 			Log.error("", "Const", "updateConstants", t.getMessage());
 		}
@@ -491,30 +502,16 @@ public class Const {
 		return ADMIN_TOKEN;
 	}
 
-	public static void setADMIN_TOKEN(String aDMIN_TOKEN) {
-		ADMIN_TOKEN = aDMIN_TOKEN;
-	}
-
 	public static Boolean getAPNS_PROD() {
 		return APNS_PROD;
 	}
 
-	public static void setAPNS_PROD(Boolean aPNS_PROD) {
-		APNS_PROD = aPNS_PROD;
-	}
-	
 	public static int getAPNS_FEEDBACK_CICLE() {
 		return APNS_FEEDBACK_CICLE;
 	}
+
 	public static int getAPNS_PUSH_CICLE() {
 		return APNS_PUSH_CICLE;
 	}
 
-	public static void setAPNS_FEEDBACK_CICLE(int aPNS_FEEDBACK_CICLE) {
-		APNS_FEEDBACK_CICLE = aPNS_FEEDBACK_CICLE;
-	}
-	public static void setAPNS_PUSH_CICLE(int aPNS_PUSH_CICLE) {
-		APNS_PUSH_CICLE = aPNS_PUSH_CICLE;
-	}
-	
 }

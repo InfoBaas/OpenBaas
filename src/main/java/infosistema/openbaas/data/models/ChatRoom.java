@@ -1,9 +1,15 @@
 package infosistema.openbaas.data.models;
 
+import infosistema.openbaas.utils.Log;
+
+import java.io.Serializable;
 import java.util.Date;
 
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
-public class ChatRoom {
+
+public class ChatRoom implements Serializable{
 
 	private String _id;
 	private String roomName;
@@ -86,4 +92,19 @@ public class ChatRoom {
 		this.unreadMessages = unreadMessages;
 	}
 	
+	public JSONObject serialize() {
+		JSONObject retObj = new JSONObject();
+		try {
+			if (_id != null) retObj.append(_ID, _id);
+			if (roomName != null) retObj.append(ROOM_NAME, roomName);
+			if (flagNotification != null) retObj.append(FLAG_NOTIFICATION, flagNotification);
+			if (roomCreator != null) retObj.append(ROOM_CREATOR, roomCreator);
+			if (participants != null) retObj.append(PARTICIPANTS, participants);
+			if (createdDate != null) retObj.append(CREATEDDATE, createdDate);
+		} catch (JSONException e) {
+			Log.error("", this, "serialize", "Error Serializing Chat", e);
+		}
+		return retObj;
+	}
+
 }

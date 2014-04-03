@@ -159,7 +159,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 			outUser.setLocation(location);
 			outUser.setOnline("true");
 		}
-		return new Result(outUser,res.getMetadata());
+		return new Result(outUser, res.getMetadata());
 		
 	}
 	

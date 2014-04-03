@@ -4,18 +4,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import javax.servlet.*;
 
+import infosistema.openbaas.comunication.bound.InboundSocket;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
-/**
- * Administrator class
- * 
- * @author miguel
- * 
- */
 public class Startup implements ServletContextListener {
 	public ServletContext context = null;
 	private static String OPENBAASADMIN = "openbaasAdmin";
@@ -45,17 +40,6 @@ public class Startup implements ServletContextListener {
 			Log.debug("", this, "contextInitialized", "userId: " + AdminId + " email: " + AdminEmail);
 			Log.debug("", this, "contextInitialized", "********************************************");
 			usersMid.createUser(this.AdminAppId, AdminId,OPENBAASADMIN,"NOK", "NOK", AdminEmail, salt, hash, null, null, null, false, null, null, null);
-			// Output a simple message to the server's console
-			/*System.out
-					.println("***********************************************");
-			System.out
-					.println("*********************WELCOME!******************");
-			System.out
-					.println("****************OpenBaas is Deployed***********");
-			System.out
-					.println("*******************Login to start**************");
-			System.out
-					.println("***********************************************");*/
 		}
 		if(sessionMid.createSession(AdminSessionId, AdminAppId,AdminId, ADMINPASSWORD)){
 			Log.debug("", this, "contextInitialized", "Admin Session created. Id: ");
@@ -65,10 +49,10 @@ public class Startup implements ServletContextListener {
 		else{
 			Log.warning("", this, "contextInitialized", "No admin Session created.");
 		}
+		InboundSocket.createServerSockets();
 	}
 
 	public void contextDestroyed(ServletContextEvent arg0) {
 		this.context = null;
-	}// end constextDestroyed method
-
+	}
 }

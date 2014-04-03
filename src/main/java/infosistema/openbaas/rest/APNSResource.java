@@ -76,7 +76,7 @@ public class APNSResource {
 				if(APNSPassword!=null && clientId != null && fileInputStream != null){
 					Result res = mediaMid.createMedia(fileInputStream, fileDetail, appId, userId, ModelEnum.storage, null, null);
 					if(res!=null){
-						Media media = (Storage) res.getData();
+						Media media = (Storage)res.getData();
 						certificatePath = media.getDir();
 						Certificate certificate = appMid.createCertificate(appId, certificatePath,APNSPassword,clientId);
 						response = Response.status(Status.OK).entity(certificate).build();

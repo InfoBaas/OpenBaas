@@ -3,6 +3,7 @@ package infosistema.openbaas.rest;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
+import infosistema.openbaas.comunication.bound.InboundSocket;
 import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
@@ -111,9 +112,8 @@ public class AccountResource {
 			if (!usersMid.userEmailExists(appId, email)) {
 				if (uriInfo == null) uriInfo = ui;
 				Result res = usersMid.createUserAndLogin(headerParams, ui,appId, userName, email, password, userFile, baseLocationOption, baseLocation, Metadata.getNewMetadata(location));
+				((User)res.getData()).setSocketPort(InboundSocket.getNextPort().toString());
 				response = Response.status(Status.CREATED).entity(res).build();
-				Date endDate = Utils.getDate();
-				Log.info(((User)res.getData()).getReturnToken(), this, "signup", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			} else {
 				response = Response.status(Status.FORBIDDEN).entity(new Error("email exists" +email)).build();
 			}
@@ -195,6 +195,7 @@ public class AccountResource {
 						outUser.setBaseLocationOption(outUser.getBaseLocationOption());
 						outUser.setLocation(lastLocation);
 						outUser.setOnline("true");
+						outUser.setSocketPort(InboundSocket.getNextPort().toString());
 						response = Response.status(Status.OK).entity(res).build();
 						Date endDate = Utils.getDate();
 						Log.info(((User)res.getData()).getReturnToken(), this, "signin", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
@@ -218,6 +219,7 @@ public class AccountResource {
 						outUser.setBaseLocationOption(outUser.getBaseLocationOption());
 						outUser.setLocation(lastLocation);
 						outUser.setOnline("true");
+						outUser.setSocketPort(InboundSocket.getNextPort().toString());
 						response = Response.status(Status.OK).entity(res).build();
 						Date endDate = Utils.getDate();
 						Log.info(((User)res.getData()).getReturnToken(), this, "signin", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));

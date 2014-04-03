@@ -65,13 +65,11 @@ public class ChatResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response createChatRoom(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		Date startDate = Utils.getDate();
 		String roomName;		
 		boolean flag=false;
 		JSONArray participants=null;
 		Boolean flagNotification=false;
 		String sessionToken = Utils.getSessionToken(hh);
-		Log.debug("", this, "createChatRoom", "********createChatRoom ************");
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -101,8 +99,6 @@ public class ChatResource {
 		} else if(code == -1){
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		}
-		Date endDate = Utils.getDate();
-		Log.info(sessionToken, this, "createChatRoom", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		return response;
 	}
 	
@@ -113,13 +109,11 @@ public class ChatResource {
 	public Response getMessages(JSONObject inputJsonObj, @Context UriInfo ui, 
 			@Context HttpHeaders hh, @PathParam("chatroomid") String chatRoomId) {
 		Response response = null;
-		Date startDate = Utils.getDate();
 		Date date;
 		String orientation;
 		Integer numberMessages;
 		List<ChatMessage> res = new ArrayList<ChatMessage>();
 		String sessionToken = Utils.getSessionToken(hh);
-		Log.debug("", this, "getMessages", "********getMessages ************");
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -141,8 +135,6 @@ public class ChatResource {
 		} else if(code == -1){
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		}
-		Date endDate = Utils.getDate();
-		Log.info(sessionToken, this, "getMessages", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		return response;
 	}
 
@@ -174,7 +166,6 @@ public class ChatResource {
 			}
 		}
 		Response response = null;
-		Date startDate = Utils.getDate();
 		String fileText;
 		String messageText;
 		String imageText;
@@ -182,7 +173,6 @@ public class ChatResource {
 		String videoText;
 		ModelEnum flag = null;
 		String sessionToken = Utils.getSessionToken(hh);
-		Log.debug("", this, "sendMessage Chat", "********sendMessage Chat************");
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -235,8 +225,6 @@ public class ChatResource {
 		} else if(code == -1){
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		}
-		Date endDate = Utils.getDate();
-		Log.info(sessionToken, this, "sendMessage", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		return response;
 	}
 	
@@ -248,9 +236,7 @@ public class ChatResource {
 			@PathParam("chatroomid") String chatRoomId) {
 		Response response = null;
 		Boolean res = false;
-		Date startDate = Utils.getDate();
 		String sessionToken = Utils.getSessionToken(hh);
-		Log.debug("", this, "readMessages", "********readMessages ************");
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -272,8 +258,6 @@ public class ChatResource {
 		} else if(code == -1){
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		}
-		Date endDate = Utils.getDate();
-		Log.info(sessionToken, this, "readMessages", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		return response;
 	}
 	
@@ -283,9 +267,7 @@ public class ChatResource {
 	public Response unReadMessages(@Context UriInfo ui, @Context HttpHeaders hh, @PathParam("chatroomid") String chatRoomId) {
 		Response response = null;
 		List<ChatMessage> lisRes = new ArrayList<ChatMessage>();
-		Date startDate = Utils.getDate();
 		String sessionToken = Utils.getSessionToken(hh);
-		Log.debug("", this, "unReadMessages", "********unReadMessages ************");
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -303,8 +285,6 @@ public class ChatResource {
 		} else if(code == -1){
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		}
-		Date endDate = Utils.getDate();
-		Log.info(sessionToken, this, "getMessages", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		return response;
 	}
 	
