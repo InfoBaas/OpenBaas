@@ -213,14 +213,26 @@ public class Outbound {
 				InputStream videoInputStream = null; 
 				InputStream audioInputStream = null; 
 				InputStream fileInputStream = null;
-				String stmp = data.getString(Message.IMAGE);
-				if (stmp != null) imageInputStream = convertBase64(stmp);
-				stmp = data.getString(Message.VIDEO);
-				if (stmp != null) videoInputStream = convertBase64(stmp);
-				stmp = data.getString(Message.AUDIO);
-				if (stmp != null) audioInputStream = convertBase64(stmp);
-				stmp = data.getString(Message.FILE);
-				if (stmp != null) fileInputStream = convertBase64(stmp);
+				String stmp = null;
+				try {
+					stmp = data.getString(Message.IMAGE);
+					if (stmp != null) imageInputStream = convertBase64(stmp);
+				} catch (Exception e) {}
+				try {
+					stmp = null;
+					stmp = data.getString(Message.VIDEO);
+					if (stmp != null) videoInputStream = convertBase64(stmp);
+				} catch (Exception e) {}
+				try {
+					stmp = null;
+					stmp = data.getString(Message.AUDIO);
+					if (stmp != null) audioInputStream = convertBase64(stmp);
+				} catch (Exception e) {}
+				try {
+					stmp = null;
+					stmp = data.getString(Message.FILE);
+					if (stmp != null) fileInputStream = convertBase64(stmp);
+				} catch (Exception e) {}
 
 				FormDataContentDisposition fileDetail = FormDataContentDisposition.name("media").build();
 				

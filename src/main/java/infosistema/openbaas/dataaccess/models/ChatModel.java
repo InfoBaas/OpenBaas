@@ -114,8 +114,10 @@ public class ChatModel {
 			if(audioText!=null) res.setAudioId(audioText);
 			if(videoText!=null) res.setVideoId(videoText);
 			if(imageText!=null) res.setImageId(imageText);
-			long l = Long.valueOf(jedis.hget(msgKey, ChatMessage.DATE)).longValue();
-			res.setDate(new Date(l));
+			try {
+				long l = Long.valueOf(jedis.hget(msgKey, ChatMessage.DATE)).longValue();
+				res.setDate(new Date(l));
+			} catch (Exception e) {}
 			res.set_id(msgId);
 		} finally {
 			pool.returnResource(jedis);
@@ -157,8 +159,10 @@ public class ChatModel {
 			res.setRoomCreator(jedis.hget(roomKey, ChatRoom.ROOM_CREATOR));
 			res.setFlagNotification(Boolean.parseBoolean(jedis.hget(roomKey, ChatRoom.FLAG_NOTIFICATION)));
 			res.setParticipants(jedis.hget(roomKey, ChatRoom.PARTICIPANTS).split(Const.SEMICOLON));
-			long l = Long.valueOf(jedis.hget(roomKey, ChatRoom.CREATEDDATE)).longValue();
-			res.setCreatedDate(new Date(l));
+			try {
+				long l = Long.valueOf(jedis.hget(roomKey, ChatRoom.CREATEDDATE)).longValue();
+				res.setCreatedDate(new Date(l));
+			} catch (Exception e) {}
 
 		} finally {
 			pool.returnResource(jedis);
@@ -209,9 +213,12 @@ public class ChatModel {
 			while(i<size){
 				index = ((int)(long) (size))-i-1;
 				i++;
-				String msgIdCurr = jedis.lindex(roomKey2, index);
-				long l = Long.valueOf(jedis.hget(getMessageKey(appId, msgIdCurr), ChatMessage.DATE)).longValue();
-				Date dateCurr = new Date(l);
+				Date dateCurr = new Date();
+				try {
+					String msgIdCurr = jedis.lindex(roomKey2, index);
+					long l = Long.valueOf(jedis.hget(getMessageKey(appId, msgIdCurr), ChatMessage.DATE)).longValue();
+					dateCurr = new Date(l);
+				} catch (Exception e) {}
 				if(dateCurr.compareTo(date)==0 && orientation.equals("front")){
 					index -= 1;
 					break;
@@ -255,8 +262,10 @@ public class ChatModel {
 					if(videoText!=null) msg.setVideoId(videoText);
 					if(imageText!=null) msg.setImageId(imageText);
 					String aux = jedis.hget(msgKey, ChatMessage.DATE);
-					long l = Long.valueOf(aux).longValue();
-					msg.setDate(new Date(l));
+					try {
+						long l = Long.valueOf(aux).longValue();
+						msg.setDate(new Date(l));
+					} catch (Exception e) {}
 					msg.set_id(msgId);
 					res.add(msg);
 				}
