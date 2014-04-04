@@ -19,7 +19,6 @@ public class SocketConnector implements Runnable, IConnector {
 
 	//Constructor
 	public SocketConnector(Socket socket) {
-		Log.error("", this, "######00000", "########");
 		outbound = new Outbound(this);
 		try{
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));

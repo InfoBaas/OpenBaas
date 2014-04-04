@@ -119,13 +119,10 @@ public class Outbound {
 				sendNOKMessage(appId, messageId, "Invalid message type: " + msgType + "!");
 			}
 			
-			Log.error("", this, "######1", "########");
 			if (retData != null) {
 				if (retData.has(Message.ERROR_MESSAGE)) {
-					Log.error("", this, "######2", "########");
 					sendNOKMessage(appId, messageId, retData.getString(Message.ERROR_MESSAGE));
 				} else {
-					Log.error("", this, "######3", "########");
 					sendOKMessage(appId, messageId, retData);
 				}
 			}
@@ -321,13 +318,9 @@ public class Outbound {
 	}
 
 	public boolean sendOKMessage(String appId, String messageId, JSONObject data) {
-		Log.error("", this, "######4", "########");
 		if (messageId == null) return true;
-		Log.error("", this, "######5", "########");
 		Message message = new Message(Message.OK, appId, messageId);
-		Log.error("", this, "######6", "########");
 		if (data != null) message.setData(data);
-		Log.error("", this, "######7", "########");
 		return sendMessage(message);
 	}
 	
@@ -362,7 +355,6 @@ public class Outbound {
 	}
 	
 	public boolean sendMessage(Message message) {
-		Log.error("", this, "######8", "########");
 		return connector.sendMessage(message);
 	}
 
