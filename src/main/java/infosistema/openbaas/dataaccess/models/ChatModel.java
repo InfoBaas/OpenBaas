@@ -249,7 +249,6 @@ public class ChatModel {
 				String msgId = jedis.lindex(roomKey2, o);
 				if(msgId!=null){
 					ChatMessage msg = new ChatMessage();
-					Log.error("", this, "$$$$", "$$$$2"); 
 					String msgKey = getMessageKey(appId, msgId); 
 					String sender = jedis.hget(msgKey, ChatMessage.SENDER);
 					String messageText = jedis.hget(msgKey, ChatMessage.MESSAGE_TEXT);
