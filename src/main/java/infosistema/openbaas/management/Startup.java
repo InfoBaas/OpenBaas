@@ -21,7 +21,10 @@ public class Startup implements ServletContextListener {
 	private static String AdminSessionId =Const.getADMIN_TOKEN();
 
 	public void contextInitialized(ServletContextEvent event) {
+		Log.error("", this, "######ZZZZZZZZZZZZZZZZZZZZ", "########");
+
 		this.context = event.getServletContext();
+		InboundSocket.createServerSockets();
 		UsersMiddleLayer usersMid = UsersMiddleLayer.getInstance();
 		SessionMiddleLayer sessionMid = SessionMiddleLayer.getInstance();
 		PasswordEncryptionService service = new PasswordEncryptionService();
@@ -49,7 +52,6 @@ public class Startup implements ServletContextListener {
 		else{
 			Log.warning("", this, "contextInitialized", "No admin Session created.");
 		}
-		InboundSocket.createServerSockets();
 	}
 
 	public void contextDestroyed(ServletContextEvent arg0) {

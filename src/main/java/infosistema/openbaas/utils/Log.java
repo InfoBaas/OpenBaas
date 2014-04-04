@@ -34,6 +34,7 @@ public class Log {
 
 		if (logger == null) {
 			System.out.println(logLevel+" "+sMessage);
+			t.printStackTrace();
 			return;
 		}
 

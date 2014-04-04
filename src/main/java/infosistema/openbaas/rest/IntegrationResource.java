@@ -108,81 +108,6 @@ public class IntegrationResource {
 			Log.error("", this, "KeystoreException", "Error Keystore Exception.", e);
 		}
 		
-		/*
-		System.out.println( "Setting up Push notification" );
-		 
-
-	       try {
-	             // Setup up a simple message
-	             !PayLoad aPayload = new !PayLoad();
-	             aPayload.addBadge( BADGE );
-	             System.out.println( "Payload setup successfull." );
-	 
-
-	            System.out.println ( aPayload );
-	 
-
-	            // Get !PushNotification Instance
-	             !PushNotificationManager pushManager = !PushNotificationManager.getInstance();
-	 
-
-	            // Link iPhone's UDID (64-char device token) to a stringName
-	             pushManager.addDevice("iPhone", iPhoneId);
-	             System.out.println( "iPhone UDID taken." );
-	 
-
-	            System.out.println( "Token: " + pushManager.getDevice( "iPhone" ).getToken() );
-	 
-
-	            // Get iPhone client
-	             Device client = pushManager.getDevice( "iPhone" );
-	             System.out.println( "Client setup successfull." );
-	 
-
-	            // Initialize connection
-	             pushManager.initializeConnection( HOST, PORT, certificate, passwd, SSLConnectionHelper.KEYSTORE_TYPE_PKCS12);
-	             System.out.println( "Connection initialized..." );
-	 
-
-	            // Send message
-	             pushManager.sendNotification( client, aPayload );
-	             System.out.println( "Message sent!" );
-	 
-
-	            System.out.println( "# of attempts: " + pushManager.getRetryAttempts() );
-	             pushManager.stopConnection();
-	 
-
-	            System.out.println( "done" );
-	 
-
-	        } catch (Exception e) {
-	             e.printStackTrace();
-	         }
-	     }
-*/
-		/*
-		//Serve para apagar coisas do redis
-		
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
-		//JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(),Const.getRedisSessionPort());
-		
-		Jedis jedis = pool.getResource();
-		try {
-			Set<String> a = jedis.keys("app:2be9*");
-			Iterator<String> it =  a.iterator();
-			while(it.hasNext()){
-				String s = it.next();
-				jedis.del(s);
-				System.out.println(s);
-			}
-		} finally {
-			pool.returnResource(jedis);
-		}
-		*/
-		
-		
-		
 		return Response.status(Status.OK).entity("DEL OK").build();
 	}
 	
@@ -208,7 +133,7 @@ public class IntegrationResource {
 			while(it.hasNext()){
 				String s = it.next();
 				jedis.del(s);
-				System.out.println(s);
+				//System. out. println(s);
 			}
 		} finally {
 			pool.returnResource(jedis);

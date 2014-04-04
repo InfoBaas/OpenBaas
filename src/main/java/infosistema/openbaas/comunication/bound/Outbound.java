@@ -50,6 +50,10 @@ public class Outbound {
 		userOutbound.put(userId, outbound);
 	}
 
+	public static void removeUserOutbound(String userId) {
+		userOutbound.remove(userId);
+	}
+
 	public static Outbound getUserOutbound(String userId) {
 		return userOutbound.get(userId);
 	}
@@ -69,13 +73,24 @@ public class Outbound {
 		String appId = null;
 		String sessionToken = null;
 		String messageId = null;
+		JSONObject data = null;
 		try {
 			JSONObject msg = new JSONObject(message);
-			msgType = msg.getString(Message.TYPE);
-			appId = msg.getString(Message.APP_ID);
-			sessionToken = msg.getString(Message.SESSION_TOKEN);
-			messageId = msg.getString(Message.MESSAGE_ID);
-			JSONObject data = msg.getJSONObject(Message.DATA);
+			try {
+				msgType = msg.getString(Message.TYPE);
+			} catch (Exception e) {}
+			try {
+				appId = msg.getString(Message.APP_ID);
+			} catch (Exception e) {}
+			try {
+				sessionToken = msg.getString(Message.SESSION_TOKEN);
+			} catch (Exception e) {}
+			try {
+				messageId = msg.getString(Message.MESSAGE_ID);
+			} catch (Exception e) {}
+			try {
+				data = msg.getJSONObject(Message.DATA);
+			} catch (Exception e) {}
 
 			if (!sessionMid.checkAppForToken(sessionToken, appId)) {
 				sendNOKMessage(appId, messageId, "Invalid sessionToken!");
@@ -87,27 +102,30 @@ public class Outbound {
 			if (msgType == null) {
 				sendNOKMessage(appId, messageId, "Type message can't be empty!");
 			} else if (msgType.equals(Message.AUTHENTICATE)) {
-				retData = processMsgAuthenticate(data, appId, messageId, sessionToken);
+				retData = processMsgAuthenticate(appId, messageId, sessionToken);
 			} else if (msgType.equals(Message.OK)) {
 				//processMsgOk(data);
 			} else if (msgType.equals(Message.NOK)) {
 				//processMsgNok(data);
 			} else if (msgType.equals(Message.CREATE_CHAT_ROOM)) {
-				processMsgCreateChatRoom(data, appId, messageId, sessionToken);
+				retData = processMsgCreateChatRoom(data, appId, messageId, sessionToken);
 			} else if (msgType.equals(Message.SENT_CHAT_MSG)) {
-				processMsgSentChatMsg(data, messageId, appId, sessionToken);
+				retData = processMsgSentChatMsg(data, messageId, appId, sessionToken);
 			} else if (msgType.equals(Message.PING)) {
-				processMsgPing(data, appId, messageId);
+				retData = processMsgPing(appId, messageId);
 			} else if (msgType.equals(Message.PONG)) {
-				processMsgPong();
+				retData = processMsgPong();
 			} else {
 				sendNOKMessage(appId, messageId, "Invalid message type: " + msgType + "!");
 			}
 			
+			Log.error("", this, "######1", "########");
 			if (retData != null) {
 				if (retData.has(Message.ERROR_MESSAGE)) {
+					Log.error("", this, "######2", "########");
 					sendNOKMessage(appId, messageId, retData.getString(Message.ERROR_MESSAGE));
 				} else {
+					Log.error("", this, "######3", "########");
 					sendOKMessage(appId, messageId, retData);
 				}
 			}
@@ -116,7 +134,7 @@ public class Outbound {
 		}
 	}
 	
-	private JSONObject processMsgAuthenticate(JSONObject data, String appId, String messageId, String sessionToken) {
+	private JSONObject processMsgAuthenticate(String appId, String messageId, String sessionToken) {
 		try {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 			setUserId(userId);
@@ -136,9 +154,11 @@ public class Outbound {
 		Boolean flagNotification=false;
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 		try {
-			roomName = (String) data.opt(ChatRoom.ROOM_NAME);
-			participants = (JSONArray) data.get(ChatRoom.PARTICIPANTS);
-			flagNotification =  data.optBoolean(ChatRoom.FLAG_NOTIFICATION);
+			roomName = data.getString(ChatRoom.ROOM_NAME);
+			participants = data.getJSONArray(ChatRoom.PARTICIPANTS);
+			try {
+				flagNotification =  data.optBoolean(ChatRoom.FLAG_NOTIFICATION);
+			} catch (Exception e) {}
 			for(int i = 0; i < participants.length(); i++){
 				String userCurr = participants.getString(i);
 				if(userCurr.equals(userId)) flag = true;
@@ -254,7 +274,7 @@ public class Outbound {
 		}
 	}
 
-	private JSONObject processMsgPing(JSONObject data, String appId, String messageId) {
+	private JSONObject processMsgPing(String appId, String messageId) {
 		sendPongMessage(appId, messageId);
 		return null;
 	}
@@ -289,9 +309,13 @@ public class Outbound {
 	}
 
 	public boolean sendOKMessage(String appId, String messageId, JSONObject data) {
+		Log.error("", this, "######4", "########");
 		if (messageId == null) return true;
+		Log.error("", this, "######5", "########");
 		Message message = new Message(Message.OK, appId, messageId);
+		Log.error("", this, "######6", "########");
 		if (data != null) message.setData(data);
+		Log.error("", this, "######7", "########");
 		return sendMessage(message);
 	}
 	
@@ -326,6 +350,7 @@ public class Outbound {
 	}
 	
 	public boolean sendMessage(Message message) {
+		Log.error("", this, "######8", "########");
 		return connector.sendMessage(message);
 	}
 

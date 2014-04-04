@@ -61,15 +61,15 @@ public class Message {
 	public String toString() {
 		JSONObject retObj = new JSONObject();
 		try {
-			if (type != null) retObj.append(TYPE, type);
-			if (messageId != null) retObj.append(MESSAGE_ID, messageId);
-			if (appId != null) retObj.append(APP_ID, appId);
-			if (sessionToken != null) retObj.append(SESSION_TOKEN, sessionToken);
-			if (data != null) retObj.append(DATA, data);
+			if (type != null) retObj.put(TYPE, type);
+			if (messageId != null) retObj.put(MESSAGE_ID, messageId);
+			if (appId != null) retObj.put(APP_ID, appId);
+			if (sessionToken != null) retObj.put(SESSION_TOKEN, sessionToken);
+			if (data != null) retObj.put(DATA, data);
 		} catch (JSONException e) {
 			Log.error("", this, "toString", "Error Serializing Message", e);
 		}
 		return retObj.toString();
 	}
-
+	
 }

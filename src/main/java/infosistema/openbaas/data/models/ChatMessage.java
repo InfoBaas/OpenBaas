@@ -127,14 +127,14 @@ public class ChatMessage {
 	public JSONObject serialize() {
 		JSONObject retObj = new JSONObject();
 		try {
-			if (_id != null) retObj.append(_ID, _id);
-			if (date != null) retObj.append(DATE, date);
-			if (sender != null) retObj.append(SENDER, sender);
-			if (messageText != null) retObj.append(MESSAGE_TEXT, messageText);
-			if (fileId != null) retObj.append(FILE_TEXT, fileId);
-			if (imageId != null) retObj.append(IMAGE_TEXT, imageId);
-			if (audioId != null) retObj.append(AUDIO_TEXT, audioId);
-			if (videoId != null) retObj.append(VIDEO_TEXT, videoId);
+			if (_id != null) retObj.put(_ID, _id);
+			if (date != null) retObj.put(DATE, "" + date.getTime());
+			if (sender != null) retObj.put(SENDER, sender);
+			if (messageText != null) retObj.put(MESSAGE_TEXT, messageText);
+			if (fileId != null) retObj.put(FILE_TEXT, fileId);
+			if (imageId != null) retObj.put(IMAGE_TEXT, imageId);
+			if (audioId != null) retObj.put(AUDIO_TEXT, audioId);
+			if (videoId != null) retObj.put(VIDEO_TEXT, videoId);
 		} catch (JSONException e) {
 			Log.error("", this, "serialize", "Error Serializing Chat", e);
 		}

@@ -95,12 +95,15 @@ public class ChatRoom implements Serializable{
 	public JSONObject serialize() {
 		JSONObject retObj = new JSONObject();
 		try {
-			if (_id != null) retObj.append(_ID, _id);
-			if (roomName != null) retObj.append(ROOM_NAME, roomName);
-			if (flagNotification != null) retObj.append(FLAG_NOTIFICATION, flagNotification);
-			if (roomCreator != null) retObj.append(ROOM_CREATOR, roomCreator);
-			if (participants != null) retObj.append(PARTICIPANTS, participants);
-			if (createdDate != null) retObj.append(CREATEDDATE, createdDate);
+			if (_id != null) retObj.put(_ID, _id);
+			if (roomName != null) retObj.put(ROOM_NAME, roomName);
+			if (flagNotification != null) retObj.put(FLAG_NOTIFICATION, flagNotification);
+			if (roomCreator != null) retObj.put(ROOM_CREATOR, roomCreator);
+			if (participants != null) {
+				for (int i = 0; i < participants.length; i++)
+					retObj.append(PARTICIPANTS, participants[i]);
+			}
+			if (createdDate != null) retObj.put(CREATEDDATE, createdDate);
 		} catch (JSONException e) {
 			Log.error("", this, "serialize", "Error Serializing Chat", e);
 		}

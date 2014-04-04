@@ -44,99 +44,6 @@ public class ApplePushNotifications {
 	}
 	
 	/**
-	 * Create a complex payload for test purposes.
-	 * @return
-	 */
-	/*
-	@SuppressWarnings("unchecked")
-	private static Payload createComplexPayload(String userId, String msg, String alertText, int badge, String keystore, String password, Boolean production, Object devices) {
-		PushNotificationPayload complexPayload = PushNotificationPayload.complex();
-		try {
-			// You can use addBody to add simple message, but we'll use
-			// a more complex alert message so let's comment it
-			complexPayload.addCustomAlertBody("My alert message");
-			complexPayload.addCustomAlertActionLocKey("Open App");
-			complexPayload.addCustomAlertLocKey("javapns rocks %@ %@%@");
-			ArrayList parameters = new ArrayList();
-			parameters.add("Test1");
-			parameters.add("Test");
-			parameters.add(2);
-			complexPayload.addCustomAlertLocArgs(parameters);
-			complexPayload.addBadge(45);
-			complexPayload.addSound("default");
-			complexPayload.addCustomDictionary("acme", "foo");
-			complexPayload.addCustomDictionary("acme2", 42);
-			ArrayList values = new ArrayList();
-			values.add("value1");
-			values.add(2);
-			complexPayload.addCustomDictionary("acme3", values);
-		} catch (Exception e) {
-			System.out.println("Error creating complex payload:");
-			e.printStackTrace();
-		}
-		return complexPayload;
-	}
-	
-	
-	
-	
-	
-	
-	private static void verifyKeystore(Object keystoreReference, String password, boolean production) {
-		try {
-			System.out.print("Validating keystore reference: ");
-			KeystoreManager.validateKeystoreParameter(keystoreReference);
-			System.out.println("VALID  (keystore was found)");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		if (password != null) {
-			try {
-				System.out.print("Verifying keystore content: ");
-				AppleNotificationServer server = new AppleNotificationServerBasicImpl(keystoreReference, password, production);
-				KeystoreManager.verifyKeystoreContent(server, keystoreReference);
-				System.out.println("VERIFIED  (no common mistakes detected)");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	*/
-	
-	/**
-	 * Create a complex payload for test purposes.
-	 * @return
-	 *//*
-	@SuppressWarnings("unchecked")
-	private static Payload createComplexPayload() {
-		PushNotificationPayload complexPayload = PushNotificationPayload.complex();
-		try {
-			// You can use addBody to add simple message, but we'll use
-			// a more complex alert message so let's comment it
-			complexPayload.addCustomAlertBody("My alert message");
-			complexPayload.addCustomAlertActionLocKey("Open App");
-			complexPayload.addCustomAlertLocKey("javapns rocks %@ %@%@");
-			ArrayList parameters = new ArrayList();
-			parameters.add("Test1");
-			parameters.add("Test");
-			parameters.add(2);
-			complexPayload.addCustomAlertLocArgs(parameters);
-			complexPayload.addBadge(45);
-			complexPayload.addSound("default");
-			complexPayload.addCustomDictionary("acme", "foo");
-			complexPayload.addCustomDictionary("acme2", 42);
-			ArrayList values = new ArrayList();
-			values.add("value1");
-			values.add(2);
-			complexPayload.addCustomDictionary("acme3", values);
-		} catch (Exception e) {
-			System.out.println("Error creating complex payload:");
-			e.printStackTrace();
-		}
-		return complexPayload;
-	}*/
-
-	/**
 	 * Print to the console a comprehensive report of all pushed notifications and results.
 	 * @param notifications a raw list of pushed notifications
 	 */
@@ -164,12 +71,9 @@ public class ApplePushNotifications {
 	 * @param notifications a list of pushed notifications to print
 	 */
 	public static void printPushedNotifications(String description, List<PushedNotification> notifications) {
-		//Log.info("","", "printPushedNotifications", description);
-		//System.out.println(description);
 		for (PushedNotification notification : notifications) {
 			try {
 				Log.info("","", "printPushedNotifications desc->", description +" Notification:"+ notification.toString());
-				//System.out.println("  " + notification.toString());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -188,11 +188,8 @@ public class ImageResource {
 			buf.append("\n");
 		}
 		
-		System.out.println(buf.toString());
+		//System. out.println(buf.toString());
 		
-		/*if(true)
-			return Response.status(Status.OK).entity(buf.toString()).build();
-		*/
 		Response response = null;
 		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();

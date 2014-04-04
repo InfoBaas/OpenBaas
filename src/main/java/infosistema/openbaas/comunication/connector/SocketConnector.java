@@ -19,6 +19,7 @@ public class SocketConnector implements Runnable, IConnector {
 
 	//Constructor
 	public SocketConnector(Socket socket) {
+		Log.error("", this, "######00000", "########");
 		outbound = new Outbound(this);
 		try{
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -29,19 +30,22 @@ public class SocketConnector implements Runnable, IConnector {
 	}
 
 	public void run(){
-		String message;
-		while (true) {
+		String message = "";
+		while (message != null) {
 			try{
 				message = in.readLine();
-				outbound.processMessage(message);
+				Log.error("", this, "######0", "########msg: " + message);
+				if (message != null) outbound.processMessage(message);
 			}catch (Exception e) {
 				Log.error("", this, "run", "Error running thread", e);
 			}
 		}
+		Outbound.removeUserOutbound(outbound.getUserId());
 	}
 
 	public boolean sendMessage(Message message) {
 		try {
+			Log.error("", this, "######7", "########msg: " + message.toString());
 			out.println(CharBuffer.wrap(message.toString()));
 		} catch (Exception e) {
 			Log.error("", this, "sendMessage", "Error sending Message", e);
