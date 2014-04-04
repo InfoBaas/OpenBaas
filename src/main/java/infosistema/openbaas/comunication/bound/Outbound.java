@@ -286,7 +286,7 @@ public class Outbound {
 	private JSONObject getErrorJSONObject(String appId, String messageId, String errorMessage) {
 		JSONObject obj = new JSONObject();
 		try {
-			obj.append(Message.ERROR_MESSAGE, errorMessage);
+			obj.put(Message.ERROR_MESSAGE, errorMessage);
 		} catch (JSONException e1) {
 			obj = null;
 			sendNOKMessage(appId, messageId, errorMessage);
@@ -324,7 +324,7 @@ public class Outbound {
 		Message message = new Message(Message.NOK, appId, messageId);
 		try {
 			JSONObject data = new JSONObject ();
-			data.append(Message.ERROR_MESSAGE, errorMessage);
+			data.put(Message.ERROR_MESSAGE, errorMessage);
 			message.setData(data);
 		} catch (JSONException e) {
 			Log.error("", this, "sendNOKMessage", "Erro sending NOK message");
@@ -337,10 +337,10 @@ public class Outbound {
 		Message message = new Message(Message.RECV_CHAT_MSG, appId);
 		try {
 			JSONObject data = new JSONObject ();
-			data.append(Message.MESSAGE, msg.serialize());
+			data.put(Message.MESSAGE, msg.serialize());
 			ChatRoom room = chatMid.getChatRoom(appId, roomId);
-			data.append(Message.MESSAGE, msg.serialize());
-			data.append(Message.CHAT_ROOM, room.serialize());
+			data.put(Message.MESSAGE, msg.serialize());
+			data.put(Message.CHAT_ROOM, room.serialize());
 			message.setData(data);
 		} catch (JSONException e) {
 			Log.error("", this, "sendRecvMessage", "Erro sending Recv message");

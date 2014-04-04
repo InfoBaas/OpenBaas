@@ -101,9 +101,9 @@ public class ChatRoom implements Serializable{
 			if (roomCreator != null) retObj.put(ROOM_CREATOR, roomCreator);
 			if (participants != null) {
 				for (int i = 0; i < participants.length; i++)
-					retObj.append(PARTICIPANTS, participants[i]);
+					retObj.accumulate(PARTICIPANTS, participants[i]);
 			}
-			if (createdDate != null) retObj.put(CREATEDDATE, createdDate);
+			if (createdDate != null) retObj.put(CREATEDDATE, "" + createdDate.getTime());
 		} catch (JSONException e) {
 			Log.error("", this, "serialize", "Error Serializing Chat", e);
 		}
