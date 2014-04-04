@@ -114,7 +114,6 @@ public class ChatResource {
 		Integer numberMessages;
 		List<ChatMessage> res = new ArrayList<ChatMessage>();
 		String sessionToken = Utils.getSessionToken(hh);
-		Log.error("", this, "######1", "########1");
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -126,9 +125,7 @@ public class ChatResource {
 				orientation = inputJsonObj.optString(ChatMessage.ORIENTATION);
 				numberMessages =  inputJsonObj.optInt(ChatMessage.NUM_MSG);	
 				
-				Log.error("", this, "######1", "########2");
 				res = chatMid.getMessages(appId,userId,chatRoomId,date,orientation,numberMessages);
-				Log.error("", this, "######1", "########3: " + res.size());
 				response = Response.status(Status.OK).entity(res).build();
 			} catch (JSONException e) {
 				Log.error("", this, "createUserAndLogin", "Error parsing the JSON.", e); 

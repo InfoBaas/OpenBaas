@@ -114,6 +114,7 @@ public class ChatModel {
 			if(audioText!=null) res.setAudioId(audioText);
 			if(videoText!=null) res.setVideoId(videoText);
 			if(imageText!=null) res.setImageId(imageText);
+			res.setDate(new Date());
 			try {
 				long l = Long.valueOf(jedis.hget(msgKey, ChatMessage.DATE)).longValue();
 				res.setDate(new Date(l));
@@ -159,6 +160,7 @@ public class ChatModel {
 			res.setRoomCreator(jedis.hget(roomKey, ChatRoom.ROOM_CREATOR));
 			res.setFlagNotification(Boolean.parseBoolean(jedis.hget(roomKey, ChatRoom.FLAG_NOTIFICATION)));
 			res.setParticipants(jedis.hget(roomKey, ChatRoom.PARTICIPANTS).split(Const.SEMICOLON));
+			res.setCreatedDate(new Date());
 			try {
 				long l = Long.valueOf(jedis.hget(roomKey, ChatRoom.CREATEDDATE)).longValue();
 				res.setCreatedDate(new Date(l));
@@ -201,8 +203,8 @@ public class ChatModel {
 	public List<ChatMessage> getMessageList(String appId, String roomId, Date date, Integer numberMessages, String orientation) {
 		Jedis jedis = pool.getResource();
 		List<ChatMessage> res = new ArrayList<ChatMessage>();
-		if(orientation==null) orientation = "";
-		if(numberMessages==null) numberMessages = 10;
+		if (orientation==null) orientation = "";
+		if (numberMessages==null) numberMessages = 10;
 		try {
 			String roomKey2 = getChatRoomKey_2(appId, roomId);
 			Long size = jedis.llen(roomKey2);		
@@ -247,7 +249,8 @@ public class ChatModel {
 				String msgId = jedis.lindex(roomKey2, o);
 				if(msgId!=null){
 					ChatMessage msg = new ChatMessage();
-					String msgKey = getMessageKey(appId, msg.get_id()); 
+					Log.error("", this, "$$$$", "$$$$2"); 
+					String msgKey = getMessageKey(appId, msgId); 
 					String sender = jedis.hget(msgKey, ChatMessage.SENDER);
 					String messageText = jedis.hget(msgKey, ChatMessage.MESSAGE_TEXT);
 					String fileText = jedis.hget(msgKey, ChatMessage.FILE_TEXT);
@@ -262,10 +265,12 @@ public class ChatModel {
 					if(videoText!=null) msg.setVideoId(videoText);
 					if(imageText!=null) msg.setImageId(imageText);
 					String aux = jedis.hget(msgKey, ChatMessage.DATE);
+					msg.setDate(new Date());
 					try {
 						long l = Long.valueOf(aux).longValue();
 						msg.setDate(new Date(l));
-					} catch (Exception e) {}
+					} catch (Exception e) {
+					}
 					msg.set_id(msgId);
 					res.add(msg);
 				}
