@@ -20,6 +20,7 @@ public class InboundSocket {
 	}
 	
 	public static Integer getNextPort() {
+		Log.error("", "", "", "%%%%%%%% zzzz");
 		nextPort++;
 		if (nextPort > Const.SOCKET_PORT_MAX) nextPort = Const.SOCKET_PORT_MIN;
 		return nextPort; 

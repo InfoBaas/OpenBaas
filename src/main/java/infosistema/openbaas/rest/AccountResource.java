@@ -136,6 +136,7 @@ public class AccountResource {
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createSession(@Context HttpServletRequest req, JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
+		Log.error("", "", "", "%%%%%%%% 1");
 		Date startDate = Utils.getDate();
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		String email = null; // user inserted fields
@@ -176,6 +177,7 @@ public class AccountResource {
 		if (outUser != null && outUser.get_id() != null) {
 			boolean usersConfirmedOption = usersMid.getConfirmUsersEmailOption(appId);
 			// Remember the order of evaluation in java
+			Log.error("", "", "", "%%%%%%%% 2");
 			if (usersConfirmedOption) {
 				if (usersMid.userEmailIsConfirmed(appId, outUser.get_id())) {
 					String sessionToken = Utils.getRandomString(Const.getIdLength());
@@ -204,11 +206,13 @@ public class AccountResource {
 					response = Response.status(Status.FORBIDDEN).entity(new Error(Const.getEmailConfirmationError())).build();
 				}
 			} else {
+				Log.error("", "", "", "%%%%%%%% 3");
 				String sessionToken = Utils.getRandomString(Const.getIdLength());
 				boolean validation = sessionMid.createSession(sessionToken, appId, outUser.get_id(), attemptedPassword);
 				if(validation){
 					refreshCode = sessionMid.refreshSession(sessionToken, location, userAgent);
 					lastLocation = usersMid.updateUserLocation(outUser.get_id(), appId, location, Metadata.getNewMetadata(location));
+					Log.error("", "", "", "%%%%%%%% 4");
 					if (validation && refreshCode) {
 						outUser.set_id(outUser.get_id());
 						outUser.setReturnToken(sessionToken);
@@ -219,7 +223,9 @@ public class AccountResource {
 						outUser.setBaseLocationOption(outUser.getBaseLocationOption());
 						outUser.setLocation(lastLocation);
 						outUser.setOnline("true");
+						Log.error("", "", "", "%%%%%%%% 5");
 						outUser.setSocketPort(InboundSocket.getNextPort().toString());
+						Log.error("", "", "", "%%%%%%%% 6");
 						response = Response.status(Status.OK).entity(res).build();
 						Date endDate = Utils.getDate();
 						Log.info(((User)res.getData()).getReturnToken(), this, "signin", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
