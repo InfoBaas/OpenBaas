@@ -269,6 +269,9 @@ public class UserModel extends ModelAbstract {
 		try {
 			String userKey = getUserKey(appId, userId);
 			return jedis.hget(userKey, field);
+		} catch (Exception e) {
+			Log.error("", this, "getUserField", "Error getting user field", e);
+			return null;
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -289,7 +292,12 @@ public class UserModel extends ModelAbstract {
 
 	private String getUserIdUsingField(String appId, String field, String value) {
 		Log.error("", "", "", "%%%%%%%% appId:"+appId+ " - field:"+field+" - value:"+value);
-		Jedis jedis = pool.getResource();
+		Jedis jedis = null;
+		try {
+			jedis = pool.getResource();
+		} catch (Exception e){
+			Log.error("", this, "get jedis", "Error get jedis", e);
+		}	
 		try {
 			Log.error("", "", "", "%%%%%%%% getKey:"+getKey(appId, field, value));
 			return jedis.get(getKey(appId, field, value));

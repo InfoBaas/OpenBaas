@@ -311,9 +311,9 @@ public class ChatModel {
 			} finally {
 				pool.returnResource(jedis);
 			}		
+		}else{
+			pool.returnResource(jedis);
 		}
-
-
 		return res;
 	}
 

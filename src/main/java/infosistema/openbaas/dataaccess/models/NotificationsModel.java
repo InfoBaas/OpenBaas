@@ -49,8 +49,8 @@ public class NotificationsModel {
 	public Boolean createUpdateCertificate(String appId, Certificate cert) {
 		Boolean res = false;
 		Jedis jedis = pool.getResource();
-		long milliseconds = cert.getCreatedDate().getTime();
 		try {
+			long milliseconds = cert.getCreatedDate().getTime();
 			jedis.hset(appId+SEPARATOR1+CERT+SEPARATOR1+cert.getClientId(), Application.APNS_CLIENT_ID, cert.getClientId());
 			jedis.hset(appId+SEPARATOR1+CERT+SEPARATOR1+cert.getClientId(), Application.APNS_CERTIFICATION_PATH, cert.getCertificatePath());
 			jedis.hset(appId+SEPARATOR1+CERT+SEPARATOR1+cert.getClientId(), Application.APNS_PASSWORD, cert.getAPNSPassword());
@@ -102,8 +102,8 @@ public class NotificationsModel {
 	public Boolean createUpdateDevice(String appId, String userId, String clientId, Device device) {
 		Boolean res = false;
 		Jedis jedis = pool.getResource();
-		Long milliseconds = device.getLastRegister().getTime();
 		try {
+			Long milliseconds = device.getLastRegister().getTime();
 			jedis.hset(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+device.getToken(), DEVICEID, device.getDeviceId());
 			jedis.hset(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+device.getToken(), DEVICETOKEN, device.getToken());
 			jedis.hset(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+device.getToken(), LASTREGISTER, milliseconds.toString());
