@@ -299,21 +299,19 @@ public class ChatModel {
 		Jedis jedis = pool.getResource();
 		int res = 0;
 		Long aux = (long) 0;
-		if(jsonArray.length()>0){
-			try {
+		try {
+			if(jsonArray.length()>0){
 				String unreadMsgKey = getUnreadMsgKey(appId, userId);
 				for(int i = 0;i<jsonArray.length();i++){
 					aux = jedis.lrem(unreadMsgKey, 0, jsonArray.getString(i));
 					res += ((int)(long)aux);
-				}					
-			} catch (JSONException e) {
-				Log.error("", this, "readMessages", "Error readMessages redis.", e); 
-			} finally {
-				pool.returnResource(jedis);
-			}		
-		}else{
+				}
+			}
+		} catch (JSONException e) {
+			Log.error("", this, "readMessages", "Error readMessages redis.", e); 
+		} finally {
 			pool.returnResource(jedis);
-		}
+		}		
 		return res;
 	}
 
