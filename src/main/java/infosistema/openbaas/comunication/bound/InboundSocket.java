@@ -37,7 +37,6 @@ public class InboundSocket {
 					t.start();
 				} catch (IOException e) {
 					Log.error("", "SocketWait", "createSocket", "Accept failed", e);
-					System.exit(-1);
 				}
 			}
 		}

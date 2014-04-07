@@ -145,14 +145,18 @@ public class Outbound {
 	}
 
 	private JSONObject processMsgCreateChatRoom(JSONObject data, String appId, String messageId, String sessionToken) {
-		String roomName;
+		String roomName = null;
 		boolean flag=false;
 		JSONArray participants=null;
 		Boolean flagNotification=false;
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 		try {
-			roomName = data.getString(ChatRoom.ROOM_NAME);
-			participants = data.getJSONArray(ChatRoom.PARTICIPANTS);
+			try {
+				roomName = data.getString(ChatRoom.ROOM_NAME);
+			} catch (Exception e) {}
+			try {
+				participants = data.getJSONArray(ChatRoom.PARTICIPANTS);
+			} catch (Exception e) {}
 			try {
 				flagNotification =  data.optBoolean(ChatRoom.FLAG_NOTIFICATION);
 			} catch (Exception e) {}
@@ -180,6 +184,8 @@ public class Outbound {
 				
 		try {
 			message = data.getString(Message.TEXT);
+		} catch (JSONException e) { }
+		try {
 			chatRoomId = data.getString(Message.CHAT_ROOM_ID);
 		} catch (JSONException e) {
 			Log.error("", this, "processMsgRecvChatMsg", "Error getting data",e);

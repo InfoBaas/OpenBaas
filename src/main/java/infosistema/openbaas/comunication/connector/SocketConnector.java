@@ -28,7 +28,7 @@ public class SocketConnector implements Runnable, IConnector {
 		}
 	}
 
-	public void run(){
+	public void run() {
 		String message = "";
 		while (message != null) {
 			try{
