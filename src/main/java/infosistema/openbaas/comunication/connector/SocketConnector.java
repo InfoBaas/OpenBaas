@@ -34,12 +34,19 @@ public class SocketConnector implements Runnable, IConnector {
 			try{
 				message = in.readLine();
 				Log.error("", this, "######0", "########msg: " + message);
-				if (message != null) outbound.processMessage(message);
+				if (message != null) 
+					outbound.processMessage(message);
 			}catch (Exception e) {
 				Log.error("", this, "run", "Error running thread", e);
 			}
 		}
-		Outbound.removeUserOutbound(outbound.getUserId());
+		try{
+			Outbound.removeUserOutbound(outbound.getUserId());
+			in.close();
+			out.close();
+		}catch (Exception e) {
+			Log.error("", this, "run", "Error closing thread", e);
+		}
 	}
 
 	public boolean sendMessage(Message message) {
