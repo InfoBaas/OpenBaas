@@ -33,7 +33,7 @@ public class SocketConnector implements Runnable, IConnector {
 		while (message != null) {
 			try{
 				message = in.readLine();
-				Log.error("", this, "######0", "########msg: " + message);
+				Log.error("", this, "######0", "########msg1: " + message);
 				if (message != null) 
 					outbound.processMessage(message);
 			}catch (Exception e) {
@@ -51,7 +51,7 @@ public class SocketConnector implements Runnable, IConnector {
 
 	public boolean sendMessage(Message message) {
 		try {
-			Log.error("", this, "######7", "########msg: " + message.toString());
+			Log.error("", this, "######7", "########msg2: " + message.toString());
 			out.println(CharBuffer.wrap(message.toString()));
 		} catch (Exception e) {
 			Log.error("", this, "sendMessage", "Error sending Message", e);

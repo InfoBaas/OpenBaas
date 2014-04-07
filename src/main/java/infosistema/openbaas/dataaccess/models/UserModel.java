@@ -288,8 +288,10 @@ public class UserModel extends ModelAbstract {
 	}
 
 	private String getUserIdUsingField(String appId, String field, String value) {
+		Log.error("", "", "", "%%%%%%%% appId:"+appId+ " - field:"+field+" - value:"+value);
 		Jedis jedis = pool.getResource();
 		try {
+			Log.error("", "", "", "%%%%%%%% getKey:"+getKey(appId, field, value));
 			return jedis.get(getKey(appId, field, value));
 		} catch (Exception e){
 			Log.error("", this, "getUserIdUsingField", "Error getting User Id", e);
