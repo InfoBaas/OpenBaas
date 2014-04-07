@@ -24,7 +24,10 @@ public class UserModel extends ModelAbstract {
 	// *** CONTRUCTORS *** //
 
 	public UserModel() {
-		pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
+		JedisPoolConfig poolConf = new JedisPoolConfig();
+		poolConf.setMaxActive(20);
+		poolConf.setMaxWait(100000);
+		pool = new JedisPool(poolConf, Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
 	}
 
 
@@ -183,9 +186,9 @@ public class UserModel extends ModelAbstract {
 	@Override
 	protected synchronized void updateMetadata(String appId, String userId, Map<String, String> metadata) {
 		Jedis jedis = pool.getResource();
-		JSONObject geolocation = getGeolocation(getMetadaJSONObject(metadata));
-		String userKey = getUserKey(appId, userId);
 		try {
+			JSONObject geolocation = getGeolocation(getMetadaJSONObject(metadata));
+			String userKey = getUserKey(appId, userId);
 			if (metadata != null){
 				String str = null;
 				try {
@@ -207,11 +210,14 @@ public class UserModel extends ModelAbstract {
 					jedis.hset(userKey, _METADATA, new JSONObject(metadata).toString());
 				}
 			}
+			if (geolocation != null){ 
+				jedis.hset(userKey, _GEO, geolocation.toString());
+			}
 		} catch (Exception e) {
 			Log.error("", this, "err", "********update metadata************",e);
 		}
-		if (geolocation != null){ 
-			jedis.hset(userKey, _GEO, geolocation.toString());
+		finally {
+			pool.returnResource(jedis);
 		}
 		super.updateMetadata(appId, userId, metadata);
 	}
@@ -286,12 +292,10 @@ public class UserModel extends ModelAbstract {
 	}
 	
 	public String getUserIdUsingEmail(String appId, String email) {
-		Log.error("", "", "", "%%%%%%%% 0");
 		return getUserIdUsingField(appId, User.EMAIL, email);
 	}
 
 	private String getUserIdUsingField(String appId, String field, String value) {
-		Log.error("", "", "", "%%%%%%%% appId:"+appId+ " - field:"+field+" - value:"+value);
 		Jedis jedis = null;
 		try {
 			jedis = pool.getResource();
@@ -299,7 +303,6 @@ public class UserModel extends ModelAbstract {
 			Log.error("", this, "get jedis", "Error get jedis", e);
 		}	
 		try {
-			Log.error("", "", "", "%%%%%%%% getKey:"+getKey(appId, field, value));
 			return jedis.get(getKey(appId, field, value));
 		} catch (Exception e){
 			Log.error("", this, "getUserIdUsingField", "Error getting User Id", e);

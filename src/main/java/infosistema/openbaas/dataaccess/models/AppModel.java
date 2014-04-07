@@ -277,16 +277,14 @@ public class AppModel {
 		boolean aws = false;
 		boolean ftp = false;
 		String appKey = getAppKey(appId);
-		try {
-			aws =  Boolean.parseBoolean(jedis.hget(appKey, FileMode.aws.toString()));
-		} catch (Exception e) { }
-		finally {
-			pool.returnResource(jedis);
-		}
-		try {
-			ftp = Boolean.parseBoolean(jedis.hget(appKey, FileMode.ftp.toString()));
-		} catch (Exception e) { }
-		finally {
+		try{
+			try {
+				aws =  Boolean.parseBoolean(jedis.hget(appKey, FileMode.aws.toString()));
+			} catch (Exception e) { }
+			try {
+				ftp = Boolean.parseBoolean(jedis.hget(appKey, FileMode.ftp.toString()));
+			} catch (Exception e) { }	
+		}finally {
 			pool.returnResource(jedis);
 		}
 		

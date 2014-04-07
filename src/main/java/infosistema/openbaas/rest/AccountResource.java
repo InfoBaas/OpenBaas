@@ -171,9 +171,7 @@ public class AccountResource {
 			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
 		if(email == null && attemptedPassword == null)
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
-		Log.error("", "", "", "%%%%%%%% A");
 		Result res = usersMid.getUserUsingEmail(appId, email);
-		Log.error("", "", "", "%%%%%%%% B");
 		outUser = (User)res.getData();
 		if (outUser != null && outUser.get_id() != null) {
 			boolean usersConfirmedOption = usersMid.getConfirmUsersEmailOption(appId);
