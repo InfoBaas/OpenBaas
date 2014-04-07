@@ -4,6 +4,7 @@ import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.comunication.bound.InboundSocket;
+import infosistema.openbaas.comunication.bound.Outbound;
 import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
@@ -149,6 +150,7 @@ public class AccountResource {
 		Boolean refreshCode = false;
 		String lastLocation =null;
 		
+		Log.error("", "", "", "%%%%%%%% 2");
 		try {
 			email = (String) inputJsonObj.get("email");
 			attemptedPassword = (String) inputJsonObj.get("password");
@@ -156,6 +158,7 @@ public class AccountResource {
 			Log.error("", this, "createSession", "Error parsing the JSON.", e); 
 			return Response.status(Status.BAD_REQUEST).entity(new Error("Error reading JSON")).build();
 		}
+		Log.error("", "", "", "%%%%%%%% 3");
 		Log.debug("", this, "signin", "********signin User ************ email: "+email);
 		try {
 			location = headerParams.getFirst(Const.LOCATION);
@@ -166,18 +169,24 @@ public class AccountResource {
 		try {
 			appKey = headerParams.getFirst(Application.APP_KEY);
 		} catch (Exception e) { }
+		Log.error("", "", "", "%%%%%%%% 4");
 		if(appKey==null)
 			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
+		Log.error("", "", "", "%%%%%%%% 5");
 		if(!appsMid.authenticateApp(appId,appKey))
 			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
+		Log.error("", "", "", "%%%%%%%% 6");
 		if(email == null && attemptedPassword == null)
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
+		Log.error("", "", "", "%%%%%%%% 7");
 		Result res = usersMid.getUserUsingEmail(appId, email);
+		Log.error("", "", "", "%%%%%%%% 8");
 		outUser = (User)res.getData();
+		Log.error("", "", "", "%%%%%%%% 9");
 		if (outUser != null && outUser.get_id() != null) {
+			Log.error("", "", "", "%%%%%%%% 10");
 			boolean usersConfirmedOption = usersMid.getConfirmUsersEmailOption(appId);
 			// Remember the order of evaluation in java
-			Log.error("", "", "", "%%%%%%%% 2");
 			if (usersConfirmedOption) {
 				if (usersMid.userEmailIsConfirmed(appId, outUser.get_id())) {
 					String sessionToken = Utils.getRandomString(Const.getIdLength());
@@ -206,13 +215,11 @@ public class AccountResource {
 					response = Response.status(Status.FORBIDDEN).entity(new Error(Const.getEmailConfirmationError())).build();
 				}
 			} else {
-				Log.error("", "", "", "%%%%%%%% 3");
 				String sessionToken = Utils.getRandomString(Const.getIdLength());
 				boolean validation = sessionMid.createSession(sessionToken, appId, outUser.get_id(), attemptedPassword);
 				if(validation){
 					refreshCode = sessionMid.refreshSession(sessionToken, location, userAgent);
 					lastLocation = usersMid.updateUserLocation(outUser.get_id(), appId, location, Metadata.getNewMetadata(location));
-					Log.error("", "", "", "%%%%%%%% 4");
 					if (validation && refreshCode) {
 						outUser.set_id(outUser.get_id());
 						outUser.setReturnToken(sessionToken);
