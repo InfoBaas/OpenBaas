@@ -4,7 +4,6 @@ import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.middleLayer.UsersMiddleLayer;
 import infosistema.openbaas.comunication.bound.InboundSocket;
-import infosistema.openbaas.comunication.bound.Outbound;
 import infosistema.openbaas.data.Error;
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.Result;
@@ -137,7 +136,6 @@ public class AccountResource {
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createSession(@Context HttpServletRequest req, JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
-		Log.error("", "", "", "%%%%%%%% 1");
 		Date startDate = Utils.getDate();
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		String email = null; // user inserted fields
@@ -150,7 +148,6 @@ public class AccountResource {
 		Boolean refreshCode = false;
 		String lastLocation =null;
 		
-		Log.error("", "", "", "%%%%%%%% 2");
 		try {
 			email = (String) inputJsonObj.get("email");
 			attemptedPassword = (String) inputJsonObj.get("password");
@@ -158,7 +155,6 @@ public class AccountResource {
 			Log.error("", this, "createSession", "Error parsing the JSON.", e); 
 			return Response.status(Status.BAD_REQUEST).entity(new Error("Error reading JSON")).build();
 		}
-		Log.error("", "", "", "%%%%%%%% 3");
 		Log.debug("", this, "signin", "********signin User ************ email: "+email);
 		try {
 			location = headerParams.getFirst(Const.LOCATION);
@@ -169,22 +165,17 @@ public class AccountResource {
 		try {
 			appKey = headerParams.getFirst(Application.APP_KEY);
 		} catch (Exception e) { }
-		Log.error("", "", "", "%%%%%%%% 4");
 		if(appKey==null)
 			return Response.status(Status.BAD_REQUEST).entity("App Key not found").build();
-		Log.error("", "", "", "%%%%%%%% 5");
 		if(!appsMid.authenticateApp(appId,appKey))
 			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
-		Log.error("", "", "", "%%%%%%%% 6");
 		if(email == null && attemptedPassword == null)
 			return Response.status(Status.BAD_REQUEST).entity("Error reading JSON").build();
-		Log.error("", "", "", "%%%%%%%% 7");
+		Log.error("", "", "", "%%%%%%%% A");
 		Result res = usersMid.getUserUsingEmail(appId, email);
-		Log.error("", "", "", "%%%%%%%% 8");
+		Log.error("", "", "", "%%%%%%%% B");
 		outUser = (User)res.getData();
-		Log.error("", "", "", "%%%%%%%% 9");
 		if (outUser != null && outUser.get_id() != null) {
-			Log.error("", "", "", "%%%%%%%% 10");
 			boolean usersConfirmedOption = usersMid.getConfirmUsersEmailOption(appId);
 			// Remember the order of evaluation in java
 			if (usersConfirmedOption) {
@@ -230,9 +221,7 @@ public class AccountResource {
 						outUser.setBaseLocationOption(outUser.getBaseLocationOption());
 						outUser.setLocation(lastLocation);
 						outUser.setOnline("true");
-						Log.error("", "", "", "%%%%%%%% 5");
 						outUser.setSocketPort(InboundSocket.getNextPort().toString());
-						Log.error("", "", "", "%%%%%%%% 6");
 						response = Response.status(Status.OK).entity(res).build();
 						Date endDate = Utils.getDate();
 						Log.info(((User)res.getData()).getReturnToken(), this, "signin", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));

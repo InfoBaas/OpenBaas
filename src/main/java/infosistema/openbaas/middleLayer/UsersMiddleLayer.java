@@ -338,31 +338,44 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	// *** GET *** //
 	
 	public Result getUserInApp(String appId, String userId) {
+		Log.error("", "", "", "%%%%%%%% 1");
 		JSONObject user = userModel.getUser(appId, userId, true);
 		if (user == null) return null;
+		Log.error("", "", "", "%%%%%%%% 2");
 		User data = new User(userId);
+		Log.error("", "", "", "%%%%%%%% 3");
 		try {
 			if(user.has(User.USER_NAME))
 				data.setUserName(user.getString(User.USER_NAME));
+			Log.error("", "", "", "%%%%%%%% 4");
 			if(user.has(User.USER_FILE))
 				data.setUserFile(user.getString(User.USER_FILE));
+			Log.error("", "", "", "%%%%%%%% 5");
 			if(user.has(User.EMAIL))
 				data.setEmail(user.getString(User.EMAIL));
+			Log.error("", "", "", "%%%%%%%% 6");
 			if(user.has(User.ALIVE))
 				data.setAlive(user.getString(User.ALIVE));
+			Log.error("", "", "", "%%%%%%%% 7");
 			if(user.has(User.EMAIL_CONFIRMED))
 				data.setEmailConfirmed(user.getString(User.EMAIL_CONFIRMED));
+			Log.error("", "", "", "%%%%%%%% 8");
 			if(user.has(User.BASE_LOCATION_OPTION))
 				data.setBaseLocationOption(user.getString(User.BASE_LOCATION_OPTION));
+			Log.error("", "", "", "%%%%%%%% 9");
 			if(user.has(User.BASE_LOCATION))
 				data.setBaseLocation(user.getString(User.BASE_LOCATION));
+			Log.error("", "", "", "%%%%%%%% 10");
 			if(user.has(User.LOCATION))
 				data.setLocation(user.getString(User.LOCATION));
+			Log.error("", "", "", "%%%%%%%% 11");
 			if(user.has(User.ONLINE))
 				data.setOnline(user.getString(User.ONLINE));
+			Log.error("", "", "", "%%%%%%%% 12");
 			Metadata metadata = null;
 			if (user.has(ModelAbstract._METADATA))
 				metadata = Metadata.getMetadata(new JSONObject(user.getString(ModelAbstract._METADATA)));
+			Log.error("", "", "", "%%%%%%%% 13");
 			return new Result(data, metadata);
 		} catch (Exception e) {
 			Log.error("", this, "getUserInApp", "An error ocorred.", e);

@@ -283,6 +283,7 @@ public class UserModel extends ModelAbstract {
 	}
 	
 	public String getUserIdUsingEmail(String appId, String email) {
+		Log.error("", "", "", "%%%%%%%% 0");
 		return getUserIdUsingField(appId, User.EMAIL, email);
 	}
 
