@@ -30,13 +30,23 @@ public class SocketConnector implements Runnable, IConnector {
 
 	public void run() {
 		String message = "";
-		while (message != null) {
+		char[] cbuf = new char[1024];
+		int n = 0;
+		while (n >= 0) {
 			try{
-				message = in.readLine();
-				Log.error("", this, "######0", "########msg1: " + message);
-				if (message != null) 
+				n = in.read(cbuf, 0, 1024);
+				String smtp = new String(cbuf);
+				Log.error("", this, "___0", "___smtp: " + smtp);
+				while (smtp.contains("\n")) {
+					message += smtp.substring(0, smtp.indexOf("\n") - 1);  
+					Log.error("", this, "######0", "########msg1: " + message);
 					outbound.processMessage(message);
+					smtp = smtp.substring(smtp.indexOf("\n"));
+					message = "";
+				}
+				message += smtp; 
 			}catch (Exception e) {
+				message = "";
 				Log.error("", this, "run", "Error running thread", e);
 			}
 		}
