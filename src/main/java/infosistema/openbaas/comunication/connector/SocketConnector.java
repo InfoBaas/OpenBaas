@@ -34,14 +34,14 @@ public class SocketConnector implements Runnable, IConnector {
 		int n = 0;
 		while (n >= 0) {
 			try{
-				n = in.read(cbuf, 0, 1024);
+				if ((n = in.read(cbuf)) < 0) continue;
 				String smtp = CharBuffer.wrap(cbuf).toString();
 				Log.error("", this, "___0", "___smtp: " + smtp);
 				while (smtp.contains("\n")) {
-					message += smtp.substring(0, smtp.indexOf("\n") - 1);  
+					message += smtp.substring(0, smtp.indexOf("\n"));  
 					Log.error("", this, "######0", "########msg1: " + message);
 					outbound.processMessage(message);
-					smtp = smtp.substring(smtp.indexOf("\n"));
+					smtp = smtp.substring(smtp.indexOf("\n") + 1);
 					message = "";
 				}
 				message += smtp; 
