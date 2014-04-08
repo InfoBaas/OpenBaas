@@ -36,7 +36,7 @@ public class SocketConnector implements Runnable, IConnector {
 			try{
 				if ((n = in.read(cbuf)) < 0) continue;
 				String smtp = CharBuffer.wrap(cbuf).toString();
-				Log.error("", this, "___0", "___smtp: " + smtp);
+				//Log.error("", this, "___0", "___smtp: " + smtp);
 				while (smtp.contains("\n")) {
 					message += smtp.substring(0, smtp.indexOf("\n"));  
 					Log.error("", this, "######0", "########msg1: " + message);
