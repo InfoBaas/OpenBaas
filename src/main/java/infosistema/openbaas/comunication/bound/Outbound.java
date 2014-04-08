@@ -15,11 +15,15 @@ import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
+import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.util.encoders.Base64Encoder;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.core.header.reader.HttpHeaderReader;
+import com.sun.jersey.multipart.FormDataBodyPart;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -237,16 +241,20 @@ public class Outbound {
 					if (stmp != null) fileInputStream = convertBase64(stmp);
 				} catch (Exception e) {}
 
-				FormDataContentDisposition fileDetail = FormDataContentDisposition.name("media").build();
+				//FormDataContentDisposition fileDetail = FormDataContentDisposition.name("media").build();
+				FormDataContentDisposition fileDetail = FormDataContentDisposition.name("media").fileName("media.txt").build();
 				
 				Result res = null;
 				if (imageInputStream != null && fileDetail!=null) {
+					fileDetail = FormDataContentDisposition.name("media").fileName("image.png").build();
 					res = mediaMid.createMedia(imageInputStream, fileDetail, appId, userId, ModelEnum.image, null, Metadata.getNewMetadata(null));
 					flag = ModelEnum.image;
 				} else if (videoInputStream!=null && fileDetail!=null) {
+					fileDetail = FormDataContentDisposition.name("media").fileName("video.wmv").build();
 					res = mediaMid.createMedia(videoInputStream, fileDetail, appId, userId, ModelEnum.video, null, Metadata.getNewMetadata(null));
 					flag = ModelEnum.video;
 				} else if (audioInputStream!=null && fileDetail!=null) {
+					fileDetail = FormDataContentDisposition.name("media").fileName("audio.mp3").build();
 					res = mediaMid.createMedia(audioInputStream, fileDetail, appId, userId, ModelEnum.audio, null, Metadata.getNewMetadata(null));
 					flag = ModelEnum.audio;
 				} else if (fileInputStream!=null && fileDetail!=null) {
@@ -374,9 +382,17 @@ public class Outbound {
 	public static void removeOutbound(Outbound out) {
 		msgOutboundList.remove(out);
 	}
-
+/*
 	private InputStream convertBase64(String str) {
 		byte[] ba = DatatypeConverter.parseBase64Binary(str);
 		return new ByteArrayInputStream(ba);
 	}
+*/
+	private InputStream convertBase64(String str) {		
+		Base64 decoder = new Base64();
+		byte[] ba = decoder.decode(str);
+		return new ByteArrayInputStream(ba);
+	}
+
 }
+

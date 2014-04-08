@@ -124,6 +124,7 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 				Boolean msgStorage = chatModel.createMsg(appId, msg);
 				List<String> unReadUsers = new ArrayList<String>();
 				for (String userId: listUsers) {
+					//TODO mudar por causa dos unreadusers
 					Outbound outbound = Outbound.getUserOutbound(userId);
 					if (outbound == null || !outbound.sendRecvMessage(appId, chatRoomId, msg))
 						unReadUsers.add(userId);
