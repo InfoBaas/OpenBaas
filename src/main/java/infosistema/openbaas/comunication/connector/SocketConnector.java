@@ -41,7 +41,10 @@ public class SocketConnector implements Runnable, IConnector {
 					message += smtp.substring(0, smtp.indexOf("\n"));  
 					Log.error("", this, "######0", "########msg1: " + message);
 					outbound.processMessage(message);
-					smtp = smtp.substring(smtp.indexOf("\n") + 1);
+					if (smtp.length() > smtp.indexOf("\n") + 1 && smtp.charAt(smtp.indexOf("\n") + 1) != 0)
+						smtp = smtp.substring(smtp.indexOf("\n") + 1);
+					else 
+						smtp = "";
 					message = "";
 				}
 				message += smtp; 
