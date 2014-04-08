@@ -16,6 +16,7 @@ public class SocketConnector implements Runnable, IConnector {
 	private Outbound outbound;
 	BufferedReader in = null;
 	PrintWriter out = null;
+	Socket socketToClose = null;
 
 	//Constructor
 	public SocketConnector(Socket socket) {
@@ -23,6 +24,7 @@ public class SocketConnector implements Runnable, IConnector {
 		try{
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
+			socketToClose = socket; 
 		} catch (IOException e) {
 			Log.error("", this, "SocketMessage", "Error in Constructor", e);
 		}
@@ -57,6 +59,7 @@ public class SocketConnector implements Runnable, IConnector {
 			Outbound.removeUserOutbound(outbound.getUserId());
 			in.close();
 			out.close();
+			socketToClose.close();
 		}catch (Exception e) {
 			Log.error("", this, "run", "Error closing thread", e);
 		}
