@@ -397,7 +397,7 @@ public class Outbound {
 	*/
 	
 	private InputStream convertBase64(String str) {		
-		Log.error("", this, "######0", "%%%%%% msgAAAA1: " + str);
+		//Log.error("", this, "######0", "%%%%%% msgAAAA1: " + str);
 		byte[] ba = Base64.decodeBase64(str);
 		
 		OutputStream stream=null;
