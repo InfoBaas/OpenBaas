@@ -32,7 +32,7 @@ public class SocketConnector implements Runnable, IConnector {
 
 	public void run() {
 		String message = "";
-		char[] cbuf = new char[1024];
+		char[] cbuf = new char[10];
 		int n = 0;
 		while (n >= 0) {
 			try{
