@@ -35,19 +35,14 @@ public class SocketConnector implements Runnable, IConnector {
 		int n = 0;
 		while (n >= 0) {
 			try{
-				char[] cbuf = new char[1024];
+				char[] cbuf = new char[4096];
 				if ((n = in.read(cbuf)) < 0) continue;
 				String smtp = CharBuffer.wrap(cbuf).toString();
+				System.out.println(cbuf);
 				if (smtp.indexOf(0) > 0) { 
-					Log.error("", this, "###", "### 0 - smtp com null");
-				}
-				if (smtp.indexOf("\0") > 0) {
-					Log.error("", this, "###", "### 1 - smtp recebido: " + smtp);
 					smtp = smtp.replaceAll("\0", "");
 				}
-				Log.error("", this, "###", "### 2 - smtp recebido");
 				while (smtp.contains("\n")) {
-					Log.error("", this, "###", "### 3 - xpto");
 					message += smtp.substring(0, smtp.indexOf("\n"));  
 					if (message.indexOf("\0") > 0) {
 						Log.error("", this, "###", "### 4 - null - message total: " + message);
@@ -61,7 +56,6 @@ public class SocketConnector implements Runnable, IConnector {
 					message = "";
 				}
 				message += smtp; 
-				//Log.error("", this, "###", "### 2 - message parcial: " + message);
 			}catch (Exception e) {
 				message = "";
 				Log.error("", this, "run", "Error running thread", e);
