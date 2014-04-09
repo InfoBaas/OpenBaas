@@ -38,21 +38,23 @@ public class SocketConnector implements Runnable, IConnector {
 				char[] cbuf = new char[1024];
 				if ((n = in.read(cbuf)) < 0) continue;
 				String smtp = CharBuffer.wrap(cbuf).toString();
-				if (smtp.indexOf("\0") > 0) {
-					smtp = smtp.replaceAll("\0", "");
-					Log.error("", this, "###", "### 1 - smtp recebido: " + smtp);
+				if (smtp.indexOf(0) > 0) { 
+					Log.error("", this, "###", "### 0 - smtp com null");
 				}
+				if (smtp.indexOf("\0") > 0) {
+					Log.error("", this, "###", "### 1 - smtp recebido: " + smtp);
+					smtp = smtp.replaceAll("\0", "");
+				}
+				Log.error("", this, "###", "### 2 - smtp recebido");
 				while (smtp.contains("\n")) {
+					Log.error("", this, "###", "### 3 - xpto");
 					message += smtp.substring(0, smtp.indexOf("\n"));  
-					//Log.error("", this, "###", "### _a - smtp.substring(0, smtp.indexOf(\"\n\"): (" + smtp.length() + ") " + smtp.substring(0, smtp.indexOf("\n")));
-					Log.error("", this, "###", "### 3 - message total: " + message);
 					if (message.indexOf("\0") > 0) {
-						Log.error("", this, "###", "### 3 - message total: " + message);
+						Log.error("", this, "###", "### 4 - null - message total: " + message);
 						message = message.replaceAll("\0", "");
 					}
 					outbound.processMessage(message);
 					if (smtp.length() > smtp.indexOf("\n") + 1 && smtp.charAt(smtp.indexOf("\n") + 1) != 0) {
-						//Log.error("", this, "###", "### _b - smtp.substring(smtp.indexOf(\"\n\") + 1): " + smtp.substring(smtp.indexOf("\n") + 1));
 						smtp = smtp.substring(smtp.indexOf("\n") + 1);
 					} else 
 						smtp = "";
