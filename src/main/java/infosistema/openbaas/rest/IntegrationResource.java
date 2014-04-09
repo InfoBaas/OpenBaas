@@ -1,6 +1,9 @@
 
 package infosistema.openbaas.rest;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -39,6 +42,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -143,6 +147,36 @@ public class IntegrationResource {
 		return Response.status(Status.OK).entity("DEL OK").build();
 	}
 	
+	@Path("/test3")
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response test3(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh){
+		
+		OutputStream stream=null;
+		try {
+			StringBuffer str = new StringBuffer((String) inputJsonObj.get("str"));
+			byte[] data = Base64.decodeBase64(str.toString());
+			
+			
+			stream = new FileOutputStream("/home/aniceto/baas/test.png") ;
+		
+		
+			stream.write(data);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				stream.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		
+		return Response.status(Status.OK).entity("DEL OK").build();
+	}
 	
 	/**
 	 * Creates a user in the application. Necessary fields: "facebook id"

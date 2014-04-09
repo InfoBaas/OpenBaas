@@ -16,7 +16,6 @@ import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import org.apache.commons.codec.binary.Base64;
-import org.bouncycastle.util.encoders.Base64Encoder;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -26,7 +25,10 @@ import com.sun.jersey.core.header.reader.HttpHeaderReader;
 import com.sun.jersey.multipart.FormDataBodyPart;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -388,10 +390,33 @@ public class Outbound {
 		return new ByteArrayInputStream(ba);
 	}
 */
+	/*
 	private InputStream convertBase64(String str) {		
 		Base64 decoder = new Base64();
 		byte[] ba = decoder.decode(str);
 		return new ByteArrayInputStream(ba);
+	}
+	*/
+	
+	private InputStream convertBase64(String str) {		
+		Log.error("", this, "######0", "%%%%%% msgAAAA1: " + str);
+		byte[] ba = Base64.decodeBase64(str);
+		
+		OutputStream stream=null;
+		try {
+			stream = new FileOutputStream("/home/administrator/baas/test.png") ;
+			stream.write(ba);
+		} catch (Exception e) {
+			Log.error("", this, "######0", "%%%%%% msgAAAA2: " + str,e);
+		}finally{
+			try {
+				stream.close();
+			} catch (IOException e) {
+				Log.error("", this, "######0", "%%%%%% msgAAAA3: " + str,e);
+			}
+		}
+		ByteArrayInputStream res = new ByteArrayInputStream(ba);
+		return res;
 	}
 
 }
