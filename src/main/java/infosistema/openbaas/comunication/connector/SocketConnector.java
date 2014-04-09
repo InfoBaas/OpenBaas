@@ -32,10 +32,10 @@ public class SocketConnector implements Runnable, IConnector {
 
 	public void run() {
 		String message = "";
-		char[] cbuf = new char[10];
 		int n = 0;
 		while (n >= 0) {
 			try{
+				char[] cbuf = new char[10];
 				if ((n = in.read(cbuf)) < 0) continue;
 				String smtp = CharBuffer.wrap(cbuf).toString();
 				Log.error("", this, "###", "### 1 - smtp recebido: " + smtp);

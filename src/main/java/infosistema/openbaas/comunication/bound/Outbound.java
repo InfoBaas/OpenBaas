@@ -21,8 +21,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
-import com.sun.jersey.core.header.reader.HttpHeaderReader;
-import com.sun.jersey.multipart.FormDataBodyPart;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
