@@ -38,18 +38,21 @@ public class SocketConnector implements Runnable, IConnector {
 			try{
 				if ((n = in.read(cbuf)) < 0) continue;
 				String smtp = CharBuffer.wrap(cbuf).toString();
-				//Log.error("", this, "___0", "___smtp: " + smtp);
+				Log.error("", this, "###", "### 1 - smtp recebido: " + smtp);
 				while (smtp.contains("\n")) {
 					message += smtp.substring(0, smtp.indexOf("\n"));  
-					Log.error("", this, "######0", "########msg1: " + message);
+					Log.error("", this, "###", "### _a - smtp.substring(0, smtp.indexOf(\"\n\"): (" + smtp.length() + ") " + smtp.substring(0, smtp.indexOf("\n")));
+					Log.error("", this, "###", "### 3 - message total: " + message);
 					outbound.processMessage(message);
-					if (smtp.length() > smtp.indexOf("\n") + 1 && smtp.charAt(smtp.indexOf("\n") + 1) != 0)
+					if (smtp.length() > smtp.indexOf("\n") + 1 && smtp.charAt(smtp.indexOf("\n") + 1) != 0) {
+						Log.error("", this, "###", "### _b - smtp.substring(smtp.indexOf(\"\n\") + 1): " + smtp.substring(smtp.indexOf("\n") + 1));
 						smtp = smtp.substring(smtp.indexOf("\n") + 1);
-					else 
+					} else 
 						smtp = "";
 					message = "";
 				}
 				message += smtp; 
+				Log.error("", this, "###", "### 2 - message parcial: " + message);
 			}catch (Exception e) {
 				message = "";
 				Log.error("", this, "run", "Error running thread", e);
