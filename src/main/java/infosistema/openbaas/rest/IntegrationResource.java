@@ -1,9 +1,14 @@
 
 package infosistema.openbaas.rest;
 
+
+import java.io.BufferedReader;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -174,6 +179,63 @@ public class IntegrationResource {
 			}
 		}
 		
+		
+		return Response.status(Status.OK).entity("DEL OK").build();
+	}
+	
+	
+	@Path("/test4")
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response test4(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) throws IOException{
+		Date startDate = Utils.getDate();
+		String everything="";
+		 BufferedReader br = new BufferedReader(new FileReader("/home/aniceto/baas/file.txt"));
+		    try {
+		        StringBuilder sb = new StringBuilder();
+		        String line = br.readLine();
+
+		        while (line != null) {
+		            sb.append(line);
+		            sb.append("\n");
+		            line = br.readLine();
+		        }
+		        everything = sb.toString();
+		    } finally {
+		        br.close();
+		    }
+		
+		
+		Socket echoSocket = null;
+	    try {
+	      echoSocket = new Socket("askme2.cl.infosistema.com", 4005);
+	      PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
+	      
+	      //StringBuffer str = new StringBuffer((String) inputJsonObj.get("str"));
+	      
+	      //String s = str.toString();//"/// DEVES COLOCAR AQUI A IMAGEM SERIALIZADA COM Base64";
+	      String s = everything;
+	      byte[] c = s.getBytes();
+	      echoSocket.getOutputStream().write(c);
+	      out.flush();
+	      s ="\n";
+	      c = s.getBytes();
+	      echoSocket.getOutputStream().write(c);
+	      out.flush();
+	      System.out.println("OK");
+	    } catch (Exception e) {
+	      e.printStackTrace();
+	    } finally {
+	      try {
+	        echoSocket.close();
+	      } catch (IOException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+	      }
+	    }
+	    Date endDate = Utils.getDate();
+	    System.out.println(Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		
 		return Response.status(Status.OK).entity("DEL OK").build();
 	}
