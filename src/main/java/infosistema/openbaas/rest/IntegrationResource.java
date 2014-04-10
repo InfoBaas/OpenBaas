@@ -191,7 +191,7 @@ public class IntegrationResource {
 	public Response test4(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) throws IOException{
 		Date startDate = Utils.getDate();
 		String everything="";
-		 BufferedReader br = new BufferedReader(new FileReader("/home/aniceto/baas/file.txt"));
+		 BufferedReader br = new BufferedReader(new FileReader("/home/aniceto/baas/file2000x2000.txt"));
 		    try {
 		        StringBuilder sb = new StringBuilder();
 		        String line = br.readLine();
