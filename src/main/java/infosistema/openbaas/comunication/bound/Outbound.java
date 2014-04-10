@@ -185,7 +185,7 @@ public class Outbound {
 		Log.error("", this, "processMsgRecvChatMsg", "####Cheguei aqui! processMsgSentMsg");
 		JSONObject inputJsonObj= new JSONObject();
 		
-		String message = null;
+		String message = null;  
 		String chatRoomId = null;
 				
 		try {

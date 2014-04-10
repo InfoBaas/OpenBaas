@@ -118,7 +118,7 @@ public class Utils {
 		str.append(" - Free: " + String.valueOf(runtime.freeMemory() / mb));
 		str.append(" - Total: " + String.valueOf(runtime.totalMemory() / mb));
 		str.append(" - Max: " + String.valueOf(runtime.maxMemory() / mb));
-		Log.info("", null, "Memory - ",str.toString());
+		Log.error("", null, "Memory - ",str.toString());
 	}
 	
 	public static String getStringByJSONArray(JSONArray array, String separator) {

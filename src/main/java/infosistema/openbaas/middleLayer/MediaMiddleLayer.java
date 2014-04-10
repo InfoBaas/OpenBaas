@@ -116,7 +116,6 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 			fields.put(Media.PATH, filePath);
 			fields.put(type+"Id", id);
 			fields.put(Media.SIZE, String.valueOf(file.length()));
-			
 		} catch(AmazonServiceException e) {
 			Log.error("", this, "upload", "Amazon Service error.", e);
 			return null;

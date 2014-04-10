@@ -82,6 +82,7 @@ public class FileSystemModel implements FileInterface {
 		try {
 			OutputStream out = new FileOutputStream(file);
 			IOUtils.copy(stream, out);
+			out.flush();
 			out.close();
 			stream.close();
 		} catch (FileNotFoundException e) {

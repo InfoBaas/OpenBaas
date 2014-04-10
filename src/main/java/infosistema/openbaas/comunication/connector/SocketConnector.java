@@ -4,6 +4,7 @@ import infosistema.openbaas.comunication.bound.Outbound;
 import infosistema.openbaas.comunication.message.Message;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
+import infosistema.openbaas.utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -54,31 +55,31 @@ public class SocketConnector implements Runnable, IConnector {
 				if ((readLength = in.read(cbuf)) < 0) continue;
 				int newLinePos = -1;
 				int startPos = 0;
-				Log.error("", this, "", "###1 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
+				//Log.error("", this, "", "###1 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
 				ini = Calendar.getInstance();
 				while ((newLinePos = nextNewLine(cbuf, startPos, readLength)) > 0)  {
-					Log.error("", this, "", "###4 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
+					//Log.error("", this, "", "###4 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
 					ini = Calendar.getInstance();
 					message.append(cbuf, startPos, (newLinePos-startPos));
 					Log.error("", this, "", "###5 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
 					ini = Calendar.getInstance();
+					Utils.printMemoryStats();
 					outbound.processMessage(message.toString());
-					Log.error("", this, "", "###6 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
+					//Log.error("", this, "", "###6 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
 					ini = Calendar.getInstance();
 					startPos = newLinePos +1;
 					message.setLength(0);
 				}
-				Log.error("", this, "", "###2 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
+				//Log.error("", this, "", "###2 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
 				ini = Calendar.getInstance();
 				message.append(cbuf, startPos, (readLength-startPos)); 
-				Log.error("", this, "", "###3 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
+				//Log.error("", this, "", "###3 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
 				ini = Calendar.getInstance();
 			}catch (Exception e) {
 				message.setLength(0);
 				Log.error("", this, "run", "Error running thread", e);
 			}
 		}
-		//System.out.println("tempo: "+ (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
 		Log.error("", this, "", "###EXIT - logout do user:" + outbound.getUserId());
 		close();
 	}
