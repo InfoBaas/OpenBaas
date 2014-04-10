@@ -22,101 +22,31 @@ public class Test {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		createImage("");
-		//getImagesData();
+	    Socket echoSocket = null;
+	    try {
+	      echoSocket = new Socket("localhost", 4005);
+	      PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
+	      String s ="/// DEVES COLOCAR AQUI A IMAGEM SERIALIZADA COM Base64";
+	      byte[] c = s.getBytes();
+	      echoSocket.getOutputStream().write(c);
+	      out.flush();
+	      s ="\n";
+	      c = s.getBytes();
+	      echoSocket.getOutputStream().write(c);
+	      out.flush();
+	      System.out.println("OK");
+	    } catch (UnknownHostException e) {
+	      e.printStackTrace();
+	    } catch (IOException e) {
+	      e.printStackTrace();
+	    } finally {
+	      try {
+	        echoSocket.close();
+	      } catch (IOException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+	      }
+	    }
 	}
 
-	private static void getImagesData() {
-		try{
-			AppsMiddleLayer appsMid = new AppsMiddleLayer();
-			int i=1;
-			PrintWriter out = new PrintWriter("/home/aniceto/test.txt");
-			while(i!=201){
-				String imageId = "IMAGE"+i;
-				JPG temp = (JPG) appsMid.getImageInApp("296", imageId);
-				String location = temp.getLocation();
-				String[] loc = location.split(":");
-				String latitude = loc[0];
-				String longitude = loc[1];
-				String text = latitude+";"+longitude+";"+imageId+";"+imageId;
-				Log.debug("", this, "getImagesData", text);
-				out.println(text);
-				i++;
-			}
-			out.close();
-		}catch(Exception e){
-			Log.error("", this, "getImagesData", "An error ocorred.", e); 
-		}
-	}
-
-	private static void createImage(String locationRand) {
-		try{
-			DecimalFormat df2 = new DecimalFormat("00.00000");
-			int i=15000;
-			AppsMiddleLayer appsMid = new AppsMiddleLayer();
-			InputStream is = new FileInputStream("/home/aniceto/IMG.jpg");
-			while(i!=50000){
-				String latitude  = getRandomLat().toString();
-				String longitude = getRandomLong().toString();
-				if(locationRand.equals("Iberia")){
-					latitude  = df2.format(getRandomLatIberia());
-					longitude = df2.format(getRandomLongIberia());
-				}
-				if(locationRand.equals("Lisboa")){
-					latitude  = df2.format(getRandomLatLisboa());
-					longitude = df2.format(getRandomLongLisboa());
-				}
-				String imageName = "IMAGE"+i;
-				String location = latitude+":"+longitude;
-				Log.debug("", this, "createImage", i);
-				String imageId = appsMid.createLocalFile(is,null, "296", "jpg", "apps/296/media/images/",imageName);
-				appsMid.uploadImageFileToServerWithGeoLocation("296",location, "jpg", imageName, imageId);
-				i++;
-			}
-		}catch(Exception e){
-			Log.error("", this, "createImage", "An error ocorred.", e); 
-		}
-		
-	}
-
-	private static Integer getRandomLat() {
-		int latitude = (int) (Math.random() * 180);
-		return latitude -90;
-	}
-	
-	private static Integer getRandomLong() {
-		int longitude = (int) (Math.random() * 360);
-		return longitude-180;
-	}
-	
-	private static Double getRandomLatIberia() {
-		Random r = new Random();
-		double latitude = (90+36.93) + ((90+43.93) - (90+36.93)) * r.nextDouble();
-		return latitude -90;
-	}
-	
-	private static Double getRandomLongIberia() {
-		Random r = new Random();
-		double longitude = (170.37) + (183.38 - 170.37) * r.nextDouble();
-		return longitude-180;
-	}
-	
-	private static Double getRandomLatLisboa() {
-		Random r = new Random();
-		double latitude = (128.701) + ((128.80) - (128.701)) * r.nextDouble();
-		
-		return latitude -90;
-	}
-	
-	private static Double getRandomLongLisboa() {
-		Random r = new Random();
-		double longitude = (170.708) + (170.90 - 170.708) * r.nextDouble();
-		
-		return longitude-180;
-	}
-	/*
-	Random r = new Random();
-	double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
-	*/
-	
 }
