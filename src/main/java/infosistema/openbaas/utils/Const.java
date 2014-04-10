@@ -6,6 +6,8 @@ public class Const {
 
 	//CONSTANTS
 	
+	public static final char CHAR_NULL = '\0';
+	public static final char CHAR_NEW_LINE = '\n';
 	public static final String SEMICOLON = ";";
 	public static final String SESSION_TOKEN = "sessionToken";
 	public static final String MESSAGE = "message";

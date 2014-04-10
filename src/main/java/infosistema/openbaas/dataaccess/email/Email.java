@@ -95,7 +95,7 @@ public class Email {
 			to[0] = new InternetAddress(email);
 			message.setRecipients(Message.RecipientType.TO, to);
 			message.setSubject(Const.getEmailSubjectEmailRecovery());
-			message.setContent("Dear " + userName +"," + '\n' + "Your new password is "+ newPass+"."+ '\n' +"Please enter the application and change it", "text/html;charset=UTF-8");
+			message.setContent("Dear " + userName +",\nYour new password is "+ newPass+".\nPlease enter the application and change it", "text/html;charset=UTF-8");
 			Transport.send(message);
 		} catch (AddressException e) {
 			Log.error("", this, "sendRecoveryEmail", "Address erros.", e); 
@@ -153,7 +153,7 @@ public class Email {
 			to[0] = new InternetAddress(email);
 			message.setRecipients(Message.RecipientType.TO, to);
 			message.setSubject(Const.getEmailSubjectEmailConfirmation());
-			message.setContent("Dear " + userName +"," + '\n' + "In order to confirm your registration, please open the following URL:"+'\n'
+			message.setContent("Dear " + userName +",\nIn order to confirm your registration, please open the following URL:\n"
 					+ link.replace("account/signup", "users") + userId+"/confirmation?registrationCode="+registrationCode, "text/html;charset=UTF-8");
 			Transport.send(message);
 		} catch (AddressException e) {

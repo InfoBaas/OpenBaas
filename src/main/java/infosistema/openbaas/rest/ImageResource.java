@@ -185,10 +185,8 @@ public class ImageResource {
 		StringBuilder buf = new StringBuilder();
 		for(String header:hh.getRequestHeaders().keySet()){
 			buf.append(header+" : "+hh.getRequestHeader(header));
-			buf.append("\n");
+			buf.append(Const.CHAR_NEW_LINE);
 		}
-		
-		//System. out.println(buf.toString());
 		
 		Response response = null;
 		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
