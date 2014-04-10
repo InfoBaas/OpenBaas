@@ -73,6 +73,7 @@ public class Outbound {
 	/*** RECEIVE MESSAGES ***/
 	
 	public void processMessage(String message) {
+		Log.error("", this, "convertBase64", "#####cheguei aqui: processMessage ini");
 		String msgType = null;
 		String appId = null;
 		String sessionToken = null;
@@ -181,7 +182,7 @@ public class Outbound {
 	}
 
 	private JSONObject processMsgSentChatMsg(JSONObject data, String messageId, String appId, String sessionToken) {
-		Log.error("", this, "processMsgRecvChatMsg", "Cheguei aqui! processMsgSentMsg");
+		Log.error("", this, "processMsgRecvChatMsg", "####Cheguei aqui! processMsgSentMsg");
 		JSONObject inputJsonObj= new JSONObject();
 		
 		String message = null;
@@ -398,7 +399,7 @@ public class Outbound {
 	*/
 	
 	private InputStream convertBase64(String str) {		
-		Log.error("", this, "convertBase64", "cheguei aqui: convertBase64 ini");
+		Log.error("", this, "convertBase64", "#####cheguei aqui: convertBase64 ini");
 		byte[] ba = Base64.decodeBase64(str);
 		
 		OutputStream stream=null;
@@ -415,7 +416,7 @@ public class Outbound {
 			}
 		}
 		ByteArrayInputStream res = new ByteArrayInputStream(ba);
-		Log.error("", this, "convertBase64", "cheguei aqui: convertBase64 fim");
+		Log.error("", this, "convertBase64", "#####cheguei aqui: convertBase64 fim");
 		return res;
 	}
 
