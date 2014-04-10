@@ -34,50 +34,8 @@ public class SocketConnector implements Runnable, IConnector {
 		}
 	}
 
-	public void run1() {
-		Calendar ini = Calendar.getInstance();
-		String message = "";
-		int n = 0;
-		while (n >= 0) {
-			try{
-				char[] cbuf = new char[4096];
-				if ((n = in.read(cbuf)) < 0) continue;
-				String smtp = CharBuffer.wrap(cbuf).toString();
-				if (smtp.indexOf(0) > 0) { 
-					smtp = smtp.replaceAll("\0", "");
-				}
-				while (smtp.contains("\n")) {
-					message += smtp.substring(0, smtp.indexOf("\n"));  
-					if (message.indexOf("\0") > 0) {
-						Log.error("", this, "###", "### 4 - null - message total: " + message);
-						message = message.replaceAll("\0", "");
-					}
-					outbound.processMessage(message);
-					if (smtp.length() > smtp.indexOf("\n") + 1 && smtp.charAt(smtp.indexOf("\n") + 1) != 0) {
-						smtp = smtp.substring(smtp.indexOf("\n") + 1);
-					} else 
-						smtp = "";
-					message = "";
-				}
-				message += smtp; 
-			}catch (Exception e) {
-				message = "";
-				Log.error("", this, "run", "Error running thread", e);
-			}
-		}
-		try{
-			Outbound.removeUserOutbound(outbound.getUserId());
-			in.close();
-			out.close();
-			socketToClose.close();
-		}catch (Exception e) {
-			Log.error("", this, "run", "Error closing thread", e);
-		}
-		System.out.println("tempo: "+ (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
-	}
-
 	public void run() {
-		Calendar ini = Calendar.getInstance();
+		//Calendar ini = Calendar.getInstance();
 		StringBuilder message = new StringBuilder();
 		int readLength = 0;
 		char[] cbuf;
@@ -98,7 +56,7 @@ public class SocketConnector implements Runnable, IConnector {
 					message.append(cbuf, startPos, (newLinePos-startPos));
 					outbound.processMessage(message.toString());
 					startPos = newLinePos +1;
-					//System.out.println(message.toString());
+					System.out.println(message.toString());
 					message.setLength(0);
 				}
 				message.append(cbuf, startPos, (readLength-startPos)); 
@@ -107,7 +65,7 @@ public class SocketConnector implements Runnable, IConnector {
 				Log.error("", this, "run", "Error running thread", e);
 			}
 		}
-		System.out.println("tempo: "+ (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
+		//System.out.println("tempo: "+ (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
 		close();
 	}
 
