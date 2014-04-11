@@ -60,6 +60,7 @@ public class SocketConnector implements Runnable, IConnector {
 				while ((newLinePos = nextNewLine(cbuf, startPos, readLength)) > 0)  {
 					//Log.error("", this, "", "###4 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
 					ini = Calendar.getInstance();
+					if (newLinePos - startPos <= 1) continue;
 					message.append(cbuf, startPos, (newLinePos-startPos));
 					Log.error("", this, "", "###5 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
 					ini = Calendar.getInstance();
