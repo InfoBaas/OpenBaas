@@ -9,6 +9,7 @@ import java.util.Set;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 
+import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.data.models.ChatMessage;
 import infosistema.openbaas.data.models.ChatRoom;
 import infosistema.openbaas.utils.Const;
@@ -387,9 +388,29 @@ public class ChatModel {
 		return res;
 	}
 
-	public void updateMessageWithMedia(String messageId) {
-		// TODO JM
-		
+	public void updateMessageWithMedia(String appId, String messageId, ModelEnum type, String mediaId) { 
+		Jedis jedis = pool.getResource();
+		long milliseconds = new Date().getTime();
+		try {
+			String msgKey = getMessageKey(appId, messageId); 
+			jedis.hset(msgKey, ChatMessage.DATE, String.valueOf(milliseconds));
+			if(type.equals(ModelEnum.image)){
+				jedis.hset(msgKey, ChatMessage.IMAGE_TEXT, mediaId);
+			}
+			if(type.equals(ModelEnum.audio)){
+				jedis.hset(msgKey, ChatMessage.AUDIO_TEXT, mediaId);
+			}
+			if(type.equals(ModelEnum.video)){
+				jedis.hset(msgKey, ChatMessage.VIDEO_TEXT, mediaId);
+			}
+			if(type.equals(ModelEnum.storage)){
+				jedis.hset(msgKey, ChatMessage.FILE_TEXT, mediaId);
+			}			
+		}catch(Exception e){
+			Log.error("", this, "updateMessageWithMedia", "Error updateMessageWithMedia redis.", e); 
+		}finally {
+			pool.returnResource(jedis);
+		}		
 	}
 
 }

@@ -172,7 +172,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 				e.printStackTrace();
 			}
 			if(messageId!=null){
-				chatModel.updateMessageWithMedia(messageId);
+				chatModel.updateMessageWithMedia(appId, messageId, type, media.get_id());
 			}
 			return new Result(media, metadata);
 		} else {
