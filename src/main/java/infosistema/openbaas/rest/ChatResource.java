@@ -183,16 +183,16 @@ public class ChatResource {
 				try {
 					Result res = null;
 					if (imageInputStream!=null && imageDetail!=null) {
-						res = mediaMid.createMedia(imageInputStream, imageDetail, appId, userId, ModelEnum.image, location, Metadata.getNewMetadata(location));
+						res = mediaMid.createMedia(imageInputStream, imageDetail, appId, userId, ModelEnum.image, location, Metadata.getNewMetadata(location),null);
 						flag = ModelEnum.image;
 					} else if (videoInputStream!=null && videoDetail!=null) {
-						res = mediaMid.createMedia(videoInputStream, videoDetail, appId, userId, ModelEnum.video, location, Metadata.getNewMetadata(location));
+						res = mediaMid.createMedia(videoInputStream, videoDetail, appId, userId, ModelEnum.video, location, Metadata.getNewMetadata(location),null);
 						flag = ModelEnum.video;
 					} else if (audioInputStream!=null && audioDetail!=null) {
-						res = mediaMid.createMedia(audioInputStream, audioDetail, appId, userId, ModelEnum.audio, location, Metadata.getNewMetadata(location));
+						res = mediaMid.createMedia(audioInputStream, audioDetail, appId, userId, ModelEnum.audio, location, Metadata.getNewMetadata(location),null);
 						flag = ModelEnum.audio;
 					} else if (fileInputStream!=null && fileDetail!=null) {
-						res = mediaMid.createMedia(fileInputStream, fileDetail, appId, userId, ModelEnum.storage, location, Metadata.getNewMetadata(location));
+						res = mediaMid.createMedia(fileInputStream, fileDetail, appId, userId, ModelEnum.storage, location, Metadata.getNewMetadata(location),null);
 						flag = ModelEnum.storage;
 					}
 					if (res!=null && flag!=null) {
