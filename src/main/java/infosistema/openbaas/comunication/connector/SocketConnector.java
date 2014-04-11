@@ -97,7 +97,7 @@ public class SocketConnector implements Runnable, IConnector {
 	
 	private int nextNewLine(char[] cbuf, int startPos, int length) {
 		for (int i = startPos; i < length; i++)
-			if (cbuf[i] == Const.CHAR_NEW_LINE) return i;
+			if (cbuf[i] == Const.CHAR_NULL) return i;
 		return -1;
 	}
 
