@@ -108,6 +108,7 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 		ChatMessage message = chatModel.getMsg(appId, messageId);
 		String roomId = message.getRoomId(); 
 		String sender = message.getSender();
+		Log.error("", this, "sendMessage", "####sendMessage messageId:"+messageId+" - appId:"+appId +" roomId"+roomId+" sender:"+sender);
 		List<String> participants = chatModel.getListParticipants(appId, roomId);
 		try {
 			List<String> listUsers = new ArrayList<String>();
@@ -233,6 +234,8 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 	}
 
 	public void updateMessageWithMedia(String appId, String messageId, ModelEnum type, String mediaId) { 
+		
+		Log.error("", this, "updateMessageWithMedia", "####updateMessageWithMedia messageId:"+messageId+" - appId:"+appId +" mediaId"+mediaId+" type:"+type);
 		chatModel.updateMessageWithMedia(appId, messageId, type, mediaId);
 		sendMessage(appId, messageId);
 	}

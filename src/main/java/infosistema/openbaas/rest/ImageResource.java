@@ -72,6 +72,7 @@ public class ImageResource {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		Log.debug("", this, "upload image", "********upload image ************");
+		Log.error("", this, "upload image", "********upload image ###### messageId:"+messageId);
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);

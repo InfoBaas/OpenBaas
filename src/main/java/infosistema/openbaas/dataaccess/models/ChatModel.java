@@ -90,6 +90,7 @@ public class ChatModel {
 			try{jedis.hset(msgKey, ChatMessage.AUDIO_ID, msg.getAudioId());}catch(Exception e){}
 			try{jedis.hset(msgKey, ChatMessage.VIDEO_ID, msg.getVideoId());}catch(Exception e){}
 			try{jedis.hset(msgKey, ChatMessage.IMAGE_ID, msg.getImageId());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.ROOM_ID, msg.getRoomId());}catch(Exception e){}
 			res = true;
 		} finally {
 			pool.returnResource(jedis);
