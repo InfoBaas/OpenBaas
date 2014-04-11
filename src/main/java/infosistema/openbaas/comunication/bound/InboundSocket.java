@@ -45,7 +45,7 @@ public class InboundSocket {
 			try{
 				server = new ServerSocket(port);
 				server.setPerformancePreferences(0, 2, 1);
-				server.setReceiveBufferSize(1024);
+				server.setReceiveBufferSize(8192);
 			} catch (IOException e) {
 				Log.error("", "SocketWait", "SocketWait", "Could not listen on port " + port);
 			}

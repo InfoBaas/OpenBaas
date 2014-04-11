@@ -50,7 +50,7 @@ public class SocketConnector implements Runnable, IConnector {
 		while (readLength >= 0) {
 			try{
 				Arrays.fill(cbuf, Const.CHAR_NULL);
-				Log.error("", this, "", "###0 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
+				//Log.error("", this, "", "###0 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
 				ini = Calendar.getInstance();
 				if ((readLength = in.read(cbuf)) < 0) continue;
 				int newLinePos = -1;
@@ -62,7 +62,7 @@ public class SocketConnector implements Runnable, IConnector {
 					ini = Calendar.getInstance();
 					if (newLinePos - startPos <= 1) continue;
 					message.append(cbuf, startPos, (newLinePos-startPos));
-					Log.error("", this, "", "###5 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
+					//Log.error("", this, "", "###5 - " + (Calendar.getInstance().getTimeInMillis() - ini.getTimeInMillis()));
 					ini = Calendar.getInstance();
 					Utils.printMemoryStats();
 					outbound.processMessage(message.toString());
