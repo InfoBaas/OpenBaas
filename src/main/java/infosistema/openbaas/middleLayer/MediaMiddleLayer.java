@@ -26,6 +26,7 @@ import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.data.models.Storage;
 import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.dataaccess.files.FileInterface;
+import infosistema.openbaas.dataaccess.models.ChatModel;
 import infosistema.openbaas.dataaccess.models.MediaModel;
 import infosistema.openbaas.dataaccess.models.ModelAbstract;
 import infosistema.openbaas.utils.Const;
@@ -38,6 +39,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	// *** MEMBERS *** //
 
 	private MediaModel mediaModel;
+	private ChatModel chatModel;
 
 
 	// *** INSTANCE *** //
@@ -47,6 +49,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	private MediaMiddleLayer() {
 		super();
 		mediaModel = new MediaModel();
+		chatModel = new ChatModel();
 	}
 	
 	public static MediaMiddleLayer getInstance() {
@@ -97,7 +100,7 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	// *** CREATE *** //
 
 	public Result createMedia(InputStream stream, FormDataContentDisposition fileDetail, String appId, String userId,
-			ModelEnum type, String location, Map<String, String> extraMetadata) {
+			ModelEnum type, String location, Map<String, String> extraMetadata, String messageId) {
 
 		String id = createFileId(appId, type);
 		
@@ -167,6 +170,9 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}
+			if(messageId!=null){
+				chatModel.updateMessageWithMedia(messageId);
 			}
 			return new Result(media, metadata);
 		} else {

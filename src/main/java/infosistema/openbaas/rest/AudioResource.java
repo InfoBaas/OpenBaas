@@ -73,7 +73,8 @@ public class AudioResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response uploadAudio(@Context HttpServletRequest request, @Context UriInfo ui, @Context HttpHeaders hh,
 			@FormDataParam(Const.FILE) InputStream uploadedInputStream, @FormDataParam(Const.FILE) FormDataContentDisposition fileDetail,
-			@PathParam(Const.APP_ID) String appId, @HeaderParam(value = Const.LOCATION) String location) {
+			@PathParam(Const.APP_ID) String appId, @HeaderParam(value = Const.LOCATION) String location,
+			@FormDataParam(Const.MESSAGEID) String messageId) {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -81,7 +82,7 @@ public class AudioResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			Result res = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, userId, ModelEnum.audio, location, Metadata.getNewMetadata(location));
+			Result res = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, userId, ModelEnum.audio, location, Metadata.getNewMetadata(location),messageId);
 			if (res == null || res.getData() == null)
 				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 			else

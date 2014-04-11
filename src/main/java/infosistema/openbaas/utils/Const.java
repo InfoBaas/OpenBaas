@@ -11,6 +11,7 @@ public class Const {
 	public static final String SEMICOLON = ";";
 	public static final String SESSION_TOKEN = "sessionToken";
 	public static final String MESSAGE = "message";
+	public static final String MESSAGEID = "messageId";
 	public static final String FILE = "file";	
 	public static final String AUDIO = "audio";
 	public static final String VIDEO = "video";

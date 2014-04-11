@@ -75,7 +75,8 @@ public class StorageResource {
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response uploadStorageFile(@Context UriInfo ui, @Context HttpHeaders hh, @FormDataParam(Const.FILE) InputStream uploadedInputStream,
-			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @PathParam(Const.APP_ID) String appId, @HeaderParam(value = Const.LOCATION) String location) {
+			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @PathParam(Const.APP_ID) String appId, @HeaderParam(value = Const.LOCATION) String location,
+			@FormDataParam(Const.MESSAGEID) String messageId) {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -83,7 +84,7 @@ public class StorageResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			Result res = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, userId, ModelEnum.storage,location, Metadata.getNewMetadata(location));
+			Result res = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, userId, ModelEnum.storage,location, Metadata.getNewMetadata(location),messageId);
 			if (res == null || res.getData() == null) 
 				response = Response.status(Status.BAD_REQUEST).entity(appId).build();
 			else

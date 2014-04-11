@@ -66,7 +66,8 @@ public class ImageResource {
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response uploadImage(@Context HttpHeaders hh, @Context UriInfo ui, @FormDataParam(Const.FILE) InputStream uploadedInputStream,
-			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @HeaderParam(value = Const.LOCATION) String location) {
+			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @HeaderParam(value = Const.LOCATION) String location,
+			@FormDataParam(Const.MESSAGEID) String messageId) {
 		Date startDate = Utils.getDate();
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
@@ -76,7 +77,7 @@ public class ImageResource {
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			Result res = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, userId, ModelEnum.image, location, Metadata.getNewMetadata(location));
+			Result res = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, userId, ModelEnum.image, location, Metadata.getNewMetadata(location), messageId);
 			if (res == null || res.getData() == null)
 				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 			else

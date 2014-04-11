@@ -387,4 +387,9 @@ public class ChatModel {
 		return res;
 	}
 
+	public void updateMessageWithMedia(String messageId) {
+		// TODO JM
+		
+	}
+
 }

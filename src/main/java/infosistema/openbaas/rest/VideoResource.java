@@ -63,7 +63,8 @@ public class VideoResource {
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response uploadVideo(@Context HttpHeaders hh, @Context UriInfo ui, @FormDataParam(Const.FILE) InputStream uploadedInputStream,
-			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @HeaderParam(value = Const.LOCATION) String location) {
+			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @HeaderParam(value = Const.LOCATION) String location,
+			@FormDataParam(Const.MESSAGEID) String messageId) {
 
 		Response response = null;
 		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
@@ -71,7 +72,7 @@ public class VideoResource {
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String userId = sessionMid.getUserIdUsingSessionToken(Utils.getSessionToken(hh));
-			Result res = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, userId, ModelEnum.video, location, Metadata.getNewMetadata(location));
+			Result res = mediaMid.createMedia(uploadedInputStream, fileDetail, appId, userId, ModelEnum.video, location, Metadata.getNewMetadata(location),messageId);
 			if (res == null || res.getData() == null)
 				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 			else
