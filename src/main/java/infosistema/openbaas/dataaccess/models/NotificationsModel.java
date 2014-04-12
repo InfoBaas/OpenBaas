@@ -52,7 +52,8 @@ public class NotificationsModel {
 	private static final String DEVICE_KEY_FORMAT = "%s:Device:%s:%s";
 	private static final String DEVICE_LIST_KEY_FORMAT = "%s_DTList_%s_%s";
 	private static final String BADGE_VALUE_FORMAT = "%s:_:%s";
-	private static final String NOTIFICATION_VALUE_FORMAT = "%s:_:%s:_:%s:_:%s:_:%s:_:%s:_:%s:_:%s:_:";
+	//private static final String NOTIFICATION_VALUE_FORMAT = "%s:_:%s:_:%s:_:%s:_:%s:_:%s:_:%s:_:%s:_:";
+	private static final String NOTIFICATION_VALUE_FORMAT = "%s:_:%s:_:%s";
 	
 	private String getClientKey(String appId, String clientId) {
 		return String.format(CLIENT_KEY_FORMAT, appId, clientId);
