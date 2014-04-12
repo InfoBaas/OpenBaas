@@ -37,7 +37,7 @@ public class NotificationsModel {
 	private static final int MAXELEMS = 9999999;
 
 	private static final String PUSHLIST = "PushList";
-	private static final String CERT = "";
+	private static final String CERT = "Cert";
 	private static final String DEVICEID = "deviceId";
 	public static final String DEVICETOKEN = "deviceToken";
 	public static final String CLIENTID = "clientId";
