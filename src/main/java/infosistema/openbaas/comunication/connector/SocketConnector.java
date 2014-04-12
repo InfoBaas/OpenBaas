@@ -56,6 +56,7 @@ public class SocketConnector implements Runnable, IConnector {
 					if (newLinePos - startPos <= 1) continue;
 					message.append(cbuf, startPos, (newLinePos-startPos));
 					Utils.printMemoryStats();
+					Log.error("", this, "######1", "########msg1: " + message.toString());
 					outbound.processMessage(message.toString());
 					startPos = newLinePos +1;
 					message.setLength(0);
@@ -72,7 +73,7 @@ public class SocketConnector implements Runnable, IConnector {
 
 	public boolean sendMessage(Message message) {
 		try {
-			Log.error("", this, "######7", "########msg2: " + message.toString());
+			Log.error("", this, "######2", "########msg2: " + message.toString());
 			out.println(CharBuffer.wrap(message.toString()));
 		} catch (Exception e) {
 			Log.error("", this, "sendMessage", "Error sending Message", e);

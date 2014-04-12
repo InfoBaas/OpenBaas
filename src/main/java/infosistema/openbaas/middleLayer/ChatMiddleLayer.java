@@ -125,7 +125,7 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 				if (outbound == null || !outbound.sendRecvMessage(appId, roomId, message))
 					unReadUsers.add(userId);
 			}
-			Boolean addMsgRoom = chatModel.addMessage2Room(appId, message.get_id(), roomId, unReadUsers);
+			//Boolean addMsgRoom = chatModel.addMessage2Room(appId, message.get_id(), roomId, unReadUsers);
 		} catch (Exception e) {
 			Log.error("", this, "createChatRoom", "Error parsing the JSON.", e); 
 		}
