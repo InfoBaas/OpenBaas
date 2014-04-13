@@ -155,10 +155,14 @@ public class Outbound {
 			} catch (Exception e) {}
 			try {
 				participants = data.getJSONArray(ChatRoom.PARTICIPANTS);
-			} catch (Exception e) {}
+			} catch (Exception e) {
+				Log.error("", this, "processMsgCreateChatRoom", "Error creating chat.", e);
+			}
 			try {
 				flagNotification =  data.optBoolean(ChatRoom.FLAG_NOTIFICATION);
-			} catch (Exception e) {}
+			} catch (Exception e) {
+				Log.error("", this, "processMsgCreateChatRoom", "Error creating chat.", e);
+			}
 			for(int i = 0; i < participants.length(); i++){
 				String userCurr = participants.getString(i);
 				if(userCurr.equals(userId)) flag = true;

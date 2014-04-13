@@ -15,10 +15,11 @@ public class ApplePushNotifications {
 	
 	
 	public static void pushCombineNotification(String alertText, int badge, String keystore, String password, Boolean production, Object devices) throws CommunicationException, KeystoreException {
+		Log.error("", "", "pushCombineNotification", "********pushCombineNotification ###### alert:"+alertText);
 		List<Device> devs = (List<Device>)devices;
 		Iterator<Device> it = devs.iterator();
 		while(it.hasNext()){
-			Log.info("", "", "push", "push0:" +"keystore:" +keystore+" - password:"+password+" - production:"+production+" - devices token:"+ it.next().getToken());
+			Log.error("", "", "push", "push0:" +"keystore:" +keystore+" - password:"+password+" - production:"+production+" - devices token:"+ it.next().getToken());
 		}
 		List<PushedNotification> notifications = Push.combined(alertText, badge, "default", keystore, password, production, devices);
 		printPushedNotifications(notifications);
@@ -32,11 +33,11 @@ public class ApplePushNotifications {
 	}
 	
 	public static void pushBadgeService(int badge,String keystore, String password, Boolean production, Object devices) throws CommunicationException, KeystoreException {
-		
+		Log.error("", "", "pushBadgeService", "********pushBadgeService ###### badge:"+badge);
 		List<Device> devs = (List<Device>)devices;
 		Iterator<Device> it = devs.iterator();
 		while(it.hasNext()){
-			Log.info("", "", "pushBadge", "pushBadge:" +"keystore:" +keystore+" - password:"+password+" - production:"+production+" - devices token:"+ it.next().getToken());
+			Log.error("", "", "pushBadge", "pushBadge:" +"keystore:" +keystore+" - password:"+password+" - production:"+production+" - devices token:"+ it.next().getToken());
 		}
 		List<PushedNotification> notifications = Push.badge(badge, keystore, password, production, devices);
 		printPushedNotifications(notifications);
