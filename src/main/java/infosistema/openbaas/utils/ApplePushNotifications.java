@@ -33,7 +33,6 @@ public class ApplePushNotifications {
 	}
 	
 	public static void pushBadgeService(int badge,String keystore, String password, Boolean production, Object devices) throws CommunicationException, KeystoreException {
-		Log.error("", "", "pushBadgeService", "********pushBadgeService ###### badge:"+badge);
 		List<Device> devs = (List<Device>)devices;
 		Iterator<Device> it = devs.iterator();
 		while(it.hasNext()){
