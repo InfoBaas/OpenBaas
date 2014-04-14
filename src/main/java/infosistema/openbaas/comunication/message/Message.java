@@ -21,6 +21,10 @@ public class Message {
 	public static final String VIDEO = "video";
 	public static final String FILE = "file";
 	public static final String AUDIO = "audio";
+	public static final String HAS_IMAGE = "hasImage";
+	public static final String HAS_VIDEO = "hasVideo";
+	public static final String HAS_FILE = "hasFile";
+	public static final String HAS_AUDIO = "hasAudio";
 	public static final String MESSAGE = "message";
 	public static final String CHAT_ROOM = "chatRoom";
 	//message types

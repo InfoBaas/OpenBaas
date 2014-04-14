@@ -66,7 +66,7 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 					String msgId = "Msg_EMPTY";
 					String chatRoomId = "Chat_"+Utils.getRandomString(Const.getIdLength());
 					
-					ChatMessage msg = new ChatMessage(msgId, new Date(), userIdCriador, "", "", "", "", "");
+					ChatMessage msg = new ChatMessage(msgId, new Date(), userIdCriador, "", "", "", "", "", "", "", "", "");
 					Boolean msgStorage = chatModel.createMsg(appId, msg);
 					Boolean msgRoomStorage = chatModel.createChatRoom(appId, msgId, chatRoomId, roomName, userIdCriador, flagNotification,strParticipants);
 					
@@ -104,8 +104,9 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 		return res;
 	}
 	
-	public ChatMessage sendMessage(String appId, String sender, String chatRoomId, String fileText,String messageText,
-			String imageText,String audioText, String videoText) {
+	public ChatMessage sendMessage(String appId, String sender, String chatRoomId, String messageText, String fileId,
+			String imageId, String audioId, String videoId, String hasFile, String hasImage, String hasAudio,
+			String hasVideo) {
 		ChatMessage res = null;
 		List<String> participants = new ArrayList<String>();
 		participants = chatModel.getListParticipants(appId, chatRoomId);
@@ -120,7 +121,7 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 					}
 				}
 				String msgId = "Msg_"+Utils.getRandomString(Const.getIdLength());
-				ChatMessage msg = new ChatMessage(msgId, new Date(), sender, messageText, fileText, imageText, audioText, videoText);
+				ChatMessage msg = new ChatMessage(msgId, new Date(), sender, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
 				Boolean msgStorage = chatModel.createMsg(appId, msg);
 				List<String> unReadUsers = new ArrayList<String>();
 				for (String userId: listUsers) {

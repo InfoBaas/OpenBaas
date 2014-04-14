@@ -167,11 +167,15 @@ public class ChatResource {
 			}
 		}
 		Response response = null;
-		String fileText;
 		String messageText;
-		String imageText;
-		String audioText;
-		String videoText;
+		String fileId;
+		String imageId;
+		String audioId;
+		String videoId;
+		String hasFile = null;
+		String hasImage = null;
+		String hasAudio = null;
+		String hasVideo = null;
 		ModelEnum flag = null;
 		String sessionToken = Utils.getSessionToken(hh);
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
@@ -185,32 +189,36 @@ public class ChatResource {
 					if (imageInputStream!=null && imageDetail!=null) {
 						res = mediaMid.createMedia(imageInputStream, imageDetail, appId, userId, ModelEnum.image, location, Metadata.getNewMetadata(location),null);
 						flag = ModelEnum.image;
+						hasImage = "true";
 					} else if (videoInputStream!=null && videoDetail!=null) {
 						res = mediaMid.createMedia(videoInputStream, videoDetail, appId, userId, ModelEnum.video, location, Metadata.getNewMetadata(location),null);
 						flag = ModelEnum.video;
+						hasVideo = "true";
 					} else if (audioInputStream!=null && audioDetail!=null) {
 						res = mediaMid.createMedia(audioInputStream, audioDetail, appId, userId, ModelEnum.audio, location, Metadata.getNewMetadata(location),null);
 						flag = ModelEnum.audio;
+						hasAudio = "true";
 					} else if (fileInputStream!=null && fileDetail!=null) {
 						res = mediaMid.createMedia(fileInputStream, fileDetail, appId, userId, ModelEnum.storage, location, Metadata.getNewMetadata(location),null);
 						flag = ModelEnum.storage;
+						hasFile = "true";
 					}
 					if (res!=null && flag!=null) {
-						String fileId = ((Media)res.getData()).get_id();
-						if(flag.equals(ModelEnum.image)) inputJsonObj.put(ChatMessage.IMAGE_TEXT, fileId);
-						if(flag.equals(ModelEnum.storage))inputJsonObj.put(ChatMessage.FILE_TEXT, fileId);
-						if(flag.equals(ModelEnum.audio))inputJsonObj.put(ChatMessage.AUDIO_TEXT, fileId);
-						if(flag.equals(ModelEnum.video))inputJsonObj.put(ChatMessage.VIDEO_TEXT, fileId);
+						String fId = ((Media)res.getData()).get_id();
+						if(flag.equals(ModelEnum.image)) inputJsonObj.put(ChatMessage.IMAGE_ID, fId);
+						if(flag.equals(ModelEnum.storage))inputJsonObj.put(ChatMessage.FILE_ID, fId);
+						if(flag.equals(ModelEnum.audio))inputJsonObj.put(ChatMessage.AUDIO_ID, fId);
+						if(flag.equals(ModelEnum.video))inputJsonObj.put(ChatMessage.VIDEO_ID, fId);
 					}
-					imageText = inputJsonObj.optString(ChatMessage.IMAGE_TEXT);
-					audioText = inputJsonObj.optString(ChatMessage.AUDIO_TEXT);
-					videoText = inputJsonObj.optString(ChatMessage.VIDEO_TEXT);
-					fileText = inputJsonObj.optString(ChatMessage.FILE_TEXT);
+					imageId = inputJsonObj.optString(ChatMessage.IMAGE_ID);
+					audioId = inputJsonObj.optString(ChatMessage.AUDIO_ID);
+					videoId = inputJsonObj.optString(ChatMessage.VIDEO_ID);
+					fileId = inputJsonObj.optString(ChatMessage.FILE_ID);
 					messageText = inputJsonObj.optString(ChatMessage.MESSAGE_TEXT);
-					ChatMessage msg = chatMid.sendMessage(appId, userId, chatRoomId, fileText, messageText, imageText, audioText, videoText);
+					ChatMessage msg = chatMid.sendMessage(appId, userId, chatRoomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
 					if(msg!=null){
 						response = Response.status(Status.OK).entity(msg).build();
-						noteMid.setPushNotificationsTODO(appId, userId, chatRoomId, fileText, videoText, imageText, audioText, messageText);
+						noteMid.setPushNotificationsTODO(appId, userId, chatRoomId, fileId, videoId, imageId, audioId, messageText);
 					}else{
 						throw new Exception("Error sendMessage");
 					}

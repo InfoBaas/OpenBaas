@@ -23,16 +23,11 @@ import org.codehaus.jettison.json.JSONObject;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Hashtable;
-
-import javax.xml.bind.DatatypeConverter;
 
 public class Outbound {
 
@@ -73,7 +68,6 @@ public class Outbound {
 	/*** RECEIVE MESSAGES ***/
 	
 	public void processMessage(String message) {
-		//Log.error("", this, "convertBase64", "#####cheguei aqui: processMessage ini");
 		String msgType = null;
 		String appId = null;
 		String sessionToken = null;
@@ -182,12 +176,9 @@ public class Outbound {
 	}
 
 	private JSONObject processMsgSentChatMsg(JSONObject data, String messageId, String appId, String sessionToken) {
-		//Log.error("", this, "processMsgRecvChatMsg", "####Cheguei aqui! processMsgSentMsg");
-		JSONObject inputJsonObj= new JSONObject();
-		
 		String message = null;  
 		String chatRoomId = null;
-				
+
 		try {
 			message = data.getString(Message.TEXT);
 		} catch (JSONException e) { }
@@ -197,25 +188,25 @@ public class Outbound {
 			Log.error("", this, "processMsgRecvChatMsg", "Error getting data",e);
 		}
 		
+		String messageText = null;
+		String fileId = null;
+		String imageId = null;
+		String audioId = null;
+		String videoId = null;
+		String hasFile = null;
+		String hasImage = null;
+		String hasAudio = null;
+		String hasVideo = null;
+		ModelEnum flag = null;
+		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 		if (message != null){
 			try {
-				inputJsonObj.put(ChatMessage.MESSAGE_TEXT, URLDecoder.decode(message,"UTF-8"));
-			} catch (JSONException e) {
-				Log.error("", this, "processMsgRecvChatMsg", "Error in message.", e);
-				return getErrorJSONObject(appId, messageId, "Error in message.");
+				messageText = URLDecoder.decode(message,"UTF-8");
 			} catch (UnsupportedEncodingException e) {
 				Log.error("", this, "processMsgRecvChatMsg", "Error in decoding message.", e);
 				return getErrorJSONObject(appId, messageId, "Error in decoding message.");
 			}
 		}
-		
-		String fileId = null;
-		String messageText = null;
-		String imageId = null;
-		String audioId = null;
-		String videoId = null;
-		ModelEnum flag = null;
-		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 		if (chatMid.existsChatRoom(appId, chatRoomId)) {
 			try {
 				InputStream imageInputStream = null; 
@@ -243,47 +234,45 @@ public class Outbound {
 					if (stmp != null) fileInputStream = convertBase64(stmp);
 				} catch (Exception e) {}
 
-				//FormDataContentDisposition fileDetail = FormDataContentDisposition.name("media").build();
 				FormDataContentDisposition fileDetail = FormDataContentDisposition.name("media").fileName("media.txt").build();
 				
 				Result res = null;
 				if (imageInputStream != null && fileDetail!=null) {
 					fileDetail = FormDataContentDisposition.name("media").fileName("image.png").build();
-					res = mediaMid.createMedia(imageInputStream, fileDetail, appId, userId, ModelEnum.image, null, Metadata.getNewMetadata(null));
+					res = mediaMid.createMedia(imageInputStream, fileDetail, appId, userId, ModelEnum.image, null, Metadata.getNewMetadata(null), null);
 					flag = ModelEnum.image;
 				} else if (videoInputStream!=null && fileDetail!=null) {
 					fileDetail = FormDataContentDisposition.name("media").fileName("video.wmv").build();
-					res = mediaMid.createMedia(videoInputStream, fileDetail, appId, userId, ModelEnum.video, null, Metadata.getNewMetadata(null));
+					res = mediaMid.createMedia(videoInputStream, fileDetail, appId, userId, ModelEnum.video, null, Metadata.getNewMetadata(null), null);
 					flag = ModelEnum.video;
 				} else if (audioInputStream!=null && fileDetail!=null) {
 					fileDetail = FormDataContentDisposition.name("media").fileName("audio.mp3").build();
-					res = mediaMid.createMedia(audioInputStream, fileDetail, appId, userId, ModelEnum.audio, null, Metadata.getNewMetadata(null));
+					res = mediaMid.createMedia(audioInputStream, fileDetail, appId, userId, ModelEnum.audio, null, Metadata.getNewMetadata(null), null);
 					flag = ModelEnum.audio;
 				} else if (fileInputStream!=null && fileDetail!=null) {
-					res = mediaMid.createMedia(fileInputStream, fileDetail, appId, userId, ModelEnum.storage, null, Metadata.getNewMetadata(null));
+					res = mediaMid.createMedia(fileInputStream, fileDetail, appId, userId, ModelEnum.storage, null, Metadata.getNewMetadata(null), null);
 					flag = ModelEnum.storage;
 				}
 				if (res!=null && flag!=null) {
 					String fid = ((Media)res.getData()).get_id();
 					if (flag.equals(ModelEnum.image)) {
-						inputJsonObj.put(ChatMessage.IMAGE_TEXT, fid);
 						imageId = fid;
+						hasImage = "true";
 					}
 					if (flag.equals(ModelEnum.storage)) {
-						inputJsonObj.put(ChatMessage.FILE_TEXT, fid);
 						fileId = fid;
+						hasFile = "true";
 					}
 					if (flag.equals(ModelEnum.audio)) {
-						inputJsonObj.put(ChatMessage.AUDIO_TEXT, fid);
 						audioId = fid;
+						hasAudio = "true";
 					}
 					if (flag.equals(ModelEnum.video)) {
-						inputJsonObj.put(ChatMessage.VIDEO_TEXT, fid);
 						videoId = fid;
+						hasVideo = "true";
 					}
 				}
-				messageText = inputJsonObj.optString(ChatMessage.MESSAGE_TEXT);
-				ChatMessage msg = chatMid.sendMessage(appId, userId, chatRoomId, fileId, messageText, imageId, audioId, videoId);
+				ChatMessage msg = chatMid.sendMessage(appId, userId, chatRoomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
 				if (msg != null) {
 					noteMid.setPushNotificationsTODO(appId, userId, chatRoomId, fileId, videoId, imageId, audioId, messageText);
 					return msg.serialize();
@@ -384,39 +373,10 @@ public class Outbound {
 	public static void removeOutbound(Outbound out) {
 		msgOutboundList.remove(out);
 	}
-/*
-	private InputStream convertBase64(String str) {
-		byte[] ba = DatatypeConverter.parseBase64Binary(str);
-		return new ByteArrayInputStream(ba);
-	}
-*/
-	/*
-	private InputStream convertBase64(String str) {		
-		Base64 decoder = new Base64();
-		byte[] ba = decoder.decode(str);
-		return new ByteArrayInputStream(ba);
-	}
-	*/
 	
 	private InputStream convertBase64(String str) {		
-		//Log.error("", this, "convertBase64", "#####cheguei aqui: convertBase64 ini");
 		byte[] ba = Base64.decodeBase64(str);
-		/*
-		OutputStream stream=null;
-		try {
-			stream = new FileOutputStream("/home/administrator/baas/test.png") ;
-			stream.write(ba);
-		} catch (Exception e) {
-			Log.error("", this, "######0", "%%%%%% msgAAAA2: " + str,e);
-		}finally{
-			try {
-				stream.close();
-			} catch (IOException e) {
-				Log.error("", this, "######0", "%%%%%% msgAAAA3: " + str,e);
-			}
-		}*/
 		ByteArrayInputStream res = new ByteArrayInputStream(ba);
-		//Log.error("", this, "convertBase64", "#####cheguei aqui: convertBase64 fim");
 		return res;
 	}
 

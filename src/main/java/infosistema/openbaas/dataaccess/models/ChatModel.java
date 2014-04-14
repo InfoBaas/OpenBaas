@@ -86,10 +86,10 @@ public class ChatModel {
 			jedis.hset(msgKey, ChatMessage.SENDER, msg.getSender());
 			jedis.hset(msgKey, ChatMessage.DATE, String.valueOf(milliseconds));
 			try{jedis.hset(msgKey, ChatMessage.MESSAGE_TEXT, msg.getMessageText());}catch(Exception e){}
-			try{jedis.hset(msgKey, ChatMessage.FILE_TEXT, msg.getFileId());}catch(Exception e){}
-			try{jedis.hset(msgKey, ChatMessage.AUDIO_TEXT, msg.getAudioId());}catch(Exception e){}
-			try{jedis.hset(msgKey, ChatMessage.VIDEO_TEXT, msg.getVideoId());}catch(Exception e){}
-			try{jedis.hset(msgKey, ChatMessage.IMAGE_TEXT, msg.getImageId());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.FILE_ID, msg.getFileId());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.AUDIO_ID, msg.getAudioId());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.VIDEO_ID, msg.getVideoId());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.IMAGE_ID, msg.getImageId());}catch(Exception e){}
 			res = true;
 		} finally {
 			pool.returnResource(jedis);
@@ -104,10 +104,10 @@ public class ChatModel {
 			String msgKey = getMessageKey(appId, msgId);
 			String sender = jedis.hget(msgKey, ChatMessage.SENDER);
 			String messageText = jedis.hget(msgKey, ChatMessage.MESSAGE_TEXT);
-			String fileText = jedis.hget(msgKey, ChatMessage.FILE_TEXT);
-			String audioText = jedis.hget(msgKey, ChatMessage.AUDIO_TEXT);
-			String videoText = jedis.hget(msgKey, ChatMessage.VIDEO_TEXT);
-			String imageText = jedis.hget(msgKey, ChatMessage.IMAGE_TEXT);
+			String fileText = jedis.hget(msgKey, ChatMessage.FILE_ID);
+			String audioText = jedis.hget(msgKey, ChatMessage.AUDIO_ID);
+			String videoText = jedis.hget(msgKey, ChatMessage.VIDEO_ID);
+			String imageText = jedis.hget(msgKey, ChatMessage.IMAGE_ID);
 
 			if(sender!=null) res.setSender(sender);
 			if(fileText!=null) res.setFileId(fileText);
@@ -253,10 +253,10 @@ public class ChatModel {
 					String msgKey = getMessageKey(appId, msgId); 
 					String sender = jedis.hget(msgKey, ChatMessage.SENDER);
 					String messageText = jedis.hget(msgKey, ChatMessage.MESSAGE_TEXT);
-					String fileText = jedis.hget(msgKey, ChatMessage.FILE_TEXT);
-					String audioText = jedis.hget(msgKey, ChatMessage.AUDIO_TEXT);
-					String videoText = jedis.hget(msgKey, ChatMessage.VIDEO_TEXT);
-					String imageText = jedis.hget(msgKey, ChatMessage.IMAGE_TEXT);
+					String fileText = jedis.hget(msgKey, ChatMessage.FILE_ID);
+					String audioText = jedis.hget(msgKey, ChatMessage.AUDIO_ID);
+					String videoText = jedis.hget(msgKey, ChatMessage.VIDEO_ID);
+					String imageText = jedis.hget(msgKey, ChatMessage.IMAGE_ID);
 
 					if(sender!=null) msg.setSender(sender);
 					if(fileText!=null) msg.setFileId(fileText);
@@ -395,16 +395,16 @@ public class ChatModel {
 			String msgKey = getMessageKey(appId, messageId); 
 			jedis.hset(msgKey, ChatMessage.DATE, String.valueOf(milliseconds));
 			if(type.equals(ModelEnum.image)){
-				jedis.hset(msgKey, ChatMessage.IMAGE_TEXT, mediaId);
+				jedis.hset(msgKey, ChatMessage.IMAGE_ID, mediaId);
 			}
 			if(type.equals(ModelEnum.audio)){
-				jedis.hset(msgKey, ChatMessage.AUDIO_TEXT, mediaId);
+				jedis.hset(msgKey, ChatMessage.AUDIO_ID, mediaId);
 			}
 			if(type.equals(ModelEnum.video)){
-				jedis.hset(msgKey, ChatMessage.VIDEO_TEXT, mediaId);
+				jedis.hset(msgKey, ChatMessage.VIDEO_ID, mediaId);
 			}
 			if(type.equals(ModelEnum.storage)){
-				jedis.hset(msgKey, ChatMessage.FILE_TEXT, mediaId);
+				jedis.hset(msgKey, ChatMessage.FILE_ID, mediaId);
 			}			
 		}catch(Exception e){
 			Log.error("", this, "updateMessageWithMedia", "Error updateMessageWithMedia redis.", e); 
