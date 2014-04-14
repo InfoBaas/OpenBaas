@@ -72,10 +72,10 @@ public class NotificationMiddleLayer {
 		return noteModel.getAllCertificateList();
 	}
 
-	public void pushBadge(String appId, String userId, String chatRoomId) {
+	public void pushBadge(String appId, String userId, String roomId) {
 		try {
 			Application app = appModel.getApplication(appId);
-			Boolean flagNotification = chatModel.hasNotification(appId,chatRoomId);
+			Boolean flagNotification = chatModel.hasNotification(appId, roomId);
 			List<Certificate> certList = new ArrayList<Certificate>();
 			
 			if(flagNotification){
@@ -103,22 +103,22 @@ public class NotificationMiddleLayer {
 	public void pushAllBadges(String appId, String userId) {
 		try {
 			List<String> chats = chatModel.getAllUserChats(appId, userId);
-			for (String chatRoomId: chats){ 
-				pushBadge(appId, userId, chatRoomId);
+			for (String roomId: chats){ 
+				pushBadge(appId, userId, roomId);
 			}
 		} catch (Exception e) {
 			Log.error("", this, "pushBadge", "Error pushing the badge.", e);
 		}
 	}
 
-	public void pushNotificationCombine(String appId, String sender,String chatRoomId, String fileText, 
-			String videoText, String imageText, String audioText, String messageText) {
+	public void pushNotificationCombine(String appId, String sender,String roomId, String fileId, 
+			String videoId, String imageId, String audioId, String messageText) {
 	
 		List<String> participants = new ArrayList<String>();
-		participants = chatModel.getListParticipants(appId, chatRoomId);
+		participants = chatModel.getListParticipants(appId, roomId);
 		try{
 			if(participants.size()>0 && participants!=null){
-				Boolean flagNotification = chatModel.hasNotification(appId,chatRoomId);
+				Boolean flagNotification = chatModel.hasNotification(appId, roomId);
 				Application app = appModel.getApplication(appId);
 				List<String> clientsList = app.getClients();
 				List<Certificate> certList = new ArrayList<Certificate>();
@@ -191,11 +191,11 @@ public class NotificationMiddleLayer {
 		return res;
 	}	
 	
-	public Boolean setPushNotificationsTODO(String appId, String userId, String chatRoomId, String fileText,String videoText,
-			String imageText, String audioText, String messageText) {
+	public Boolean setPushNotificationsTODO(String appId, String userId, String roomId, String fileId, String videoId,
+			String imageId, String audioId, String messageText) {
 		Boolean res = false;
 		try {
-			res = noteModel.setNewNotifications(appId, userId, chatRoomId, fileText, videoText, imageText, audioText, messageText);
+			res = noteModel.setNewNotifications(appId, userId, roomId, fileId, videoId, imageId, audioId, messageText);
 		} catch(Exception e){
 			Log.error("", this, "getPushNotificationsTODO", "Error in getPushNotificationsTODO."+res, e);
 		}

@@ -49,29 +49,29 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 
 	public ChatRoom createChatRoom(String appId, String roomName, String userIdCriador, Boolean flagNotification, JSONArray participants) {
 		ChatRoom res = null;
-		String existChatRoomId = null;
+		String existChatRoom = null;
 		if(participants.length()>1){
 			//ordenar JsonArray;
 			participants = orderJsonArray(participants);
 			if(participants.length()==2){
-				existChatRoomId = chatModel.existsChat(Utils.getStringByJSONArray(participants, ";"),appId);
+				existChatRoom = chatModel.existsChat(Utils.getStringByJSONArray(participants, ";"),appId);
 			}
-			if(existChatRoomId != null){
-				res = chatModel.getChatRoom(appId, existChatRoomId);
-				List<ChatMessage> lstMsg = getUnreadMsgs(appId, userIdCriador, existChatRoomId);
+			if(existChatRoom != null){
+				res = chatModel.getChatRoom(appId, existChatRoom);
+				List<ChatMessage> lstMsg = getUnreadMsgs(appId, userIdCriador, existChatRoom);
 				res.setUnreadMessages(lstMsg.size());
 			}else{
 				try {
 					String strParticipants = Utils.getStringByJSONArray(participants,";");
 					String msgId = "Msg_EMPTY";
-					String chatRoomId = "Chat_"+Utils.getRandomString(Const.getIdLength());
+					String roomId = "Chat_"+Utils.getRandomString(Const.getIdLength());
 					
-					ChatMessage msg = new ChatMessage(msgId, new Date(), userIdCriador, "", "", "", "", "", "", "", "", "");
+					ChatMessage msg = new ChatMessage(msgId, new Date(), userIdCriador, roomId, "", "", "", "", "", "", "", "", "");
 					Boolean msgStorage = chatModel.createMsg(appId, msg);
-					Boolean msgRoomStorage = chatModel.createChatRoom(appId, msgId, chatRoomId, roomName, userIdCriador, flagNotification,strParticipants);
+					Boolean msgRoomStorage = chatModel.createChatRoom(appId, msgId, roomId, roomName, userIdCriador, flagNotification,strParticipants);
 					
 					if(msgRoomStorage && msgStorage)
-						res = chatModel.getChatRoom(appId, chatRoomId);;
+						res = chatModel.getChatRoom(appId, roomId);;
 				} catch (Exception e) {
 					Log.error("", this, "createChatRoom", "Error ocorred.", e); 
 				}
@@ -104,12 +104,39 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 		return res;
 	}
 	
-	public ChatMessage sendMessage(String appId, String sender, String chatRoomId, String messageText, String fileId,
+	public ChatMessage sendMessage(String appId, String messageId) {
+		ChatMessage message = chatModel.getMsg(appId, messageId);
+		String roomId = message.getRoomId(); 
+		String sender = message.getSender();
+		List<String> participants = chatModel.getListParticipants(appId, roomId);
+		try {
+			List<String> listUsers = new ArrayList<String>();
+			Iterator<String> it = participants.iterator();
+			while(it.hasNext()){
+				String curr = it.next();
+				if(!curr.equals(sender)){
+					listUsers.add(curr);
+				}
+			}
+			List<String> unReadUsers = new ArrayList<String>();
+			for (String userId: listUsers) {
+				Outbound outbound = Outbound.getUserOutbound(userId);
+				if (outbound == null || !outbound.sendRecvMessage(appId, roomId, message))
+					unReadUsers.add(userId);
+			}
+			Boolean addMsgRoom = chatModel.addMsg2Room(appId, message.get_id(), roomId, unReadUsers);
+		} catch (Exception e) {
+			Log.error("", this, "createChatRoom", "Error parsing the JSON.", e); 
+		}
+		return message;
+	}
+			
+	public ChatMessage sendMessage(String appId, String sender, String roomId, String messageText, String fileId,
 			String imageId, String audioId, String videoId, String hasFile, String hasImage, String hasAudio,
 			String hasVideo) {
 		ChatMessage res = null;
 		List<String> participants = new ArrayList<String>();
-		participants = chatModel.getListParticipants(appId, chatRoomId);
+		participants = chatModel.getListParticipants(appId, roomId);
 		if(participants.size()>0 && participants!=null){
 			try {
 				List<String> listUsers = new ArrayList<String>();
@@ -121,16 +148,16 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 					}
 				}
 				String msgId = "Msg_"+Utils.getRandomString(Const.getIdLength());
-				ChatMessage msg = new ChatMessage(msgId, new Date(), sender, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
+				ChatMessage msg = new ChatMessage(msgId, new Date(), sender, roomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
 				Boolean msgStorage = chatModel.createMsg(appId, msg);
 				List<String> unReadUsers = new ArrayList<String>();
 				for (String userId: listUsers) {
 					//TODO mudar por causa dos unreadusers
 					Outbound outbound = Outbound.getUserOutbound(userId);
-					if (outbound == null || !outbound.sendRecvMessage(appId, chatRoomId, msg))
+					if (outbound == null || !outbound.sendRecvMessage(appId, roomId, msg))
 						unReadUsers.add(userId);
 				}
-				Boolean addMsgRoom = chatModel.addMsg2Room(appId, msgId, chatRoomId, unReadUsers);
+				Boolean addMsgRoom = chatModel.addMsg2Room(appId, msgId, roomId, unReadUsers);
 				if (addMsgRoom && msgStorage)
 					res = msg;
 			} catch (Exception e) {
@@ -142,13 +169,13 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 		return res;
 	}
 
-	public List<ChatMessage> getMessages(String appId, String userId, String chatRoomId, Date date, String orientation, Integer numberMessages) {
+	public List<ChatMessage> getMessages(String appId, String userId, String roomId, Date date, String orientation, Integer numberMessages) {
 		
 		List<ChatMessage> res = new ArrayList<ChatMessage>();
 		List<String> unreadMsg = new ArrayList<String>();
 		try {
 			unreadMsg = chatModel.getTotalUnreadMsg(appId, userId);
-			res = chatModel.getMessageList(appId,chatRoomId, date, numberMessages, orientation);
+			res = chatModel.getMessageList(appId, roomId, date, numberMessages, orientation);
 			Iterator<ChatMessage> it = res.iterator();
 			while(it.hasNext()){
 				ChatMessage msg = it.next();
@@ -176,21 +203,21 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 		return res;
 	}
 
-	public Boolean existsChatRoom(String appId, String chatRoomId) {
+	public Boolean existsChatRoom(String appId, String roomId) {
 		Boolean res = false;		
 		try {
-			res = chatModel.existsKey(appId,chatRoomId);
+			res = chatModel.existsKey(appId,roomId);
 		} catch (Exception e) {
 			Log.error("", this, "getMessages", "Error parsing the JSON.", e); 
 		}
 		return res;
 	}
 	
-	public List<ChatMessage> getUnreadMsgs(String appId, String userId, String chatRoomId) {
+	public List<ChatMessage> getUnreadMsgs(String appId, String userId, String roomId) {
 		List<ChatMessage> res = new ArrayList<ChatMessage>();		
 		try {
 			List<String> msgList = chatModel.getTotalUnreadMsg(appId, userId);
-			List<String> list = chatModel.getMessageChatroom(appId, chatRoomId);
+			List<String> list = chatModel.getMessageChatroom(appId, roomId);
 			Iterator<String> it = msgList.iterator();
 			while(it.hasNext()){
 				String msgId = it.next();
@@ -203,6 +230,11 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 			Log.error("", this, "getMessages", "Error parsing the JSON.", e); 
 		}
 		return res;
+	}
+
+	public void updateMessageWithMedia(String appId, String messageId, ModelEnum type, String mediaId) { 
+		chatModel.updateMessageWithMedia(appId, messageId, type, mediaId);
+		sendMessage(appId, messageId);
 	}
 	
 }

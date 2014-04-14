@@ -244,14 +244,14 @@ public class NotificationsModel {
 		return res;
 	}
 
-	public Boolean setNewNotifications(String appId, String userId, String chatRoomId,String fileText,String videoText,
-			String imageText, String audioText, String messageText) {
+	public Boolean setNewNotifications(String appId, String userId, String roomId,String fileId,String videoId,
+			String imageId, String audioId, String messageText) {
 		Jedis jedis = pool.getResource();
 		Boolean res = false;
 		try {
 			StringBuffer value = new StringBuffer();
-			value.append(appId+SEPARATOR3+userId+SEPARATOR3+chatRoomId+SEPARATOR3+fileText+SEPARATOR3);
-			value.append(videoText+SEPARATOR3+imageText+SEPARATOR3+audioText+SEPARATOR3+messageText+SEPARATOR3);
+			value.append(appId+SEPARATOR3+userId+SEPARATOR3+roomId+SEPARATOR3+fileId+SEPARATOR3);
+			value.append(videoId+SEPARATOR3+imageId+SEPARATOR3+audioId+SEPARATOR3+messageText+SEPARATOR3);
 			jedis.lrem(PUSHLIST, 0,value.toString() );
 			jedis.rpush(PUSHLIST, value.toString());
 			res = true;

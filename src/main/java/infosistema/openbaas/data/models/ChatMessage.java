@@ -21,6 +21,7 @@ public class ChatMessage {
 	private String hasImage;
 	private String hasAudio;
 	private String hasVideo;
+	private String roomId;
 	private Boolean read;
 	
 	public final static String ORIENTATION = "orientation";
@@ -46,7 +47,7 @@ public class ChatMessage {
 		
 	}
 	
-	public ChatMessage(String _id, Date date, String sender, String messageText, String fileId, String imageId, 
+	public ChatMessage(String _id, Date date, String sender, String roomId, String messageText, String fileId, String imageId, 
 			String audioId, String videoId, String hasFile, String hasImage, String hasAudio, String hasVideo) {
 		super();
 		this._id = _id;
@@ -61,6 +62,7 @@ public class ChatMessage {
 		this.hasImage = hasImage;
 		this.hasAudio = hasAudio;
 		this.hasVideo = hasVideo;
+		this.roomId = roomId;
 	}
 
 	public String get_id() {
@@ -157,6 +159,14 @@ public class ChatMessage {
 
 	public void setHasVideoId(String hasVideo) {
 		this.hasVideo = hasVideo;
+	}
+
+	public String getRoomId() {
+		return roomId;
+	}
+
+	public void setRoomId(String roomId) {
+		this.roomId = roomId;
 	}
 
 	public Boolean getRead() {

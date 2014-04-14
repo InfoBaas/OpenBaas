@@ -171,8 +171,8 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			if(messageId!=null){
-				chatModel.updateMessageWithMedia(appId, messageId, type, media.get_id());
+			if(messageId != null){
+				ChatMiddleLayer.getInstance().updateMessageWithMedia(appId, messageId, type, media.get_id());
 			}
 			return new Result(media, metadata);
 		} else {

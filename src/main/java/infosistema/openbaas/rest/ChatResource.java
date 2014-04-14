@@ -103,11 +103,11 @@ public class ChatResource {
 	}
 	
 	@POST
-	@Path("/{chatroomid}/getmessages")
+	@Path("/{roomid}/getmessages")
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response getMessages(JSONObject inputJsonObj, @Context UriInfo ui, 
-			@Context HttpHeaders hh, @PathParam("chatroomid") String chatRoomId) {
+			@Context HttpHeaders hh, @PathParam("roomid") String roomId) {
 		Response response = null;
 		Date date;
 		String orientation;
@@ -125,7 +125,7 @@ public class ChatResource {
 				orientation = inputJsonObj.optString(ChatMessage.ORIENTATION);
 				numberMessages =  inputJsonObj.optInt(ChatMessage.NUM_MSG);	
 				
-				res = chatMid.getMessages(appId,userId,chatRoomId,date,orientation,numberMessages);
+				res = chatMid.getMessages(appId, userId, roomId, date, orientation, numberMessages);
 				response = Response.status(Status.OK).entity(res).build();
 			} catch (JSONException e) {
 				Log.error("", this, "createUserAndLogin", "Error parsing the JSON.", e); 
@@ -140,10 +140,10 @@ public class ChatResource {
 	}
 
 	@POST
-	@Path("/{chatroomid}/sendmessage")
+	@Path("/{roomid}/sendmessage")
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response sendMessage(@PathParam("chatroomid") String chatRoomId, @Context UriInfo ui, @Context HttpHeaders hh,
+	public Response sendMessage(@PathParam("roomid") String roomId, @Context UriInfo ui, @Context HttpHeaders hh,
 			@FormDataParam(Const.MESSAGE) String message,
 			@FormDataParam(Const.IMAGE) InputStream imageInputStream, 
 			@FormDataParam(Const.IMAGE) FormDataContentDisposition imageDetail,
@@ -183,7 +183,7 @@ public class ChatResource {
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			if(chatMid.existsChatRoom(appId,chatRoomId)){
+			if(chatMid.existsChatRoom(appId,roomId)){
 				try {
 					Result res = null;
 					if (imageInputStream!=null && imageDetail!=null) {
@@ -215,10 +215,10 @@ public class ChatResource {
 					videoId = inputJsonObj.optString(ChatMessage.VIDEO_ID);
 					fileId = inputJsonObj.optString(ChatMessage.FILE_ID);
 					messageText = inputJsonObj.optString(ChatMessage.MESSAGE_TEXT);
-					ChatMessage msg = chatMid.sendMessage(appId, userId, chatRoomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
+					ChatMessage msg = chatMid.sendMessage(appId, userId, roomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
 					if(msg!=null){
 						response = Response.status(Status.OK).entity(msg).build();
-						noteMid.setPushNotificationsTODO(appId, userId, chatRoomId, fileId, videoId, imageId, audioId, messageText);
+						noteMid.setPushNotificationsTODO(appId, userId, roomId, fileId, videoId, imageId, audioId, messageText);
 					}else{
 						throw new Exception("Error sendMessage");
 					}
@@ -238,11 +238,11 @@ public class ChatResource {
 	}
 	
 	@POST
-	@Path("/{chatroomid}/readmessages")
+	@Path("/{roomid}/readmessages")
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response readMessages(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh, 
-			@PathParam("chatroomid") String chatRoomId) {
+			@PathParam("roomid") String roomId) {
 		Response response = null;
 		Boolean res = false;
 		String sessionToken = Utils.getSessionToken(hh);
@@ -257,7 +257,7 @@ public class ChatResource {
 					res = chatMid.readMsgsFromUser(appId,userId,jsonArray);
 				}
 				response = Response.status(Status.OK).entity(res).build();
-				noteMid.pushBadge(appId,userId,chatRoomId);
+				noteMid.pushBadge(appId, userId, roomId);
 			} catch (Exception e) {
 				Log.error("", this, "readMessages", "Error in readMessages.", e);
 				return Response.status(Status.BAD_REQUEST).entity("Error parsing the JSON.").build();
@@ -271,9 +271,9 @@ public class ChatResource {
 	}
 	
 	@GET
-	@Path("/{chatroomid}/unreadmessages")
+	@Path("/{roomid}/unreadmessages")
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response unReadMessages(@Context UriInfo ui, @Context HttpHeaders hh, @PathParam("chatroomid") String chatRoomId) {
+	public Response unReadMessages(@Context UriInfo ui, @Context HttpHeaders hh, @PathParam("roomid") String roomId) {
 		Response response = null;
 		List<ChatMessage> lisRes = new ArrayList<ChatMessage>();
 		String sessionToken = Utils.getSessionToken(hh);
@@ -283,7 +283,7 @@ public class ChatResource {
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			try {
-				lisRes = chatMid.getUnreadMsgs(appId, userId, chatRoomId);
+				lisRes = chatMid.getUnreadMsgs(appId, userId, roomId);
 				response = Response.status(Status.OK).entity(lisRes).build();
 			} catch (Exception e) {
 				Log.error("", this, "createUserAndLogin", "Error parsing the JSON.", e); 

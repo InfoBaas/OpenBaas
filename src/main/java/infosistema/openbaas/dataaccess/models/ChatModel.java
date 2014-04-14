@@ -104,17 +104,19 @@ public class ChatModel {
 			String msgKey = getMessageKey(appId, msgId);
 			String sender = jedis.hget(msgKey, ChatMessage.SENDER);
 			String messageText = jedis.hget(msgKey, ChatMessage.MESSAGE_TEXT);
-			String fileText = jedis.hget(msgKey, ChatMessage.FILE_ID);
-			String audioText = jedis.hget(msgKey, ChatMessage.AUDIO_ID);
-			String videoText = jedis.hget(msgKey, ChatMessage.VIDEO_ID);
-			String imageText = jedis.hget(msgKey, ChatMessage.IMAGE_ID);
+			String fileId = jedis.hget(msgKey, ChatMessage.FILE_ID);
+			String audioId = jedis.hget(msgKey, ChatMessage.AUDIO_ID);
+			String videoId = jedis.hget(msgKey, ChatMessage.VIDEO_ID);
+			String imageId = jedis.hget(msgKey, ChatMessage.IMAGE_ID);
+			String roomId = jedis.hget(msgKey, ChatMessage.ROOM_ID);
 
 			if(sender!=null) res.setSender(sender);
-			if(fileText!=null) res.setFileId(fileText);
+			if(fileId!=null) res.setFileId(fileId);
 			if(messageText!=null) res.setMessageText(messageText);
-			if(audioText!=null) res.setAudioId(audioText);
-			if(videoText!=null) res.setVideoId(videoText);
-			if(imageText!=null) res.setImageId(imageText);
+			if(audioId!=null) res.setAudioId(audioId);
+			if(videoId!=null) res.setVideoId(videoId);
+			if(imageId!=null) res.setImageId(imageId);
+			if(roomId!=null) res.setRoomId(roomId);
 			res.setDate(new Date());
 			try {
 				long l = Long.valueOf(jedis.hget(msgKey, ChatMessage.DATE)).longValue();
@@ -253,24 +255,24 @@ public class ChatModel {
 					String msgKey = getMessageKey(appId, msgId); 
 					String sender = jedis.hget(msgKey, ChatMessage.SENDER);
 					String messageText = jedis.hget(msgKey, ChatMessage.MESSAGE_TEXT);
-					String fileText = jedis.hget(msgKey, ChatMessage.FILE_ID);
-					String audioText = jedis.hget(msgKey, ChatMessage.AUDIO_ID);
-					String videoText = jedis.hget(msgKey, ChatMessage.VIDEO_ID);
-					String imageText = jedis.hget(msgKey, ChatMessage.IMAGE_ID);
+					String fileId = jedis.hget(msgKey, ChatMessage.FILE_ID);
+					String audioId = jedis.hget(msgKey, ChatMessage.AUDIO_ID);
+					String videoId = jedis.hget(msgKey, ChatMessage.VIDEO_ID);
+					String imageId = jedis.hget(msgKey, ChatMessage.IMAGE_ID);
 
 					if(sender!=null) msg.setSender(sender);
-					if(fileText!=null) msg.setFileId(fileText);
+					if(fileId!=null) msg.setFileId(fileId);
 					if(messageText!=null) msg.setMessageText(messageText);
-					if(audioText!=null) msg.setAudioId(audioText);
-					if(videoText!=null) msg.setVideoId(videoText);
-					if(imageText!=null) msg.setImageId(imageText);
+					if(audioId!=null) msg.setAudioId(audioId);
+					if(videoId!=null) msg.setVideoId(videoId);
+					if(imageId!=null) msg.setImageId(imageId);
 					String aux = jedis.hget(msgKey, ChatMessage.DATE);
 					msg.setDate(new Date());
+					msg.setRoomId(roomId);
 					try {
 						long l = Long.valueOf(aux).longValue();
 						msg.setDate(new Date(l));
-					} catch (Exception e) {
-					}
+					} catch (Exception e) { }
 					msg.set_id(msgId);
 					res.add(msg);
 				}

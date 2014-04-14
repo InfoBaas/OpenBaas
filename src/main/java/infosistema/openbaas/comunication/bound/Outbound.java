@@ -177,13 +177,13 @@ public class Outbound {
 
 	private JSONObject processMsgSentChatMsg(JSONObject data, String messageId, String appId, String sessionToken) {
 		String message = null;  
-		String chatRoomId = null;
+		String roomId = null;
 
 		try {
 			message = data.getString(Message.TEXT);
 		} catch (JSONException e) { }
 		try {
-			chatRoomId = data.getString(Message.CHAT_ROOM_ID);
+			roomId = data.getString(Message.CHAT_ROOM_ID);
 		} catch (JSONException e) {
 			Log.error("", this, "processMsgRecvChatMsg", "Error getting data",e);
 		}
@@ -207,7 +207,7 @@ public class Outbound {
 				return getErrorJSONObject(appId, messageId, "Error in decoding message.");
 			}
 		}
-		if (chatMid.existsChatRoom(appId, chatRoomId)) {
+		if (chatMid.existsChatRoom(appId, roomId)) {
 			try {
 				InputStream imageInputStream = null; 
 				InputStream videoInputStream = null; 
@@ -272,9 +272,9 @@ public class Outbound {
 						hasVideo = "true";
 					}
 				}
-				ChatMessage msg = chatMid.sendMessage(appId, userId, chatRoomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
+				ChatMessage msg = chatMid.sendMessage(appId, userId, roomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
 				if (msg != null) {
-					noteMid.setPushNotificationsTODO(appId, userId, chatRoomId, fileId, videoId, imageId, audioId, messageText);
+					noteMid.setPushNotificationsTODO(appId, userId, roomId, fileId, videoId, imageId, audioId, messageText);
 					return msg.serialize();
 				}else{
 					return getErrorJSONObject(appId, messageId, "Error sendMessage");
