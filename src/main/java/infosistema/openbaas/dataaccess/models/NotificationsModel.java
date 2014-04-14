@@ -21,8 +21,22 @@ import redis.clients.jedis.JedisPoolConfig;
 public class NotificationsModel {
 
 	// *** CONTRUCTORS *** //
+
+	public NotificationsModel() {
+		pool = new JedisPool(new JedisPoolConfig(), Const.getRedisChatServer(),Const.getRedisChatPort());
+	}
+
+
 	// *** PRIVATE *** //
+
+	private JedisPool pool;
+	
+
 	// *** CONSTANTS *** //
+
+	private static final int MAXELEMS = 9999999;
+
+	
 	// *** KEYS *** //
 
 	private static final String SEPARATOR1 = ":";
@@ -32,7 +46,6 @@ public class NotificationsModel {
 	private static final String PUSHLIST = "PushList";
 	private static final String CERT = "Cert";
 	private static final String DEVICE = "Device";
-	private static final int MAXELEMS = 9999999;
 	private static final String DEVICEID = "deviceId";
 	public static final String DEVICETOKEN = "deviceToken";
 	public static final String CLIENTID = "clientId";
@@ -40,12 +53,6 @@ public class NotificationsModel {
 	private static final String USERID= "userId";
 	private static final String PUSH_BADGES_LIST = "PushBadgesList";
 	
-	private JedisPool pool;
-	
-	public NotificationsModel() {
-		pool = new JedisPool(new JedisPoolConfig(), Const.getRedisChatServer(),Const.getRedisChatPort());
-	}
-
 	public Boolean createUpdateCertificate(String appId, Certificate cert) {
 		Boolean res = false;
 		Jedis jedis = pool.getResource();

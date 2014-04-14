@@ -120,6 +120,7 @@ public class AppModel {
 		return null;
 	}
 
+	
 	// *** UPDATE *** //
 	
 	public Application updateAppFields(String appId, String alive, String newAppName, Boolean confirmUsersEmail,

@@ -32,10 +32,11 @@ public class ChatModel {
 
 	private JedisPool pool;
 
-	private static final int MAXELEMS = 9999999;
-
 
 	// *** CONSTANTS *** //
+
+	private static final int MAXELEMS = 9999999;
+
 
 	// *** KEYS *** //
 	
@@ -48,8 +49,8 @@ public class ChatModel {
 	private static final String USER_IN_PARTICIPANTS_LIST_2 = "%s:*;%s;*";
 	private static final String USER_IN_PARTICIPANTS_LIST_3 = "%s:*;%s";
 	
-	private String getMessageKey(String appId, String msgId) {
-		return String.format(MESSAGE_KEY_FORMAT, appId, msgId);
+	private String getMessageKey(String appId, String messageId) {
+		return String.format(MESSAGE_KEY_FORMAT, appId, messageId);
 	}
 	
 	private String getChatRoomKey(String appId, String roomId) {
@@ -76,61 +77,10 @@ public class ChatModel {
 		return retObj;
 	}
 
-	public Boolean createMsg(String appId, ChatMessage msg) {
-		Boolean res = false;
-		Jedis jedis = pool.getResource();
-		long milliseconds = msg.getDate().getTime();
-		try {
-			String msgKey = getMessageKey(appId, msg.get_id()); 
-			jedis.hset(msgKey, ChatMessage._ID, msg.get_id());
-			jedis.hset(msgKey, ChatMessage.SENDER, msg.getSender());
-			jedis.hset(msgKey, ChatMessage.DATE, String.valueOf(milliseconds));
-			try{jedis.hset(msgKey, ChatMessage.MESSAGE_TEXT, msg.getMessageText());}catch(Exception e){}
-			try{jedis.hset(msgKey, ChatMessage.FILE_ID, msg.getFileId());}catch(Exception e){}
-			try{jedis.hset(msgKey, ChatMessage.AUDIO_ID, msg.getAudioId());}catch(Exception e){}
-			try{jedis.hset(msgKey, ChatMessage.VIDEO_ID, msg.getVideoId());}catch(Exception e){}
-			try{jedis.hset(msgKey, ChatMessage.IMAGE_ID, msg.getImageId());}catch(Exception e){}
-			try{jedis.hset(msgKey, ChatMessage.ROOM_ID, msg.getRoomId());}catch(Exception e){}
-			res = true;
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
-
-	public ChatMessage getMsg(String appId, String msgId) {
-		ChatMessage res = new ChatMessage();
-		Jedis jedis = pool.getResource();
-		try {
-			String msgKey = getMessageKey(appId, msgId);
-			String sender = jedis.hget(msgKey, ChatMessage.SENDER);
-			String messageText = jedis.hget(msgKey, ChatMessage.MESSAGE_TEXT);
-			String fileId = jedis.hget(msgKey, ChatMessage.FILE_ID);
-			String audioId = jedis.hget(msgKey, ChatMessage.AUDIO_ID);
-			String videoId = jedis.hget(msgKey, ChatMessage.VIDEO_ID);
-			String imageId = jedis.hget(msgKey, ChatMessage.IMAGE_ID);
-			String roomId = jedis.hget(msgKey, ChatMessage.ROOM_ID);
-
-			if(sender!=null) res.setSender(sender);
-			if(fileId!=null) res.setFileId(fileId);
-			if(messageText!=null) res.setMessageText(messageText);
-			if(audioId!=null) res.setAudioId(audioId);
-			if(videoId!=null) res.setVideoId(videoId);
-			if(imageId!=null) res.setImageId(imageId);
-			if(roomId!=null) res.setRoomId(roomId);
-			res.setDate(new Date());
-			try {
-				long l = Long.valueOf(jedis.hget(msgKey, ChatMessage.DATE)).longValue();
-				res.setDate(new Date(l));
-			} catch (Exception e) {}
-			res.set_id(msgId);
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
-
-	public Boolean createChatRoom(String appId, String msgId,String roomId, String roomName, String roomCreator, Boolean flagNotification, String totalParticipants) {
+	
+	// *** CREATE *** //
+	
+	public Boolean createChatRoom(String appId, String messageId,String roomId, String roomName, String roomCreator, Boolean flagNotification, String totalParticipants) {
 		Boolean res = false;
 		Jedis jedis = pool.getResource();
 		if(flagNotification==null) flagNotification = false;
@@ -144,7 +94,7 @@ public class ChatModel {
 			jedis.hset(roomKey, ChatRoom.FLAG_NOTIFICATION, flagNotification.toString());
 			jedis.hset(roomKey, ChatRoom.PARTICIPANTS, totalParticipants);
 			jedis.hset(roomKey, ChatRoom.CREATEDDATE, milliseconds.toString());
-			jedis.rpush(getChatRoomKey_2(appId, roomId), msgId);
+			jedis.rpush(getChatRoomKey_2(appId, roomId), messageId);
 			if(participants.length==2)
 				jedis.set(getParticipantsKey(appId, totalParticipants), roomId);
 			res = true;
@@ -154,36 +104,43 @@ public class ChatModel {
 		return res;
 	}
 
-	public ChatRoom getChatRoom(String appId, String roomId) {
-		ChatRoom res = new ChatRoom();
+	public Boolean createMessage(String appId, ChatMessage msg) {
+		Boolean res = false;
 		Jedis jedis = pool.getResource();
+		long milliseconds = msg.getDate().getTime();
 		try {
-			String roomKey = getChatRoomKey(appId, roomId);
-			res.set_id(roomId);
-			res.setRoomName(jedis.hget(roomKey, ChatRoom.ROOM_NAME));
-			res.setRoomCreator(jedis.hget(roomKey, ChatRoom.ROOM_CREATOR));
-			res.setFlagNotification(Boolean.parseBoolean(jedis.hget(roomKey, ChatRoom.FLAG_NOTIFICATION)));
-			res.setParticipants(jedis.hget(roomKey, ChatRoom.PARTICIPANTS).split(Const.SEMICOLON));
-			res.setCreatedDate(new Date());
-			try {
-				long l = Long.valueOf(jedis.hget(roomKey, ChatRoom.CREATEDDATE)).longValue();
-				res.setCreatedDate(new Date(l));
-			} catch (Exception e) {}
-
+			String msgKey = getMessageKey(appId, msg.get_id()); 
+			jedis.hset(msgKey, ChatMessage._ID, msg.get_id());
+			jedis.hset(msgKey, ChatMessage.SENDER, msg.getSender());
+			jedis.hset(msgKey, ChatMessage.DATE, String.valueOf(milliseconds));
+			try{jedis.hset(msgKey, ChatMessage.MESSAGE_TEXT, msg.getMessageText());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.FILE_ID, msg.getFileId());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.AUDIO_ID, msg.getAudioId());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.VIDEO_ID, msg.getVideoId());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.IMAGE_ID, msg.getImageId());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.HAS_FILE, msg.getHasFile());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.HAS_AUDIO, msg.getHasAudio());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.HAS_VIDEO, msg.getHasVideo());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.HAS_IMAGE, msg.getHasImage());}catch(Exception e){}
+			try{jedis.hset(msgKey, ChatMessage.ROOM_ID, msg.getRoomId());}catch(Exception e){}
+			res = true;
 		} finally {
 			pool.returnResource(jedis);
 		}
 		return res;
 	}
 
-	public Boolean addMsg2Room(String appId, String msgId,String roomId, List<String> unReadUsers) {
+	
+	// *** UPDATE *** //
+
+	public Boolean addMessage2Room(String appId, String messageId, String roomId, List<String> unReadUsers) {
 		Boolean res = false;
 		Jedis jedis = pool.getResource();
 		Iterator<String> it = unReadUsers.iterator();
 		try {
-			jedis.rpush(getChatRoomKey_2(appId, roomId), msgId);
+			jedis.rpush(getChatRoomKey_2(appId, roomId), messageId);
 			while(it.hasNext()){
-				jedis.rpush(getUnreadMsgKey(appId, it.next()), msgId);
+				jedis.rpush(getUnreadMsgKey(appId, it.next()), messageId);
 			}
 			res = true;
 		} finally {
@@ -191,6 +148,34 @@ public class ChatModel {
 		}
 		return res;
 	}
+
+	public void updateMessageWithMedia(String appId, String messageId, ModelEnum type, String mediaId) { 
+		Jedis jedis = pool.getResource();
+		long milliseconds = new Date().getTime();
+		try {
+			String msgKey = getMessageKey(appId, messageId); 
+			jedis.hset(msgKey, ChatMessage.DATE, String.valueOf(milliseconds));
+			if(type.equals(ModelEnum.image)){
+				jedis.hset(msgKey, ChatMessage.IMAGE_ID, mediaId);
+			}
+			if(type.equals(ModelEnum.audio)){
+				jedis.hset(msgKey, ChatMessage.AUDIO_ID, mediaId);
+			}
+			if(type.equals(ModelEnum.video)){
+				jedis.hset(msgKey, ChatMessage.VIDEO_ID, mediaId);
+			}
+			if(type.equals(ModelEnum.storage)){
+				jedis.hset(msgKey, ChatMessage.FILE_ID, mediaId);
+			}			
+		}catch(Exception e){
+			Log.error("", this, "updateMessageWithMedia", "Error updateMessageWithMedia redis.", e); 
+		}finally {
+			pool.returnResource(jedis);
+		}		
+	}
+
+	
+	// *** GET LIST *** //
 
 	public List<String> getListParticipants(String appId, String roomId) {
 		List<String> res = null;
@@ -221,8 +206,8 @@ public class ChatModel {
 				i++;
 				Date dateCurr = new Date();
 				try {
-					String msgIdCurr = jedis.lindex(roomKey2, index);
-					long l = Long.valueOf(jedis.hget(getMessageKey(appId, msgIdCurr), ChatMessage.DATE)).longValue();
+					String messageIdCurr = jedis.lindex(roomKey2, index);
+					long l = Long.valueOf(jedis.hget(getMessageKey(appId, messageIdCurr), ChatMessage.DATE)).longValue();
 					dateCurr = new Date(l);
 				} catch (Exception e) {}
 				if(dateCurr.compareTo(date)==0 && orientation.equals("front")){
@@ -250,10 +235,10 @@ public class ChatModel {
 				return new ArrayList<ChatMessage>();
 			}
 			for(int o=startIndex;o<=endIndex;o++){
-				String msgId = jedis.lindex(roomKey2, o);
-				if(msgId!=null){
+				String messageId = jedis.lindex(roomKey2, o);
+				if(messageId!=null){
 					ChatMessage msg = new ChatMessage();
-					String msgKey = getMessageKey(appId, msgId); 
+					String msgKey = getMessageKey(appId, messageId); 
 					String sender = jedis.hget(msgKey, ChatMessage.SENDER);
 					String messageText = jedis.hget(msgKey, ChatMessage.MESSAGE_TEXT);
 					String fileId = jedis.hget(msgKey, ChatMessage.FILE_ID);
@@ -274,7 +259,7 @@ public class ChatModel {
 						long l = Long.valueOf(aux).longValue();
 						msg.setDate(new Date(l));
 					} catch (Exception e) { }
-					msg.set_id(msgId);
+					msg.set_id(messageId);
 					res.add(msg);
 				}
 			}
@@ -286,13 +271,70 @@ public class ChatModel {
 		return res;
 	}
 
-	public String existsChat(String participants, String appId) {
+	public List<String> getMessageChatroom(String appId, String roomId) {
 		Jedis jedis = pool.getResource();
-		String res=null;
+		List<String> res = new ArrayList<String>();
 		try {
-			res = jedis.get(getParticipantsKey(appId, participants));
-		}catch(Exception e){
-			Log.error("", this, "getMessageList", "Error getMessageList redis.", e); 
+			res = jedis.lrange(getChatRoomKey_2(appId, roomId), 0, MAXELEMS);		
+		} catch (Exception e) {
+			Log.error("", this, "getMessageChatroom", "Error getMessageChatroom redis."+ res.size(), e); 
+		}finally {
+			pool.returnResource(jedis);
+		}
+		return res;
+	}
+
+
+	// *** GET *** //
+
+	public ChatRoom getChatRoom(String appId, String roomId) {
+		ChatRoom res = new ChatRoom();
+		Jedis jedis = pool.getResource();
+		try {
+			String roomKey = getChatRoomKey(appId, roomId);
+			res.set_id(roomId);
+			res.setRoomName(jedis.hget(roomKey, ChatRoom.ROOM_NAME));
+			res.setRoomCreator(jedis.hget(roomKey, ChatRoom.ROOM_CREATOR));
+			res.setFlagNotification(Boolean.parseBoolean(jedis.hget(roomKey, ChatRoom.FLAG_NOTIFICATION)));
+			res.setParticipants(jedis.hget(roomKey, ChatRoom.PARTICIPANTS).split(Const.SEMICOLON));
+			res.setCreatedDate(new Date());
+			try {
+				long l = Long.valueOf(jedis.hget(roomKey, ChatRoom.CREATEDDATE)).longValue();
+				res.setCreatedDate(new Date(l));
+			} catch (Exception e) {}
+
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
+	}
+
+	public ChatMessage getMessage(String appId, String messageId) {
+		ChatMessage res = new ChatMessage();
+		Jedis jedis = pool.getResource();
+		try {
+			String msgKey = getMessageKey(appId, messageId);
+			String sender = jedis.hget(msgKey, ChatMessage.SENDER);
+			String messageText = jedis.hget(msgKey, ChatMessage.MESSAGE_TEXT);
+			String fileId = jedis.hget(msgKey, ChatMessage.FILE_ID);
+			String audioId = jedis.hget(msgKey, ChatMessage.AUDIO_ID);
+			String videoId = jedis.hget(msgKey, ChatMessage.VIDEO_ID);
+			String imageId = jedis.hget(msgKey, ChatMessage.IMAGE_ID);
+			String roomId = jedis.hget(msgKey, ChatMessage.ROOM_ID);
+
+			if(sender!=null) res.setSender(sender);
+			if(fileId!=null) res.setFileId(fileId);
+			if(messageText!=null) res.setMessageText(messageText);
+			if(audioId!=null) res.setAudioId(audioId);
+			if(videoId!=null) res.setVideoId(videoId);
+			if(imageId!=null) res.setImageId(imageId);
+			if(roomId!=null) res.setRoomId(roomId);
+			res.setDate(new Date());
+			try {
+				long l = Long.valueOf(jedis.hget(msgKey, ChatMessage.DATE)).longValue();
+				res.setDate(new Date(l));
+			} catch (Exception e) {}
+			res.set_id(messageId);
 		} finally {
 			pool.returnResource(jedis);
 		}
@@ -319,19 +361,6 @@ public class ChatModel {
 		return res;
 	}
 
-	public Boolean existsKey(String appId, String key) {
-		Jedis jedis = pool.getResource();
-		Boolean res = false;
-		try {
-			res = jedis.exists(getMessageKey(appId, key));		
-		} catch (Exception e) {
-			Log.error("", this, "existsKey", "Error existsKey redis: "+ getMessageKey(appId, key), e); 
-		}finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
-
 	public List<String> getTotalUnreadMsg(String appId, String userId) {
 		Jedis jedis = pool.getResource();
 		List<String> res = new ArrayList<String>();
@@ -339,30 +368,6 @@ public class ChatModel {
 			res = jedis.lrange(getUnreadMsgKey(appId, userId), 0, MAXELEMS);		
 		} catch (Exception e) {
 			Log.error("", this, "getTotalListElements", "Error getTotalListElements redis."+ res.size(), e); 
-		}finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
-
-	public Boolean hasNotification(String appId, String roomId) {
-		Boolean res = false;
-		Jedis jedis = pool.getResource();
-		try {
-			res = (Boolean.parseBoolean(jedis.hget(getChatRoomKey(appId, roomId), ChatRoom.FLAG_NOTIFICATION)));
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
-
-	public List<String> getMessageChatroom(String appId, String roomId) {
-		Jedis jedis = pool.getResource();
-		List<String> res = new ArrayList<String>();
-		try {
-			res = jedis.lrange(getChatRoomKey_2(appId, roomId), 0, MAXELEMS);		
-		} catch (Exception e) {
-			Log.error("", this, "getMessageChatroom", "Error getMessageChatroom redis."+ res.size(), e); 
 		}finally {
 			pool.returnResource(jedis);
 		}
@@ -391,29 +396,44 @@ public class ChatModel {
 		return res;
 	}
 
-	public void updateMessageWithMedia(String appId, String messageId, ModelEnum type, String mediaId) { 
+	
+	// *** EXISTS *** //
+	
+	public String existsChat(String participants, String appId) {
 		Jedis jedis = pool.getResource();
-		long milliseconds = new Date().getTime();
+		String res=null;
 		try {
-			String msgKey = getMessageKey(appId, messageId); 
-			jedis.hset(msgKey, ChatMessage.DATE, String.valueOf(milliseconds));
-			if(type.equals(ModelEnum.image)){
-				jedis.hset(msgKey, ChatMessage.IMAGE_ID, mediaId);
-			}
-			if(type.equals(ModelEnum.audio)){
-				jedis.hset(msgKey, ChatMessage.AUDIO_ID, mediaId);
-			}
-			if(type.equals(ModelEnum.video)){
-				jedis.hset(msgKey, ChatMessage.VIDEO_ID, mediaId);
-			}
-			if(type.equals(ModelEnum.storage)){
-				jedis.hset(msgKey, ChatMessage.FILE_ID, mediaId);
-			}			
+			res = jedis.get(getParticipantsKey(appId, participants));
 		}catch(Exception e){
-			Log.error("", this, "updateMessageWithMedia", "Error updateMessageWithMedia redis.", e); 
+			Log.error("", this, "getMessageList", "Error getMessageList redis.", e); 
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
+	}
+
+	public Boolean existsKey(String appId, String key) {
+		Jedis jedis = pool.getResource();
+		Boolean res = false;
+		try {
+			res = jedis.exists(getMessageKey(appId, key));		
+		} catch (Exception e) {
+			Log.error("", this, "existsKey", "Error existsKey redis: "+ getMessageKey(appId, key), e); 
 		}finally {
 			pool.returnResource(jedis);
-		}		
+		}
+		return res;
+	}
+
+	public Boolean hasNotification(String appId, String roomId) {
+		Boolean res = false;
+		Jedis jedis = pool.getResource();
+		try {
+			res = (Boolean.parseBoolean(jedis.hget(getChatRoomKey(appId, roomId), ChatRoom.FLAG_NOTIFICATION)));
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
 	}
 
 }

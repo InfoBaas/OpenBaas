@@ -153,7 +153,7 @@ public class ChatMessage {
 		this.hasAudio = hasAudio;
 	}
 
-	public String getHasVideoId() {
+	public String getHasVideo() {
 		return hasVideo;
 	}
 

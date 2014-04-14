@@ -63,12 +63,12 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 			}else{
 				try {
 					String strParticipants = Utils.getStringByJSONArray(participants,";");
-					String msgId = "Msg_EMPTY";
+					String messageId = "Msg_EMPTY";
 					String roomId = "Chat_"+Utils.getRandomString(Const.getIdLength());
 					
-					ChatMessage msg = new ChatMessage(msgId, new Date(), userIdCriador, roomId, "", "", "", "", "", "", "", "", "");
-					Boolean msgStorage = chatModel.createMsg(appId, msg);
-					Boolean msgRoomStorage = chatModel.createChatRoom(appId, msgId, roomId, roomName, userIdCriador, flagNotification,strParticipants);
+					ChatMessage msg = new ChatMessage(messageId, new Date(), userIdCriador, roomId, "", "", "", "", "", "", "", "", "");
+					Boolean msgStorage = chatModel.createMessage(appId, msg);
+					Boolean msgRoomStorage = chatModel.createChatRoom(appId, messageId, roomId, roomName, userIdCriador, flagNotification,strParticipants);
 					
 					if(msgRoomStorage && msgStorage)
 						res = chatModel.getChatRoom(appId, roomId);;
@@ -105,7 +105,7 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 	}
 	
 	public ChatMessage sendMessage(String appId, String messageId) {
-		ChatMessage message = chatModel.getMsg(appId, messageId);
+		ChatMessage message = chatModel.getMessage(appId, messageId);
 		String roomId = message.getRoomId(); 
 		String sender = message.getSender();
 		Log.error("", this, "sendMessage", "####sendMessage messageId:"+messageId+" - appId:"+appId +" roomId"+roomId+" sender:"+sender);
@@ -125,7 +125,7 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 				if (outbound == null || !outbound.sendRecvMessage(appId, roomId, message))
 					unReadUsers.add(userId);
 			}
-			Boolean addMsgRoom = chatModel.addMsg2Room(appId, message.get_id(), roomId, unReadUsers);
+			Boolean addMsgRoom = chatModel.addMessage2Room(appId, message.get_id(), roomId, unReadUsers);
 		} catch (Exception e) {
 			Log.error("", this, "createChatRoom", "Error parsing the JSON.", e); 
 		}
@@ -148,9 +148,9 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 						listUsers.add(curr);
 					}
 				}
-				String msgId = "Msg_"+Utils.getRandomString(Const.getIdLength());
-				ChatMessage msg = new ChatMessage(msgId, new Date(), sender, roomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
-				Boolean msgStorage = chatModel.createMsg(appId, msg);
+				String messageId = "Msg_"+Utils.getRandomString(Const.getIdLength());
+				ChatMessage msg = new ChatMessage(messageId, new Date(), sender, roomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
+				Boolean msgStorage = chatModel.createMessage(appId, msg);
 				List<String> unReadUsers = new ArrayList<String>();
 				for (String userId: listUsers) {
 					//TODO mudar por causa dos unreadusers
@@ -158,7 +158,7 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 					if (outbound == null || !outbound.sendRecvMessage(appId, roomId, msg))
 						unReadUsers.add(userId);
 				}
-				Boolean addMsgRoom = chatModel.addMsg2Room(appId, msgId, roomId, unReadUsers);
+				Boolean addMsgRoom = chatModel.addMessage2Room(appId, messageId, roomId, unReadUsers);
 				if (addMsgRoom && msgStorage)
 					res = msg;
 			} catch (Exception e) {
@@ -221,9 +221,9 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 			List<String> list = chatModel.getMessageChatroom(appId, roomId);
 			Iterator<String> it = msgList.iterator();
 			while(it.hasNext()){
-				String msgId = it.next();
-				if(list.contains(msgId)) {
-					ChatMessage msg = chatModel.getMsg(appId, msgId);
+				String messageId = it.next();
+				if(list.contains(messageId)) {
+					ChatMessage msg = chatModel.getMessage(appId, messageId);
 					res.add(msg);
 				}
 			}

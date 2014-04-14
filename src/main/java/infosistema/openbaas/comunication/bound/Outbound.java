@@ -197,16 +197,29 @@ public class Outbound {
 		String hasImage = null;
 		String hasAudio = null;
 		String hasVideo = null;
+		try {
+			hasFile = data.getString(Message.HAS_FILE);
+		} catch (JSONException e1) { }
+		try {
+			hasImage = data.getString(Message.HAS_IMAGE);
+		} catch (JSONException e1) { }
+		try {
+			hasAudio = data.getString(Message.HAS_AUDIO);
+		} catch (JSONException e1) { }
+		try {
+			hasVideo = data.getString(Message.HAS_VIDEO);
+		} catch (JSONException e1) { }
 		ModelEnum flag = null;
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 		if (message != null){
 			try {
-				messageText = URLDecoder.decode(message,"UTF-8");
+				messageText = URLDecoder.decode(message, "UTF-8");
 			} catch (UnsupportedEncodingException e) {
 				Log.error("", this, "processMsgRecvChatMsg", "Error in decoding message.", e);
 				return getErrorJSONObject(appId, messageId, "Error in decoding message.");
 			}
 		}
+		
 		if (chatMid.existsChatRoom(appId, roomId)) {
 			try {
 				InputStream imageInputStream = null; 
