@@ -36,150 +36,60 @@ public class NotificationsModel {
 
 	private static final int MAXELEMS = 9999999;
 
-	
-	// *** KEYS *** //
-
-	private static final String SEPARATOR1 = ":";
-	private static final String SEPARATOR2 = "_";
-	private static final String SEPARATOR3 = ":_:";
-	private static final String DTLIST = "DTList";
 	private static final String PUSHLIST = "PushList";
-	private static final String CERT = "Cert";
-	private static final String DEVICE = "Device";
+	private static final String CERT = "";
 	private static final String DEVICEID = "deviceId";
 	public static final String DEVICETOKEN = "deviceToken";
 	public static final String CLIENTID = "clientId";
 	private static final String LASTREGISTER= "lastRegister";
 	private static final String USERID= "userId";
 	private static final String PUSH_BADGES_LIST = "PushBadgesList";
+
 	
-	public Boolean createUpdateCertificate(String appId, Certificate cert) {
-		Boolean res = false;
-		Jedis jedis = pool.getResource();
-		try {
-			long milliseconds = cert.getCreatedDate().getTime();
-			jedis.hset(appId+SEPARATOR1+CERT+SEPARATOR1+cert.getClientId(), Application.APNS_CLIENT_ID, cert.getClientId());
-			jedis.hset(appId+SEPARATOR1+CERT+SEPARATOR1+cert.getClientId(), Application.APNS_CERTIFICATION_PATH, cert.getCertificatePath());
-			jedis.hset(appId+SEPARATOR1+CERT+SEPARATOR1+cert.getClientId(), Application.APNS_PASSWORD, cert.getAPNSPassword());
-			jedis.hset(appId+SEPARATOR1+CERT+SEPARATOR1+cert.getClientId(), Application.CREATION_DATE, String.valueOf(milliseconds));
-			res = true;
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
+	// *** KEYS *** //
+
+	private static final String CLIENT_KEY_FORMAT = "%s:"+CERT+":%s";
+	private static final String DEVICE_KEY_FORMAT = "%s:Device:%s:%s";
+	private static final String DEVICE_LIST_KEY_FORMAT = "%s_DTList_%s_%s";
+	private static final String BADGE_VALUE_FORMAT = "%s:_:%s";
+	private static final String NOTIFICATION_VALUE_FORMAT = "%s:_:%s:_:%s:_:%s:_:%s:_:%s:_:%s:_:%s:_:";
+	
+	private String getClientKey(String appId, String clientId) {
+		return String.format(CLIENT_KEY_FORMAT, appId, clientId);
+	}
+	
+	private String getDeviceKey(String appId, String clientId, String deviceToken) {
+		return String.format(DEVICE_KEY_FORMAT, appId, clientId, deviceToken);
+	}
+	
+	private String getDeviceListKey(String appId, String userId, String clientId) {
+		return String.format(DEVICE_LIST_KEY_FORMAT, appId, userId, clientId);
 	}
 
-	public Certificate getCertificate(String appId, String clientId) {
-		Certificate res = null;
-		Jedis jedis = pool.getResource();
-		try {
-			String path = jedis.hget(appId+SEPARATOR1+CERT+SEPARATOR1+clientId, Application.APNS_CERTIFICATION_PATH);
-			String pass = jedis.hget(appId+SEPARATOR1+CERT+SEPARATOR1+clientId, Application.APNS_PASSWORD);
-			long l = Long.valueOf(jedis.hget(appId+SEPARATOR1+CERT+SEPARATOR1+clientId, Application.CREATION_DATE));
-			res = new Certificate();
-			res.setClientId(clientId);
-			res.setCertificatePath(path);
-			res.setAPNSPassword(pass);
-			res.setCreatedDate(new Timestamp(l));
-			res.setAppId(appId);
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
+	private String getBadgeValue(String appId, String userId) {
+		return String.format(BADGE_VALUE_FORMAT, appId, userId);
+	}
+
+	private String getNotificationValue(String appId, String userId, String roomId, String fileId, String videoId, String imageId, String audioId, String messageText) {
+		return String.format(NOTIFICATION_VALUE_FORMAT, appId, userId, roomId, fileId, videoId, imageId, audioId, messageText);
 	}
 	
-	public List<Certificate> getAllCertificateList() {
-		List<Certificate> res = new ArrayList<Certificate>();
-		Jedis jedis = pool.getResource();
-		try {
-			Set<String> setCert = jedis.keys("*"+CERT+"*");
-			Iterator<String> it = setCert.iterator();
-			while(it.hasNext()){
-				String str = it.next();
-				String[] aux = str.split(SEPARATOR1);
-				if(aux.length==3)
-					res.add(getCertificate(aux[0], aux[2]));				
-			}
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
-		
-	public Boolean createUpdateDevice(String appId, String userId, String clientId, Device device) {
-		Boolean res = false;
-		Jedis jedis = pool.getResource();
-		try {
-			Long milliseconds = device.getLastRegister().getTime();
-			jedis.hset(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+device.getToken(), DEVICEID, device.getDeviceId());
-			jedis.hset(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+device.getToken(), DEVICETOKEN, device.getToken());
-			jedis.hset(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+device.getToken(), LASTREGISTER, milliseconds.toString());
-			jedis.hset(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+device.getToken(),USERID, userId);
-			res = true;
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
-	
-	public Device getDevice(String appId,String clientId, String deviceToken) {
-		Device res = new BasicDevice();
-		Jedis jedis = pool.getResource();
-		try {
-			Log.info("", "", "hget", "hget->" +"key:" +appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+deviceToken);
-			String deviceId = jedis.hget(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+deviceToken, DEVICEID);
-			long l = Long.valueOf(jedis.hget(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+deviceToken, LASTREGISTER));
-			res.setLastRegister(new Timestamp(l));
-			res.setToken(deviceToken);
-			res.setDeviceId(deviceId);
-			//res.setUserId(userId);
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
-	
-	public String getDeviceUser(String appId,String clientId, String deviceToken) {
-		String res = null;
-		Jedis jedis = pool.getResource();
-		try {
-			String userId = jedis.hget(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+deviceToken, USERID);
-			res=userId;
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
-	
-	public String removeDevice(String appId,String clientId, String deviceToken) {
-		String res = null;
-		Jedis jedis = pool.getResource();
-		try {
-			if(jedis.exists(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+deviceToken)){
-				res = jedis.hget(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+deviceToken, USERID);
-				jedis.del(appId+SEPARATOR1+DEVICE+SEPARATOR1+clientId+SEPARATOR1+deviceToken);
-			}
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
+	// *** CREATE *** //
+
+	//device
 	
 	public Boolean addDeviceId(String appId,String userId, String clientId, String deviceToken) {
 		Boolean res = false;
 		Jedis jedis = pool.getResource();
 		try {
 			String user = getDeviceUser(appId, clientId, deviceToken);
-			Long a= (long) -1;
-			Long b= (long) -1;
+			String deviceListKey = getDeviceListKey(appId, userId, clientId);
 			if(user!=userId){
-				a = jedis.lrem(appId+SEPARATOR2+DTLIST+SEPARATOR2+user+SEPARATOR2+clientId, 0, deviceToken);
+				jedis.lrem(getDeviceListKey(appId, user, clientId), 0, deviceToken);
+			} else{
+				jedis.lrem(deviceListKey, 0, deviceToken);
 			}
-			else{
-				b = jedis.lrem(appId+SEPARATOR2+DTLIST+SEPARATOR2+userId+SEPARATOR2+clientId, 0, deviceToken);
-			}
-			Log.info("", this, "addDeviceId","a:"+a + " - b:"+b);
-			jedis.rpush(appId+SEPARATOR2+DTLIST+SEPARATOR2+userId+SEPARATOR2+clientId, deviceToken);
+			jedis.rpush(deviceListKey, deviceToken);
 			res = true;
 		} catch(Exception e){
 			res = false;
@@ -190,27 +100,86 @@ public class NotificationsModel {
 		return res;
 	}
 	
-	public Boolean removeDeviceId(String appId,String userId, String clientId, String deviceToken) {
+	public Boolean createUpdateDevice(String appId, String userId, String clientId, Device device) {
 		Boolean res = false;
 		Jedis jedis = pool.getResource();
 		try {
-			Long a=(long) -1;
-			a = jedis.lrem(appId+SEPARATOR2+DTLIST+SEPARATOR2+userId+SEPARATOR2+clientId, 0, deviceToken);
-			if(a>0)				
-				res = true;
+			Long milliseconds = device.getLastRegister().getTime();
+			String deviceKey = getDeviceKey(appId, clientId, device.getToken());
+			jedis.hset(deviceKey, DEVICEID, device.getDeviceId());
+			jedis.hset(deviceKey, DEVICETOKEN, device.getToken());
+			jedis.hset(deviceKey, LASTREGISTER, milliseconds.toString());
+			jedis.hset(deviceKey, USERID, userId);
+			res = true;
 		} finally {
 			pool.returnResource(jedis);
 		}
 		return res;
 	}
 	
+	//certificate
+	
+	public Boolean createUpdateCertificate(String appId, Certificate cert) {
+		Boolean res = false;
+		Jedis jedis = pool.getResource();
+		try {
+			long milliseconds = cert.getCreatedDate().getTime();
+			String clientKey = getClientKey(appId, cert.getClientId());
+			jedis.hset(clientKey, Application.APNS_CLIENT_ID, cert.getClientId());
+			jedis.hset(clientKey, Application.APNS_CERTIFICATION_PATH, cert.getCertificatePath());
+			jedis.hset(clientKey, Application.APNS_PASSWORD, cert.getAPNSPassword());
+			jedis.hset(clientKey, Application.CREATION_DATE, String.valueOf(milliseconds));
+			res = true;
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
+	}
+
+	//badges
+	
+	public Boolean setNewBadgesTODO(String appId, String userId) {
+		Jedis jedis = pool.getResource();
+		Boolean res = false;
+		try {
+			String value = getBadgeValue(appId, userId);
+			jedis.lrem(PUSH_BADGES_LIST, 0, value);
+			jedis.rpush(PUSH_BADGES_LIST, value);
+			res = true;
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
+	}
+
+	//notifications
+
+	public Boolean setNewNotifications(String appId, String userId, String roomId,String fileId,String videoId,
+			String imageId, String audioId, String messageText) {
+		Jedis jedis = pool.getResource();
+		Boolean res = false;
+		try {
+			String value = getNotificationValue(appId, userId, roomId, fileId, videoId, imageId, audioId, messageText);
+			jedis.lrem(PUSHLIST, 0, value);
+			jedis.rpush(PUSHLIST, value);
+			res = true;
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
+	}
+
+	
+	// *** GET LIST *** //
+
+	//device
+	
 	public List<Device> getDeviceIdList(String appId,String userId, String clientId) {
 		List<Device> res = new ArrayList<Device>();
 		List<String> aux = new ArrayList<String>();
 		Jedis jedis = pool.getResource();
 		try {
-			Log.info("", "", "push", "lrange ->" +"key:" +appId+SEPARATOR2+DTLIST+SEPARATOR2+userId+SEPARATOR2+clientId+" - min:"+"0"+" - max:"+MAXELEMS);
-			aux = jedis.lrange(appId+SEPARATOR2+DTLIST+SEPARATOR2+userId+SEPARATOR2+clientId, 0, MAXELEMS);
+			aux = jedis.lrange(getDeviceListKey(appId, userId, clientId), 0, MAXELEMS);
 			Iterator<String> it = aux.iterator();
 			while(it.hasNext()){
 				res.add(getDevice(appId, clientId, it.next()));
@@ -221,20 +190,27 @@ public class NotificationsModel {
 		return res;
 	}
 
-	public Boolean setNewBadgesTODO(String appId, String userId) {
+	//certificate
+	
+	public List<Certificate> getAllCertificateList() {
+		List<Certificate> res = new ArrayList<Certificate>();
 		Jedis jedis = pool.getResource();
-		Boolean res = false;
 		try {
-			StringBuffer value = new StringBuffer();
-			value.append(appId+SEPARATOR3+userId);
-			jedis.lrem(PUSH_BADGES_LIST, 0, value.toString() );
-			jedis.rpush(PUSH_BADGES_LIST, value.toString());
-			res = true;
+			Set<String> setCert = jedis.keys("*"+CERT+"*");
+			Iterator<String> it = setCert.iterator();
+			while(it.hasNext()){
+				String str = it.next();
+				String[] aux = str.split(Const.COLON);
+				if(aux.length==3)
+					res.add(getCertificate(aux[0], aux[2]));				
+			}
 		} finally {
 			pool.returnResource(jedis);
 		}
 		return res;
 	}
+
+	//badges
 
 	public List<String> getAllBadgesTODO() {
 		Jedis jedis = pool.getResource();
@@ -251,22 +227,7 @@ public class NotificationsModel {
 		return res;
 	}
 
-	public Boolean setNewNotifications(String appId, String userId, String roomId,String fileId,String videoId,
-			String imageId, String audioId, String messageText) {
-		Jedis jedis = pool.getResource();
-		Boolean res = false;
-		try {
-			StringBuffer value = new StringBuffer();
-			value.append(appId+SEPARATOR3+userId+SEPARATOR3+roomId+SEPARATOR3+fileId+SEPARATOR3);
-			value.append(videoId+SEPARATOR3+imageId+SEPARATOR3+audioId+SEPARATOR3+messageText+SEPARATOR3);
-			jedis.lrem(PUSHLIST, 0,value.toString() );
-			jedis.rpush(PUSHLIST, value.toString());
-			res = true;
-		} finally {
-			pool.returnResource(jedis);
-		}
-		return res;
-	}
+	//notifications
 
 	public List<String> getAllNotificationsTODO() {
 		Jedis jedis = pool.getResource();
@@ -284,4 +245,94 @@ public class NotificationsModel {
 		return res;
 	}
 
+
+	// *** GET *** //
+
+	//device
+	
+	public Device getDevice(String appId,String clientId, String deviceToken) {
+		Device res = new BasicDevice();
+		Jedis jedis = pool.getResource();
+		try {
+			String deviceKey = getDeviceKey(appId, clientId, deviceToken);
+			String deviceId = jedis.hget(deviceKey, DEVICEID);
+			long l = Long.valueOf(jedis.hget(deviceKey, LASTREGISTER));
+			res.setLastRegister(new Timestamp(l));
+			res.setToken(deviceToken);
+			res.setDeviceId(deviceId);
+			//res.setUserId(userId);
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
+	}
+	
+	public String getDeviceUser(String appId,String clientId, String deviceToken) {
+		String res = null;
+		Jedis jedis = pool.getResource();
+		try {
+			String userId = jedis.hget(getDeviceKey(appId, clientId, deviceToken), USERID);
+			res=userId;
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
+	}
+	
+	//certificate
+	
+	public Certificate getCertificate(String appId, String clientId) {
+		Certificate res = null;
+		Jedis jedis = pool.getResource();
+		try {
+			String clientKey = getClientKey(appId, clientId);
+			String path = jedis.hget(clientKey, Application.APNS_CERTIFICATION_PATH);
+			String pass = jedis.hget(clientKey, Application.APNS_PASSWORD);
+			long l = Long.valueOf(jedis.hget(clientKey, Application.CREATION_DATE));
+			res = new Certificate();
+			res.setClientId(clientId);
+			res.setCertificatePath(path);
+			res.setAPNSPassword(pass);
+			res.setCreatedDate(new Timestamp(l));
+			res.setAppId(appId);
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
+	}
+
+	
+	// *** DELETE *** //
+
+	//device
+	
+	public String removeDevice(String appId,String clientId, String deviceToken) {
+		String res = null;
+		Jedis jedis = pool.getResource();
+		try {
+			String deviceKey = getDeviceKey(appId, clientId, deviceToken);
+			if(jedis.exists(deviceKey)){
+				res = jedis.hget(deviceKey, USERID);
+				jedis.del(deviceKey);
+			}
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
+	}
+	
+	public Boolean removeDeviceId(String appId,String userId, String clientId, String deviceToken) {
+		Boolean res = false;
+		Jedis jedis = pool.getResource();
+		try {
+			Long a=(long) -1;
+			a = jedis.lrem(getDeviceListKey(appId, userId, clientId), 0, deviceToken);
+			if(a>0)				
+				res = true;
+		} finally {
+			pool.returnResource(jedis);
+		}
+		return res;
+	}
+	
 }
