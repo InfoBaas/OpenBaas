@@ -70,8 +70,8 @@ public class NotificationsModel {
 		return String.format(BADGE_VALUE_FORMAT, appId, userId);
 	}
 
-	private String getNotificationValue(String appId, String userId, String roomId, String fileId, String videoId, String imageId, String audioId, String messageText) {
-		return String.format(NOTIFICATION_VALUE_FORMAT, appId, userId, roomId, fileId, videoId, imageId, audioId, messageText);
+	private String getNotificationValue(String appId, String userId, String roomId) {
+		return String.format(NOTIFICATION_VALUE_FORMAT, appId, userId, roomId);
 	}
 	
 	// *** CREATE *** //
@@ -154,12 +154,11 @@ public class NotificationsModel {
 
 	//notifications
 
-	public Boolean setNewNotifications(String appId, String userId, String roomId,String fileId,String videoId,
-			String imageId, String audioId, String messageText) {
+	public Boolean setNewNotifications(String appId, String userId, String roomId) {
 		Jedis jedis = pool.getResource();
 		Boolean res = false;
 		try {
-			String value = getNotificationValue(appId, userId, roomId, fileId, videoId, imageId, audioId, messageText);
+			String value = getNotificationValue(appId, userId, roomId);
 			jedis.lrem(PUSHLIST, 0, value);
 			jedis.rpush(PUSHLIST, value);
 			res = true;

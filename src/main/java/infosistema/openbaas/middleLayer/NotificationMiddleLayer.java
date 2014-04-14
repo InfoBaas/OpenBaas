@@ -111,8 +111,7 @@ public class NotificationMiddleLayer {
 		}
 	}
 
-	public void pushNotificationCombine(String appId, String sender,String roomId, String fileId, 
-			String videoId, String imageId, String audioId, String messageText) {
+	public void pushNotificationCombine(String appId, String sender, String roomId) {
 	
 		List<String> participants = new ArrayList<String>();
 		participants = chatModel.getListParticipants(appId, roomId);
@@ -166,7 +165,7 @@ public class NotificationMiddleLayer {
 		try{
 			res = noteModel.getAllBadgesTODO();
 		}catch(Exception e){
-			Log.error("", this, "getPushNotificationsTODO", "Error in getPushNotificationsTODO."+res.size(), e);
+			Log.error("", this, "getPushBadgesTODO", "Error in getPushBadgesTODO."+res.size(), e);
 		}
 		return res;
 	}	
@@ -176,7 +175,7 @@ public class NotificationMiddleLayer {
 		try {
 			res = noteModel.setNewBadgesTODO(appId, userId);
 		} catch(Exception e){
-			Log.error("", this, "getPushNotificationsTODO", "Error in getPushNotificationsTODO."+res, e);
+			Log.error("", this, "setPushBadgesTODO", "Error in setPushBadgesTODO."+res, e);
 		}
 		return res;
 	}	
@@ -191,11 +190,10 @@ public class NotificationMiddleLayer {
 		return res;
 	}	
 	
-	public Boolean setPushNotificationsTODO(String appId, String userId, String roomId, String fileId, String videoId,
-			String imageId, String audioId, String messageText) {
+	public Boolean setPushNotificationsTODO(String appId, String userId, String roomId) {
 		Boolean res = false;
 		try {
-			res = noteModel.setNewNotifications(appId, userId, roomId, fileId, videoId, imageId, audioId, messageText);
+			res = noteModel.setNewNotifications(appId, userId, roomId);
 		} catch(Exception e){
 			Log.error("", this, "getPushNotificationsTODO", "Error in getPushNotificationsTODO."+res, e);
 		}

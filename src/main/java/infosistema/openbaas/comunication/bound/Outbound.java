@@ -287,7 +287,7 @@ public class Outbound {
 				}
 				ChatMessage msg = chatMid.sendMessage(appId, userId, roomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
 				if (msg != null) {
-					noteMid.setPushNotificationsTODO(appId, userId, roomId, fileId, videoId, imageId, audioId, messageText);
+					noteMid.setPushNotificationsTODO(appId, userId, roomId);
 					return msg.serialize();
 				}else{
 					return getErrorJSONObject(appId, messageId, "Error sendMessage");
