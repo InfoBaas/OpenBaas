@@ -245,13 +245,21 @@ public class ChatModel {
 					String audioId = jedis.hget(msgKey, ChatMessage.AUDIO_ID);
 					String videoId = jedis.hget(msgKey, ChatMessage.VIDEO_ID);
 					String imageId = jedis.hget(msgKey, ChatMessage.IMAGE_ID);
+					String hasFile = jedis.hget(msgKey, ChatMessage.HAS_FILE);
+					String hasAudio = jedis.hget(msgKey, ChatMessage.HAS_AUDIO);
+					String hasVideo = jedis.hget(msgKey, ChatMessage.HAS_VIDEO);
+					String hasImage = jedis.hget(msgKey, ChatMessage.HAS_IMAGE);
 
 					if(sender!=null) msg.setSender(sender);
-					if(fileId!=null) msg.setFileId(fileId);
 					if(messageText!=null) msg.setMessageText(messageText);
+					if(fileId!=null) msg.setFileId(fileId);
 					if(audioId!=null) msg.setAudioId(audioId);
 					if(videoId!=null) msg.setVideoId(videoId);
 					if(imageId!=null) msg.setImageId(imageId);
+					if(hasFile!=null) msg.setHasFile(hasFile);
+					if(hasAudio!=null) msg.setHasAudio(hasAudio);
+					if(hasVideo!=null) msg.setHasVideoId(hasVideo);
+					if(hasImage!=null) msg.setHasImage(hasImage);
 					String aux = jedis.hget(msgKey, ChatMessage.DATE);
 					msg.setDate(new Date());
 					msg.setRoomId(roomId);
@@ -320,14 +328,22 @@ public class ChatModel {
 			String audioId = jedis.hget(msgKey, ChatMessage.AUDIO_ID);
 			String videoId = jedis.hget(msgKey, ChatMessage.VIDEO_ID);
 			String imageId = jedis.hget(msgKey, ChatMessage.IMAGE_ID);
+			String hasFile = jedis.hget(msgKey, ChatMessage.HAS_FILE);
+			String hasAudio = jedis.hget(msgKey, ChatMessage.HAS_AUDIO);
+			String hasVideo = jedis.hget(msgKey, ChatMessage.HAS_VIDEO);
+			String hasImage = jedis.hget(msgKey, ChatMessage.HAS_IMAGE);
 			String roomId = jedis.hget(msgKey, ChatMessage.ROOM_ID);
 
 			if(sender!=null) res.setSender(sender);
-			if(fileId!=null) res.setFileId(fileId);
 			if(messageText!=null) res.setMessageText(messageText);
+			if(fileId!=null) res.setFileId(fileId);
 			if(audioId!=null) res.setAudioId(audioId);
 			if(videoId!=null) res.setVideoId(videoId);
 			if(imageId!=null) res.setImageId(imageId);
+			if(hasFile!=null) res.setHasFile(hasFile);
+			if(hasAudio!=null) res.setHasAudio(hasAudio);
+			if(hasVideo!=null) res.setHasVideoId(hasVideo);
+			if(hasImage!=null) res.setHasImage(hasImage);
 			if(roomId!=null) res.setRoomId(roomId);
 			res.setDate(new Date());
 			try {
