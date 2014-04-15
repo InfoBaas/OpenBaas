@@ -151,17 +151,21 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 				ChatMessage msg = new ChatMessage(messageId, new Date(), sender, roomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
 				Boolean msgStorage = chatModel.createMessage(appId, msg);
 				List<String> unReadUsers = new ArrayList<String>();
+				Log.error("", this, "sendMessage", "sendMessage ###0");
 				for (String userId: listUsers) {
 					//TODO mudar por causa dos unreadusers
+					Log.error("", this, "sendMessage", "sendMessage ###1");
 					Outbound outbound = Outbound.getUserOutbound(userId);
-					if (outbound == null || !outbound.sendRecvMessage(appId, roomId, msg))
+					if (outbound == null || !outbound.sendRecvMessage(appId, roomId, msg)){
+						Log.error("", this, "sendMessage", "sendMessage ###2");
 						unReadUsers.add(userId);
+					}
 				}
 				Boolean addMsgRoom = chatModel.addMessage2Room(appId, messageId, roomId, unReadUsers);
 				if (addMsgRoom && msgStorage)
 					res = msg;
 			} catch (Exception e) {
-				Log.error("", this, "createChatRoom", "Error parsing the JSON.", e); 
+				Log.error("", this, "sendMessage", "Error parsing the JSON.", e); 
 			}
 		}else{
 			return null;

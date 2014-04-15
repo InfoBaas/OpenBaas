@@ -283,6 +283,7 @@ public class ChatResource {
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			try {
+				Log.error("", "", "unReadMessages", "********unReadMessages ###### APPID:"+appId+" - userId:"+userId+" - roomId:"+roomId);
 				lisRes = chatMid.getUnreadMsgs(appId, userId, roomId);
 				response = Response.status(Status.OK).entity(lisRes).build();
 			} catch (Exception e) {

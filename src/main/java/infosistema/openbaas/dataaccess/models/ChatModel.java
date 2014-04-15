@@ -140,7 +140,9 @@ public class ChatModel {
 		try {
 			jedis.rpush(getChatRoomKey_2(appId, roomId), messageId);
 			while(it.hasNext()){
-				jedis.rpush(getUnreadMsgKey(appId, it.next()), messageId);
+				String user = it.next();
+				jedis.rpush(getUnreadMsgKey(appId, user), messageId);
+				Log.error("", "", "addMessage2Room", "********addMessage2Room Lista Unread ###### userId:"+user +" - roomId:"+roomId+" - mensagem:"+messageId);
 			}
 			res = true;
 		} finally {
