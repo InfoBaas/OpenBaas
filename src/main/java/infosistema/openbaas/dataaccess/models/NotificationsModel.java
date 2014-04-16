@@ -144,7 +144,6 @@ public class NotificationsModel {
 		Boolean res = false;
 		try {
 			String value = getBadgeValue(appId, userId);
-			//Log.error("", this, "setNewBadgesTODO", "setBadgTODO ###value:"+ value);
 			jedis.lrem(PUSH_BADGES_LIST, 0, value);
 			jedis.rpush(PUSH_BADGES_LIST, value);
 			res = true;
@@ -161,7 +160,6 @@ public class NotificationsModel {
 		Boolean res = false;
 		try {
 			String value = getNotificationValue(appId, userId, roomId);
-			//Log.error("", this, "setNewNotifications", "setNoteTODO ###value:"+ value); 
 			jedis.lrem(PUSHLIST, 0, value);
 			jedis.rpush(PUSHLIST, value);
 			res = true;
@@ -219,7 +217,6 @@ public class NotificationsModel {
 		List<String> res = new ArrayList<String>();
 		try {
 			res = jedis.lrange(PUSH_BADGES_LIST, 0, MAXELEMS);
-			//Log.error("", this, "getAllBadgesTODO", "getBadgTODO ###size:"+ res.size()); 
 			if (res.size()>0) jedis.del(PUSH_BADGES_LIST);
 		} catch (Exception e) {
 			Log.error("", this, "getAllBadgesTODO", "Error in getAllBadgesTODO redis."+ res.size(), e); 
@@ -237,7 +234,6 @@ public class NotificationsModel {
 		List<String> res = new ArrayList<String>();
 		try {
 			res = jedis.lrange(PUSHLIST, 0, MAXELEMS);
-			//Log.error("", this, "getAllNotificationsTODO", "getNoteTODO ###size:"+ res.size()); 
 			if(res.size()>0)
 				jedis.del(PUSHLIST);
 		} catch (Exception e) {

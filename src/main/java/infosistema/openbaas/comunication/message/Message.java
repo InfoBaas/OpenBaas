@@ -27,6 +27,7 @@ public class Message {
 	public static final String HAS_AUDIO = "hasAudio";
 	public static final String MESSAGE = "message";
 	public static final String CHAT_ROOM = "chatRoom";
+	public static final String UNREADMESSAGES = "unreadMessages";
 	//message types
 	public static final String AUTHENTICATE = "AUTHENTICATE";
 	public static final String OK = "OK";

@@ -360,12 +360,14 @@ public class Outbound {
 		return sendMessage(message);
 	}
 
-	public boolean sendRecvMessage(String appId, String roomId, ChatMessage msg) {
+	public boolean sendRecvMessage(String appId, String roomId, ChatMessage msg, String userId) {
 		Message message = new Message(Message.RECV_CHAT_MSG, appId);
 		try {
 			JSONObject data = new JSONObject ();
 			data.put(Message.MESSAGE, msg.serialize());
 			ChatRoom room = chatMid.getChatRoom(appId, roomId);
+			int unReadMsgNumber = chatMid.getUnreadMsgs(appId, userId, roomId).size();
+			room.setUnreadMessages(unReadMsgNumber);
 			data.put(Message.MESSAGE, msg.serialize());
 			data.put(Message.CHAT_ROOM, room.serialize());
 			message.setData(data);

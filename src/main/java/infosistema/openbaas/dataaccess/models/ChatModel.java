@@ -142,7 +142,6 @@ public class ChatModel {
 			while(it.hasNext()){
 				String user = it.next();
 				jedis.rpush(getUnreadMsgKey(appId, user), messageId);
-				Log.error("", "", "addMessage2Room", "********addMessage2Room Lista Unread ###### userId:"+user +" - roomId:"+roomId+" - mensagem:"+messageId);
 			}
 			res = true;
 		} finally {
@@ -367,6 +366,7 @@ public class ChatModel {
 			if(jsonArray.length()>0){
 				String unreadMsgKey = getUnreadMsgKey(appId, userId);
 				for(int i = 0;i<jsonArray.length();i++){
+					//Log.error("", "", "readMessages", "********readMessages read ###### userId:"+userId +" - mensagem:"+jsonArray.getString(i));
 					aux = jedis.lrem(unreadMsgKey, 0, jsonArray.getString(i));
 					res += ((int)(long)aux);
 				}
@@ -383,7 +383,7 @@ public class ChatModel {
 		Jedis jedis = pool.getResource();
 		List<String> res = new ArrayList<String>();
 		try {
-			res = jedis.lrange(getUnreadMsgKey(appId, userId), 0, MAXELEMS);		
+			res = jedis.lrange(getUnreadMsgKey(appId, userId), 0, MAXELEMS);
 		} catch (Exception e) {
 			Log.error("", this, "getTotalListElements", "Error getTotalListElements redis."+ res.size(), e); 
 		}finally {

@@ -121,7 +121,7 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 			List<String> unReadUsers = new ArrayList<String>();
 			for (String userId: listUsers) {
 				Outbound outbound = Outbound.getUserOutbound(userId);
-				if (outbound == null || !outbound.sendRecvMessage(appId, roomId, message))
+				if (outbound == null || !outbound.sendRecvMessage(appId, roomId, message, userId))
 					unReadUsers.add(userId);
 			}
 			//Boolean addMsgRoom = chatModel.addMessage2Room(appId, message.get_id(), roomId, unReadUsers);
@@ -151,12 +151,9 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 				ChatMessage msg = new ChatMessage(messageId, new Date(), sender, roomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
 				Boolean msgStorage = chatModel.createMessage(appId, msg);
 				List<String> unReadUsers = new ArrayList<String>();
-				Log.error("", this, "sendMessage", "sendMessage ###0");
 				for (String userId: listUsers) {
-					//TODO mudar por causa dos unreadusers
-					Log.error("", this, "sendMessage", "sendMessage ###1");
 					Outbound outbound = Outbound.getUserOutbound(userId);
-					if (outbound != null) outbound.sendRecvMessage(appId, roomId, msg);
+					if (outbound != null) outbound.sendRecvMessage(appId, roomId, msg, userId);
 					unReadUsers.add(userId);
 				}
 				Boolean addMsgRoom = chatModel.addMessage2Room(appId, messageId, roomId, unReadUsers);
@@ -217,20 +214,25 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 	
 	public List<ChatMessage> getUnreadMsgs(String appId, String userId, String roomId) {
 		List<ChatMessage> res = new ArrayList<ChatMessage>();		
+		int i=0;
 		try {
 			List<String> msgList = chatModel.getTotalUnreadMsg(appId, userId);
+			Log.error("", this, "getUnreadMsgs", "getUnreadMsgs ###1 totalUnRead:"+msgList.size()); 
 			List<String> list = chatModel.getMessageChatroom(appId, roomId);
+			Log.error("", this, "getUnreadMsgs", "getUnreadMsgs ###1 totalChatRoom:"+msgList.size());
 			Iterator<String> it = msgList.iterator();
 			while(it.hasNext()){
 				String messageId = it.next();
 				if(list.contains(messageId)) {
 					ChatMessage msg = chatModel.getMessage(appId, messageId);
+					Log.error("", this, "getUnreadMsgs", "getUnreadMsgs ###1 addMsg:"+(i++));
 					res.add(msg);
 				}
 			}
 		} catch (Exception e) {
 			Log.error("", this, "getMessages", "Error parsing the JSON.", e); 
 		}
+		Log.error("", this, "getUnreadMsgs", "getUnreadMsgs ###1 returnMsgSize:"+res.size());
 		return res;
 	}
 

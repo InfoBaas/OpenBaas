@@ -2,6 +2,7 @@ package infosistema.openbaas.comunication.connector;
 
 import infosistema.openbaas.comunication.bound.Outbound;
 import infosistema.openbaas.comunication.message.Message;
+import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
@@ -15,6 +16,7 @@ import java.net.SocketException;
 import java.nio.CharBuffer;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 
 public class SocketConnector implements Runnable, IConnector {
 
@@ -22,6 +24,8 @@ public class SocketConnector implements Runnable, IConnector {
 	BufferedReader in = null;
 	PrintWriter out = null;
 	Socket socketToClose = null;
+	Date startDate1 ;
+	Date startDate2 ;
 
 	//Constructor
 	public SocketConnector(Socket socket) {
@@ -47,15 +51,20 @@ public class SocketConnector implements Runnable, IConnector {
 			return;
 		}
 		while (readLength >= 0) {
+			
 			try{
 				Arrays.fill(cbuf, Const.CHAR_NULL);
 				if ((readLength = in.read(cbuf)) < 0) continue;
 				int newLinePos = -1;
 				int startPos = 0;
 				while ((newLinePos = nextNewLine(cbuf, startPos, readLength)) > 0)  {
+					startDate1 = Utils.getDate();
+					Log.error("", this, "######startDate1", "########startDate1 inicio: " + startDate1);
 					if (newLinePos - startPos <= 1) continue;
 					message.append(cbuf, startPos, (newLinePos-startPos));
-					Utils.printMemoryStats();
+					//Utils.printMemoryStats();
+					startDate2 = Utils.getDate();
+					Log.error("", this, "######startDate2", "########startDate2 inicio: " + startDate2);
 					Log.error("", this, "######1", "########msg1: " + message.toString());
 					outbound.processMessage(message.toString());
 					startPos = newLinePos +1;
@@ -79,6 +88,9 @@ public class SocketConnector implements Runnable, IConnector {
 			Log.error("", this, "sendMessage", "Error sending Message", e);
 			return false;
 		}
+		Date endDate = Utils.getDate();
+		Log.error("", "", "Time1", "Time Start1: " + Utils.printDate(startDate1) + " - Time Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate1.getTime()));
+		Log.error("", "", "Time2", "Time Start2: " + Utils.printDate(startDate2) + " - Time Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate2.getTime()));
 		return true;
 	}
 	

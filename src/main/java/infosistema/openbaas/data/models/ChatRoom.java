@@ -17,12 +17,13 @@ public class ChatRoom implements Serializable{
 	private String roomCreator;
 	private String[] participants;
 	private Date createdDate;
-	private Integer unreadMessages = 0;
+	private Integer unreadMessages;
 	
 	public final static String CREATEDDATE = "createdDate";
 	public final static String FLAG_NOTIFICATION = "flagNotification";
 	public final static String PARTICIPANTS = "participants";
 	public final static String ROOM_NAME = "roomName";
+	public final static String UNREADMSGS = "unreadMessages";
 	public final static String ROOM_CREATOR = "roomCreator";
 	public final static String _ID = "_id";
 	public final static String SEPARATOR = ";";
@@ -104,6 +105,7 @@ public class ChatRoom implements Serializable{
 					retObj.accumulate(PARTICIPANTS, participants[i]);
 			}
 			if (createdDate != null) retObj.put(CREATEDDATE, "" + createdDate.getTime());
+			if (unreadMessages != null) retObj.put(UNREADMSGS, "" + unreadMessages);
 		} catch (JSONException e) {
 			Log.error("", this, "serialize", "Error Serializing Chat", e);
 		}
