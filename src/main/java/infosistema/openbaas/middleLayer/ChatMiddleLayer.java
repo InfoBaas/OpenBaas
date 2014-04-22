@@ -156,10 +156,8 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 					//TODO mudar por causa dos unreadusers
 					Log.error("", this, "sendMessage", "sendMessage ###1");
 					Outbound outbound = Outbound.getUserOutbound(userId);
-					if (outbound == null || !outbound.sendRecvMessage(appId, roomId, msg)){
-						Log.error("", this, "sendMessage", "sendMessage ###2");
-						unReadUsers.add(userId);
-					}
+					if (outbound != null) outbound.sendRecvMessage(appId, roomId, msg);
+					unReadUsers.add(userId);
 				}
 				Boolean addMsgRoom = chatModel.addMessage2Room(appId, messageId, roomId, unReadUsers);
 				if (addMsgRoom && msgStorage)
