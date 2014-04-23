@@ -139,24 +139,16 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 		participants = chatModel.getListParticipants(appId, roomId);
 		if(participants.size()>0 && participants!=null){
 			try {
-				List<String> listUsers = new ArrayList<String>();
-				Iterator<String> it = participants.iterator();
-				while(it.hasNext()){
-					String curr = it.next();
-					if(!curr.equals(sender)){
-						listUsers.add(curr);
-					}
-				}
 				String messageId = "Msg_"+Utils.getRandomString(Const.getIdLength());
 				ChatMessage msg = new ChatMessage(messageId, new Date(), sender, roomId, messageText, fileId, imageId, audioId, videoId, hasFile, hasImage, hasAudio, hasVideo);
 				Boolean msgStorage = chatModel.createMessage(appId, msg);
-				List<String> unReadUsers = new ArrayList<String>();
-				for (String userId: listUsers) {
-					Outbound outbound = Outbound.getUserOutbound(userId);
-					if (outbound != null) outbound.sendRecvMessage(appId, roomId, msg, userId);
-					unReadUsers.add(userId);
+				Boolean addMsgRoom = chatModel.addMessage2Room(appId, messageId, roomId, sender, participants);
+				for (String userId: participants) {
+					if (sender == null || !sender.equals(userId)) {
+						Outbound outbound = Outbound.getUserOutbound(userId);
+						if (outbound != null) outbound.sendRecvMessage(appId, roomId, msg, userId);
+					}
 				}
-				Boolean addMsgRoom = chatModel.addMessage2Room(appId, messageId, roomId, unReadUsers);
 				if (addMsgRoom && msgStorage)
 					res = msg;
 			} catch (Exception e) {

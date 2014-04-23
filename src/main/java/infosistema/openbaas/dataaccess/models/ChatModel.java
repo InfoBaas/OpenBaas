@@ -133,7 +133,7 @@ public class ChatModel {
 	
 	// *** UPDATE *** //
 
-	public Boolean addMessage2Room(String appId, String messageId, String roomId, List<String> unReadUsers) {
+	public Boolean addMessage2Room(String appId, String messageId, String roomId, String senderId, List<String> unReadUsers) {
 		Boolean res = false;
 		Jedis jedis = pool.getResource();
 		Iterator<String> it = unReadUsers.iterator();
@@ -141,7 +141,8 @@ public class ChatModel {
 			jedis.rpush(getChatRoomKey_2(appId, roomId), messageId);
 			while(it.hasNext()){
 				String user = it.next();
-				jedis.rpush(getUnreadMsgKey(appId, user), messageId);
+				if (senderId == null || !senderId.equals(user))
+					jedis.rpush(getUnreadMsgKey(appId, user), messageId);
 			}
 			res = true;
 		} finally {
