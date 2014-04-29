@@ -244,7 +244,6 @@ public class ChatResource {
 	public Response readMessages(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh, 
 			@PathParam("roomid") String roomId) {
 		Response response = null;
-		Boolean res = false;
 		String sessionToken = Utils.getSessionToken(hh);
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
@@ -254,9 +253,9 @@ public class ChatResource {
 			try {
 				JSONArray jsonArray = inputJsonObj.getJSONArray(ChatMessage.MSGSLIST);
 				if(jsonArray.length()>0){
-					res = chatMid.readMsgsFromUser(appId,userId,jsonArray);
+					chatMid.readMsgsFromUser(appId,userId,jsonArray);
 				}
-				response = Response.status(Status.OK).entity(res).build();
+				response = Response.status(Status.OK).build();
 				noteMid.pushBadge(appId, userId, roomId);
 			} catch (Exception e) {
 				Log.error("", this, "readMessages", "Error in readMessages.", e);

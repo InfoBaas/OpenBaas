@@ -209,22 +209,18 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 		int i=0;
 		try {
 			List<String> msgList = chatModel.getTotalUnreadMsg(appId, userId);
-			Log.error("", this, "getUnreadMsgs", "getUnreadMsgs ###1 totalUnRead:"+msgList.size()); 
 			List<String> list = chatModel.getMessageChatroom(appId, roomId);
-			Log.error("", this, "getUnreadMsgs", "getUnreadMsgs ###1 totalChatRoom:"+msgList.size());
 			Iterator<String> it = msgList.iterator();
 			while(it.hasNext()){
 				String messageId = it.next();
 				if(list.contains(messageId)) {
 					ChatMessage msg = chatModel.getMessage(appId, messageId);
-					Log.error("", this, "getUnreadMsgs", "getUnreadMsgs ###1 addMsg:"+(i++));
 					res.add(msg);
 				}
 			}
 		} catch (Exception e) {
 			Log.error("", this, "getMessages", "Error parsing the JSON.", e); 
 		}
-		Log.error("", this, "getUnreadMsgs", "getUnreadMsgs ###1 returnMsgSize:"+res.size());
 		return res;
 	}
 

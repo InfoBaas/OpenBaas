@@ -111,7 +111,7 @@ public class AppDataResource {
 			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION) String location) {
 		Date startDate = Utils.getDate();
 		Response response = null;
-		Log.debug("", this, "patch app data", "********patch app data ************");
+		Log.error("", this, "patch app data", "********patch app data ************");
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String sessionToken = Utils.getSessionToken(hh);
@@ -122,7 +122,8 @@ public class AppDataResource {
 			if (res != null){
 				response = Response.status(Status.OK).entity(res).build();
 				Date endDate = Utils.getDate();
-				Log.info(sessionToken, this, "patch app data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
+				Utils.printMemoryStats();
+				Log.error(sessionToken, this, "patch app data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			}
 			else
 				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
