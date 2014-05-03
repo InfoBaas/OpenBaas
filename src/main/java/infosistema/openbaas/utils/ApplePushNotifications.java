@@ -1,6 +1,7 @@
 package infosistema.openbaas.utils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javapns.Push;
@@ -14,8 +15,8 @@ public class ApplePushNotifications {
 	
 	
 	public static void pushCombineNotification(String alertText, int badge, String keystore, String password, Boolean production, Object devices) throws CommunicationException, KeystoreException {
-		//Log.error("", "", "pushCombineNotification", "********pushCombineNotification ###### alert:"+alertText);
-		/*List<Device> devs = (List<Device>)devices;
+		/*Log.error("", "", "pushCombineNotification", "********pushCombineNotification ###### alert:"+alertText);
+		List<Device> devs = (List<Device>)devices;
 		Iterator<Device> it = devs.iterator();
 		while(it.hasNext()){
 			Log.error("", "", "push", "push0:" +"keystore:" +keystore+" - password:"+password+" - production:"+production+" - devices token:"+ it.next().getToken());

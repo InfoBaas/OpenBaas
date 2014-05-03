@@ -68,11 +68,13 @@ public class NotificationsThread extends Thread {
     
     private void processCommand() {
         try {
+        	Log.error("",  "thread", "", "###1 ");
         	List<String> notificationList = noteMid.getPushNotificationsTODO();
         	Iterator<String> it = notificationList.iterator();
         	while(it.hasNext()){
         		String notificationCurr = it.next(); 
 	        	String[] arrayNotifications =  notificationCurr.split(SEPARATOR3);
+	        	Log.error("",  "thread", "", "###2 -"+arrayNotifications[0]+" - "+arrayNotifications[1]+" - "+arrayNotifications[2]);
 	        	noteMid.pushNotificationCombine(arrayNotifications[0], arrayNotifications[1], arrayNotifications[2]);
         	}
         	List<String> badgesList = noteMid.getPushBadgesTODO();
