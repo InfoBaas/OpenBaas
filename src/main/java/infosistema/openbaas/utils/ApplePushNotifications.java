@@ -1,6 +1,7 @@
 package infosistema.openbaas.utils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,14 +33,18 @@ public class ApplePushNotifications {
 	}
 	
 	public static void pushBadgeService(int badge,String keystore, String password, Boolean production, Object devices) throws CommunicationException, KeystoreException {
-		/*List<Device> devs = (List<Device>)devices;
-		Iterator<Device> it = devs.iterator();
-		while(it.hasNext()){
-			Log.error("", "", "pushBadge", "pushBadge:" +"keystore:" +keystore+" - password:"+password+" - production:"+production+" - devices token:"+ it.next().getToken());
-		}*/
+		Log.info("", "", "", "@@@6");
+		Date startDate = Utils.getDate();
+		Date endDate = Utils.getDate();
+		Log.info("", "", "delete app", "Time@1:" + (endDate.getTime()-startDate.getTime()));
+		startDate = endDate;
 		List<PushedNotification> notifications = Push.badge(badge, keystore, password, production, devices);
+		endDate = Utils.getDate();
+		Log.info("", "", "delete app", "Time@2:" + (endDate.getTime()-startDate.getTime()));
+		startDate = endDate;
 		printPushedNotifications(notifications);
-		
+		endDate = Utils.getDate();
+		Log.info("", "", "delete app", "Time@3:" + (endDate.getTime()-startDate.getTime()));
 	}
 	
 	/**
@@ -47,6 +52,7 @@ public class ApplePushNotifications {
 	 * @param notifications a raw list of pushed notifications
 	 */
 	public static void printPushedNotifications(List<PushedNotification> notifications) {
+		Log.info("", "", "", "@@@7");
 		List<PushedNotification> failedNotifications = PushedNotification.findFailedNotifications(notifications);
 		List<PushedNotification> successfulNotifications = PushedNotification.findSuccessfulNotifications(notifications);
 		int failed = failedNotifications.size();

@@ -77,61 +77,46 @@ public class NotificationMiddleLayer {
 	}
 
 	public void pushBadge(String appId, String userId, String roomId) {
+		Log.info("", this, "", "@@@3");
 		try {
-			Date startDate = Utils.getDate();
 			int numberBadge = 0;
 			Application app = appModel.getApplication(appId);
 			List<String> unReadMsgs =  chatModel.getTotalUnreadMsg(appId, userId);
 			Boolean flagNotification = null;
-			Date endDate = Utils.getDate();
-			Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$1:" + (endDate.getTime()-startDate.getTime()));
-			startDate = endDate;
 			if(roomId != null){
 				numberBadge = unReadMsgs.size();
 				flagNotification = chatModel.hasNotification(appId, roomId);
-				endDate = Utils.getDate();
-				Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$2:" + (endDate.getTime()-startDate.getTime()));
-				startDate = endDate;
 				if (flagNotification){
 					sendBadge(appId, userId, app, numberBadge,roomId);
 				}
-				endDate = Utils.getDate();
-				Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$3:" + (endDate.getTime()-startDate.getTime()));
-				startDate = endDate;
 			}else{
 				Iterator<String> it = unReadMsgs.iterator();
 				while(it.hasNext()){
 					String messageId = it.next();
 					ChatMessage msg = chatModel.getMessage(appId, messageId);
-					endDate = Utils.getDate();
-					Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$4:" + (endDate.getTime()-startDate.getTime()));
-					startDate = endDate;
 					flagNotification = chatModel.hasNotification(appId, msg.getRoomId());
-					endDate = Utils.getDate();
-					Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$5:" + (endDate.getTime()-startDate.getTime()));
-					startDate = endDate;
 					if(flagNotification){
 						numberBadge++;
+						Log.info("", this, "", "@@@4");
 						sendBadge(appId, userId, app, numberBadge,msg.getRoomId());
-						endDate = Utils.getDate();
-						Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$6:" + (endDate.getTime()-startDate.getTime()));
-						startDate = endDate;
 					}
 				}
 			}
-			endDate = Utils.getDate();
-			Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$3:" + (endDate.getTime()-startDate.getTime()));
-			startDate = endDate;
 		} catch (Exception e) {
 			Log.error("", this, "pushBadge", "Error pushing the badge.", e);
 		}
 	}
 
 	private void sendBadge(String appId, String userId, Application app, int numberBadge, String roomId) {
+		Log.info("", this, "", "@@@5");
+		Date startDate = Utils.getDate();
 		List<Certificate> certList = new ArrayList<Certificate>();
 		try {
 			List<String> clientsList = app.getClients();
 			Iterator<String> it2 = clientsList.iterator();
+			Date endDate = Utils.getDate();
+			Log.info("", this, "delete app", "Time#1:" + (endDate.getTime()-startDate.getTime()));
+			startDate = endDate;
 			while(it2.hasNext()){
 				String clientId = it2.next();
 				certList.add(noteModel.getCertificate(appId,clientId));
@@ -141,7 +126,13 @@ public class NotificationMiddleLayer {
 				Certificate certi = it3.next();
 				List<Device> devices = noteModel.getDeviceIdList(appId, userId, certi.getClientId());
 				if(devices!=null && devices.size()>0){
+					endDate = Utils.getDate();
+					Log.info("", this, "delete app", "Time#2:" + (endDate.getTime()-startDate.getTime()));
+					startDate = endDate;
 					ApplePushNotifications.pushBadgeService(numberBadge, certi.getCertificatePath(), certi.getAPNSPassword(), Const.getAPNS_PROD(), devices);
+					endDate = Utils.getDate();
+					Log.info("", this, "delete app", "Time#3:" + (endDate.getTime()-startDate.getTime()));
+					startDate = endDate;
 				}
 			}
 		} catch (Exception e) {
