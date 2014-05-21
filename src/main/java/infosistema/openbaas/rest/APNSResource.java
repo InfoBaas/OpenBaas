@@ -17,6 +17,7 @@ import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import java.io.InputStream;
+import java.util.Date;
 import java.util.Map;
 
 import javapns.devices.Device;
@@ -101,6 +102,7 @@ public class APNSResource {
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response registerDeviceToken(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
+		Date startDate = Utils.getDate();
 		Response response = null;
 		String deviceToken = null;
 		String client = null;
@@ -109,6 +111,9 @@ public class APNSResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 		int code = Utils.treatParameters(ui, hh);
+		Date endDate = Utils.getDate();
+		Log.info("", this, "$$$1$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
+		startDate = endDate;
 		if (code == 1) {
 			try {
 				deviceToken = inputJsonObj.getString(NotificationsModel.DEVICETOKEN);
@@ -117,9 +122,18 @@ public class APNSResource {
 				Log.error("", this, "registerDeviceToken", "Error parsing json in registerDeviceToken", e); 
 				return Response.status(Status.BAD_REQUEST).entity("Error parsing the JSON.").build();
 			}
+			endDate = Utils.getDate();
+			Log.info("", this, "$$$2$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
+			startDate = endDate;
 			try {
 				Map<String, Device> res = noteMid.addDeviceToken(appId, userId, client, deviceToken);
+				endDate = Utils.getDate();
+				Log.info("", this, "$$$3$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
+				startDate = endDate;
 				NotificationMiddleLayer.getInstance().pushBadge(appId, userId, null);
+				endDate = Utils.getDate();
+				Log.info("", this, "$$$4$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
+				startDate = endDate;
 				response = Response.status(Status.OK).entity(res).build();				
 			} catch (Exception e) {
 				Log.error("", this, "registerDeviceToken", "Error registerDeviceToken", e); 
@@ -130,6 +144,9 @@ public class APNSResource {
 		} else if(code == -1){
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		}
+		endDate = Utils.getDate();
+		Log.info("", this, "$$$5$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
+		startDate = endDate;
 		return response;
 	}
 	
