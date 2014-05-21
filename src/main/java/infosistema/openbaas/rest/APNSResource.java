@@ -101,7 +101,6 @@ public class APNSResource {
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response registerDeviceToken(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
-		Log.info("", this, "", "@@@1");
 		Response response = null;
 		String deviceToken = null;
 		String client = null;
@@ -120,7 +119,6 @@ public class APNSResource {
 			}
 			try {
 				Map<String, Device> res = noteMid.addDeviceToken(appId, userId, client, deviceToken);
-				Log.info("", this, "", "@@@2");
 				NotificationMiddleLayer.getInstance().pushBadge(appId, userId, null);
 				response = Response.status(Status.OK).entity(res).build();				
 			} catch (Exception e) {

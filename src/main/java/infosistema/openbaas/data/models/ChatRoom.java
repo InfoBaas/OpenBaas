@@ -10,6 +10,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 
 public class ChatRoom implements Serializable{
+	private static final long serialVersionUID = 1L;
 
 	private String _id;
 	private String roomName;

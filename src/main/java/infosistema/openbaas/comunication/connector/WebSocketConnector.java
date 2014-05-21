@@ -2,32 +2,19 @@ package infosistema.openbaas.comunication.connector;
 
 import infosistema.openbaas.comunication.bound.Outbound;
 import infosistema.openbaas.comunication.message.Message;
-import infosistema.openbaas.data.enums.ModelEnum;
-import infosistema.openbaas.data.models.ChatMessage;
-import infosistema.openbaas.data.models.ChatRoom;
-import infosistema.openbaas.middleLayer.ChatMiddleLayer;
-import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.utils.Log;
-import infosistema.openbaas.utils.Utils;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 
 import org.apache.catalina.websocket.MessageInbound;
 import org.apache.catalina.websocket.WsOutbound;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 public class WebSocketConnector extends MessageInbound implements IConnector {
 
 	private Outbound outbound;
 	private WsOutbound wsOutbound;
-	private SessionMiddleLayer sessionMid = SessionMiddleLayer.getInstance();
-	private ChatMiddleLayer chatMid = ChatMiddleLayer.getInstance();
 
 	@Override
 	public void onOpen(WsOutbound wsOutbound){

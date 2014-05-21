@@ -26,7 +26,6 @@ import infosistema.openbaas.data.models.Media;
 import infosistema.openbaas.data.models.Storage;
 import infosistema.openbaas.data.models.Video;
 import infosistema.openbaas.dataaccess.files.FileInterface;
-import infosistema.openbaas.dataaccess.models.ChatModel;
 import infosistema.openbaas.dataaccess.models.MediaModel;
 import infosistema.openbaas.dataaccess.models.ModelAbstract;
 import infosistema.openbaas.utils.Const;
@@ -39,7 +38,6 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	// *** MEMBERS *** //
 
 	private MediaModel mediaModel;
-	private ChatModel chatModel;
 
 
 	// *** INSTANCE *** //
@@ -49,7 +47,6 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 	private MediaMiddleLayer() {
 		super();
 		mediaModel = new MediaModel();
-		chatModel = new ChatModel();
 	}
 	
 	public static MediaMiddleLayer getInstance() {

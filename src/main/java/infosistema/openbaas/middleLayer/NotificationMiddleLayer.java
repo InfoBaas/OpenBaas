@@ -8,8 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javapns.communication.exceptions.CommunicationException;
-import javapns.communication.exceptions.KeystoreException;
 import javapns.devices.Device;
 import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.data.models.Certificate;
@@ -21,8 +19,6 @@ import infosistema.openbaas.dataaccess.models.NotificationsModel;
 import infosistema.openbaas.utils.ApplePushNotifications;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
-import infosistema.openbaas.utils.Utils;
-
 
 public class NotificationMiddleLayer {
 
@@ -77,46 +73,31 @@ public class NotificationMiddleLayer {
 	}
 
 	public void pushBadge(String appId, String userId, String roomId) {
-		Log.info("", this, "", "@@@3");
 		try {
 			int numberBadge = 0;
 			Application app = appModel.getApplication(appId);
-			List<String> unReadMsgs =  chatModel.getTotalUnreadMsg(appId, userId);
-			Boolean flagNotification = null;
-			if(roomId != null){
-				numberBadge = unReadMsgs.size();
-				flagNotification = chatModel.hasNotification(appId, roomId);
-				if (flagNotification){
-					sendBadge(appId, userId, app, numberBadge,roomId);
-				}
-			}else{
-				Iterator<String> it = unReadMsgs.iterator();
-				while(it.hasNext()){
-					String messageId = it.next();
-					ChatMessage msg = chatModel.getMessage(appId, messageId);
-					flagNotification = chatModel.hasNotification(appId, msg.getRoomId());
-					if(flagNotification){
-						numberBadge++;
-						Log.info("", this, "", "@@@4");
-						sendBadge(appId, userId, app, numberBadge,msg.getRoomId());
-					}
+			List<String> unReadMsgs = chatModel.getTotalUnreadMsg(appId, userId);
+			Boolean flagNotification = roomId != null || chatModel.hasNotification(appId, roomId);
+			Iterator<String> it = unReadMsgs.iterator();
+			while(it.hasNext()) {
+				String messageId = it.next();
+				ChatMessage msg = chatModel.getMessage(appId, messageId);
+				if (chatModel.hasNotification(appId, msg.getRoomId())) {
+					numberBadge++;
 				}
 			}
+			if (flagNotification) sendBadge(appId, userId, app, numberBadge);
+
 		} catch (Exception e) {
 			Log.error("", this, "pushBadge", "Error pushing the badge.", e);
 		}
 	}
 
-	private void sendBadge(String appId, String userId, Application app, int numberBadge, String roomId) {
-		Log.info("", this, "", "@@@5");
-		Date startDate = Utils.getDate();
+	private void sendBadge(String appId, String userId, Application app, int numberBadge) {
 		List<Certificate> certList = new ArrayList<Certificate>();
 		try {
 			List<String> clientsList = app.getClients();
 			Iterator<String> it2 = clientsList.iterator();
-			Date endDate = Utils.getDate();
-			Log.info("", this, "delete app", "Time#1:" + (endDate.getTime()-startDate.getTime()));
-			startDate = endDate;
 			while(it2.hasNext()){
 				String clientId = it2.next();
 				certList.add(noteModel.getCertificate(appId,clientId));
@@ -126,13 +107,7 @@ public class NotificationMiddleLayer {
 				Certificate certi = it3.next();
 				List<Device> devices = noteModel.getDeviceIdList(appId, userId, certi.getClientId());
 				if(devices!=null && devices.size()>0){
-					endDate = Utils.getDate();
-					Log.info("", this, "delete app", "Time#2:" + (endDate.getTime()-startDate.getTime()));
-					startDate = endDate;
 					ApplePushNotifications.pushBadgeService(numberBadge, certi.getCertificatePath(), certi.getAPNSPassword(), Const.getAPNS_PROD(), devices);
-					endDate = Utils.getDate();
-					Log.info("", this, "delete app", "Time#3:" + (endDate.getTime()-startDate.getTime()));
-					startDate = endDate;
 				}
 			}
 		} catch (Exception e) {

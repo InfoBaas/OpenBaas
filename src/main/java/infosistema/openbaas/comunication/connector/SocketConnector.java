@@ -2,7 +2,6 @@ package infosistema.openbaas.comunication.connector;
 
 import infosistema.openbaas.comunication.bound.Outbound;
 import infosistema.openbaas.comunication.message.Message;
-import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
@@ -15,8 +14,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.CharBuffer;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 
 public class SocketConnector implements Runnable, IConnector {
 

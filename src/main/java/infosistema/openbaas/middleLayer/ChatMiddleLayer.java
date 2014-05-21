@@ -206,7 +206,6 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 	
 	public List<ChatMessage> getUnreadMsgs(String appId, String userId, String roomId) {
 		List<ChatMessage> res = new ArrayList<ChatMessage>();		
-		int i=0;
 		try {
 			List<String> msgList = chatModel.getTotalUnreadMsg(appId, userId);
 			List<String> list = chatModel.getMessageChatroom(appId, roomId);
