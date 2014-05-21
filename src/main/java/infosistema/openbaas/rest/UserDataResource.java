@@ -15,7 +15,6 @@ import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
-import java.util.Date;
 import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -75,8 +74,6 @@ public class UserDataResource {
 	public Response createOrReplaceDocument(JSONObject inputJson,  @PathParam("pathId") List<PathSegment> path,
 			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION) String location) {
 		Response response = null;
-		Date startDate = Utils.getDate();
-		Log.debug("", this, "put user data", "********put user data ************");
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String sessionToken = Utils.getSessionToken(hh);
@@ -86,8 +83,6 @@ public class UserDataResource {
 				Result res = docMid.insertDocumentInPath(appId, userId, path, inputJson, Metadata.getNewMetadata(location));
 				if (res != null){
 					response = Response.status(Status.OK).entity(res).build();
-					Date endDate = Utils.getDate();
-					Log.info(sessionToken, this, "put user data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 				}
 				else
 					response = Response.status(Status.BAD_REQUEST).entity(new Error(inputJson.toString())).build();
@@ -115,9 +110,7 @@ public class UserDataResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response patchDataInElement(JSONObject inputJson, @PathParam("pathId") List<PathSegment> path,
 			@Context UriInfo ui, @Context HttpHeaders hh, @HeaderParam(value = Const.LOCATION) String location) {
-		Date startDate = Utils.getDate();
 		Response response = null;
-		Log.debug("", this, "patch user data", "********patch user data ************");
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
 			String sessionToken = Utils.getSessionToken(hh);
@@ -127,8 +120,6 @@ public class UserDataResource {
 			Result res = docMid.updateDocumentInPath(appId, userId, path, inputJson, Metadata.getNewMetadata(location));
 			if (res != null){
 				response = Response.status(Status.OK).entity(res).build();
-				Date endDate = Utils.getDate();
-				Log.info(sessionToken, this, "patch user data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			}
 			else
 				response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
@@ -144,26 +135,19 @@ public class UserDataResource {
 	@Path("/{pathId:.+}")
 	public Response deleteDataInElement(@PathParam("pathId") List<PathSegment> path, @Context UriInfo ui,
 			@Context HttpHeaders hh) {
-		Date startDate = Utils.getDate();
 		Response response = null;
-		Log.debug("", this, "del user data", "********del user data ************");
 		int code = Utils.treatParameters(ui, hh);
 		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (code == 1) {
-			String sessionToken = Utils.getSessionToken(hh);
 			if (docMid.existsDocumentInPath(appId, userId, path)) {
 				if (docMid.deleteDocumentInPath(appId, userId, path)){
 					response = Response.status(Status.OK).entity("").build();
-					Date endDate = Utils.getDate();
-					Log.info(sessionToken, this, "delete user data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 				}
 				else
 					response = Response.status(Status.BAD_REQUEST).entity(new Error(path.toString())).build();
 			} else {
 				response = Response.status(Status.OK).entity(new Error("not exits")).build();
-				Date endDate = Utils.getDate();
-				Log.info(sessionToken, this, "delete user data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			}
 		} else if (code == -2) {
 			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
@@ -210,9 +194,7 @@ public class UserDataResource {
 			@QueryParam(Const.ELEM_COUNT) String pageCount, @QueryParam(Const.ELEM_INDEX) String pageIndex,
 			@QueryParam(Const.PAGE_NUMBER) String pageNumberStr, @QueryParam(Const.PAGE_SIZE) String pageSizeStr, 
 			@QueryParam(Const.ORDER_BY) String orderByStr, @QueryParam(Const.ORDER_TYPE) String orderTypeStr) {
-		Date startDate = Utils.getDate();
 		Response response = null;
-		Log.debug("", this, "get user data", "********get user data ************");
 		String sessionToken = Utils.getSessionToken(hh);
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
@@ -225,8 +207,6 @@ public class UserDataResource {
 				try {
 					ListResult res = docMid.find(qp,arrayShow);
 					response = Response.status(Status.OK).entity(res).build();
-					Date endDate = Utils.getDate();
-					Log.info(sessionToken, this, "delete user data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 				} catch (Exception e) {
 					Log.error("", this, "findDocument", "Error ocorred", e);
 					response = Response.status(Status.FORBIDDEN).entity(e.getMessage()).build();
@@ -238,8 +218,6 @@ public class UserDataResource {
 					response = Response.status(Status.BAD_REQUEST).entity(new Error(appId)).build();
 				else{
 					response = Response.status(Status.OK).entity(res).build();
-					Date endDate = Utils.getDate();
-					Log.info(sessionToken, this, "delete user data", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 				}
 			} else {
 				response = Response.status(Status.NOT_FOUND).entity(new Error("data not exists for userId: "+userId)).build();

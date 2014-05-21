@@ -17,7 +17,6 @@ import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import java.io.InputStream;
-import java.util.Date;
 import java.util.Map;
 
 import javapns.devices.Device;
@@ -66,7 +65,6 @@ public class APNSResource {
 			@FormDataParam(Const.FILE) InputStream fileInputStream, 
 			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail) {
 		Response response = null;
-		Date startDate = Utils.getDate();
 		String certificatePath;
 		String sessionToken = Utils.getSessionToken(hh);
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -95,8 +93,6 @@ public class APNSResource {
 		} else if(code == -1){
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		}
-		Date endDate = Utils.getDate();
-		Log.info(sessionToken, this, "createCertificate", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		return response;
 	}
 	
@@ -106,7 +102,6 @@ public class APNSResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response registerDeviceToken(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		Date startDate = Utils.getDate();
 		String deviceToken = null;
 		String client = null;
 		String sessionToken = Utils.getSessionToken(hh);
@@ -135,8 +130,6 @@ public class APNSResource {
 		} else if(code == -1){
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		}
-		Date endDate = Utils.getDate();
-		Log.info(sessionToken, this, "registerDeviceToken", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		return response;
 	}
 	
@@ -146,11 +139,9 @@ public class APNSResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response unRegisterDeviceToken(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		Date startDate = Utils.getDate();
 		String deviceToken = null;
 		String client = null;
 		String sessionToken = Utils.getSessionToken(hh);
-		Log.debug("", this, "unRegisterDeviceToken", "********unRegisterDeviceToken ************");
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		//String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -175,8 +166,6 @@ public class APNSResource {
 		} else if(code == -1){
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		}
-		Date endDate = Utils.getDate();
-		Log.info(sessionToken, this, "unRegisterDeviceToken", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		return response;
 	}
 }

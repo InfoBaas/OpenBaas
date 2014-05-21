@@ -60,7 +60,7 @@ public class SocketConnector implements Runnable, IConnector {
 					if (newLinePos - startPos <= 1) continue;	
 					message.append(cbuf, startPos, (newLinePos-startPos));
 					Utils.printMemoryStats();
-					Log.error("",  "SocketConnector (" + strGuid + ")", "", "###Message received: " + message.toString());
+					//Log.debug("",  "SocketConnector (" + strGuid + ")", "", "###Message received: " + message.toString());
 					outbound.processMessage(message.toString());
 					startPos = newLinePos +1;
 					message.setLength(0);
@@ -71,14 +71,14 @@ public class SocketConnector implements Runnable, IConnector {
 				Log.error("",  "SocketConnector (" + strGuid + ")", "", "Error running thread", e);
 			}
 		}
-		Log.error("",  "SocketConnector (" + strGuid + ")", "", "###EXIT - logout do user:" + outbound.getUserId());
+		//Log.debug("",  "SocketConnector (" + strGuid + ")", "", "###EXIT - logout do user:" + outbound.getUserId());
 		close();
 	}
 
 	public boolean sendMessage(Message message) {
 		try {
 			out.println(CharBuffer.wrap(message.toString()));
-			Log.error("",  "SocketConnector (" + strGuid + ")", "", "###Message sent to chat room: " + message.toString());
+			//Log.debug("",  "SocketConnector (" + strGuid + ")", "", "###Message sent to chat room: " + message.toString());
 		} catch (Exception e) {
 			Log.error("",  "SocketConnector (" + strGuid + ")", "sendMessage", "Error sending Message", e);
 			return false;

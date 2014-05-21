@@ -75,8 +75,6 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 					adminHash = entry.getValue().getBytes("ISO-8859-1");
 				}
 			}
-			Log.debug("", this, "createAdminSession", "ADMIN HASH: " + adminHash.toString());
-			Log.debug("", this, "createAdminSession", "ADMIN SALT: " + adminSalt.toString());
 			if (adminId.equals(OPENBAASADMIN)
 					&& service.authenticate(attemptedPassword, adminHash,
 							adminSalt)) {

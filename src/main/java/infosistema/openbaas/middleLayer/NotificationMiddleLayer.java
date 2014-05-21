@@ -140,7 +140,7 @@ public class NotificationMiddleLayer {
 	}
 
 	public void pushNotificationCombine(String appId, String sender, String roomId) {
-		Log.error("",  "pushCombine", "", "###0 -appId:"+appId+" - sender: "+sender+" - roomId:"+roomId);
+		//Log.debug("",  "pushNotificationCombine", "", "###0 -appId:"+appId+" - sender: "+sender+" - roomId:"+roomId);
 		List<String> participants = new ArrayList<String>();
 		participants = chatModel.getListParticipants(appId, roomId);
 		try{
@@ -158,26 +158,26 @@ public class NotificationMiddleLayer {
 				}
 				List<String> unReadUsers = new ArrayList<String>();
 				Iterator<String> it = participants.iterator();
-				Log.error("",  "pushCombine", "", "###1 -participants size:"+participants.size());
+				//Log.debug("",  "pushNotificationCombine", "", "###1 -participants size:"+participants.size());
 				while(it.hasNext()){
 					String curr = it.next();
 					if(!curr.equals(sender)){
-						Log.error("",  "pushCombine", "", "###2 ");
+						//Log.debug("",  "pushNotificationCombine", "", "###2 ");
 						unReadUsers.add(curr);
 						if(flagNotification){
-							Log.error("",  "pushCombine", "", "###3 ");
+							//Log.debug("",  "pushNotificationCombine", "", "###3 ");
 							if(app!=null){
 								if(clientsList!= null && clientsList.size()>0){
-									Log.error("",  "pushCombine", "", "###4 ");
+									//Log.debug("",  "pushNotificationCombine", "", "###4 ");
 									if(certList.size()>0){
 										Iterator<Certificate> it3 = certList.iterator();
 										while(it3.hasNext()){
 											Certificate certi = it3.next();
-											Log.error("",  "pushCombine", "", "###5 ");
+											//Log.debug("",  "pushNotificationCombine", "", "###5 ");
 											List<Device> devices = noteModel.getDeviceIdList(appId, curr, certi.getClientId());
 											if(devices!=null && devices.size()>0){
 												int badge = chatModel.getTotalUnreadMsg(appId, curr).size();
-												Log.error("",  "pushCombine", "", "###6 -badge:"+badge+" - devices size"+devices.size());
+												//Log.debug("",  "pushNotificationCombine", "", "###6 -badge:"+badge+" - devices size"+devices.size());
 												ApplePushNotifications.pushCombineNotification("Recebeu uma mensagem nova",badge,certi.getCertificatePath(), certi.getAPNSPassword(), Const.getAPNS_PROD(), devices);
 											}
 										}

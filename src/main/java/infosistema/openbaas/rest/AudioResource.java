@@ -116,7 +116,6 @@ public class AudioResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			Log.debug("", this, "deleteAudio", "***********Deleting Audio***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.audio, audioId)) {
 				if(mediaMid.deleteMedia(appId, ModelEnum.audio, audioId))
 					response = Response.status(Status.OK).entity("").build();
@@ -189,7 +188,6 @@ public class AudioResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			Log.debug("", this, "findAudioById", "********Finding Audio Meta**********");
 			if (appsMid.appExists(this.appId)) {
 				if (mediaMid.mediaExists(this.appId, ModelEnum.audio, audioId)) {
 					Result res = mediaMid.getMedia(appId, ModelEnum.audio, audioId, true);
@@ -225,7 +223,6 @@ public class AudioResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			Log.debug("", this, "downloadAudio", "*********Downloading Audio**********");
 			if (this.mediaMid.mediaExists(appId, ModelEnum.audio, audioId)) {
 				Audio audio = (Audio)(mediaMid.getMedia(appId, ModelEnum.audio, audioId, false).getData());
 				sucess = mediaMid.download(appId, ModelEnum.audio, audioId,audio.getFileExtension(),quality,null);

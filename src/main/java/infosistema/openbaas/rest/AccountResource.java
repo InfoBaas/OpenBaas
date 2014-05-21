@@ -17,7 +17,6 @@ import infosistema.openbaas.utils.encryption.PasswordEncryptionService;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -82,7 +81,6 @@ public class AccountResource {
 		String appKey = null;
 		Boolean readOk = false;
 		String location = null;
-		Date startDate = Utils.getDate();
 		try {
 			appKey = headerParams.getFirst(Application.APP_KEY);
 		} catch (Exception e) { }
@@ -136,7 +134,6 @@ public class AccountResource {
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createSession(@Context HttpServletRequest req, JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
-		Date startDate = Utils.getDate();
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		String email = null; // user inserted fields
 		String attemptedPassword = null; // user inserted fields
@@ -155,7 +152,6 @@ public class AccountResource {
 			Log.error("", this, "createSession", "Error parsing the JSON.", e); 
 			return Response.status(Status.BAD_REQUEST).entity(new Error("Error reading JSON")).build();
 		}
-		Log.debug("", this, "signin", "********signin User ************ email: "+email);
 		try {
 			location = headerParams.getFirst(Const.LOCATION);
 		} catch (Exception e) { }
@@ -197,8 +193,6 @@ public class AccountResource {
 						outUser.setOnline("true");
 						outUser.setSocketPort(InboundSocket.getNextPort().toString());
 						response = Response.status(Status.OK).entity(res).build();
-						Date endDate = Utils.getDate();
-						Log.info(((User)res.getData()).getReturnToken(), this, "signin", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 					}
 				} else {
 					response = Response.status(Status.FORBIDDEN).entity(new Error(Const.getEmailConfirmationError())).build();
@@ -221,8 +215,6 @@ public class AccountResource {
 						outUser.setOnline("true");
 						outUser.setSocketPort(InboundSocket.getNextPort().toString());
 						response = Response.status(Status.OK).entity(res).build();
-						Date endDate = Utils.getDate();
-						Log.info(((User)res.getData()).getReturnToken(), this, "signin", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 					}
 				} else {
 					response = Response.status(Status.UNAUTHORIZED).entity(new Error("")).build();
@@ -243,11 +235,9 @@ public class AccountResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response patchSession( @HeaderParam(Const.USER_AGENT) String userAgent, @HeaderParam(Const.LOCATION) String location,
 			@PathParam(Const.SESSION_TOKEN) String sessionToken) {
-		Date startDate = Utils.getDate();
 		Response response = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-			Log.debug("", this, "patch account", "********patch session token ************ userId: "+userId);
 			Result res = usersMid.getUserInApp(appId, userId);
 			User user = (User)res.getData(); 
 			if (!sessionMid.checkAppForToken(sessionToken, appId))
@@ -259,13 +249,12 @@ public class AccountResource {
 				meta.setLocation(lastLocation);
 				sessionMid.refreshSession(sessionToken, location, userAgent);					
 				response = Response.status(Status.OK).entity(res).build();
-			} // if the device does not have the gps turned on we should not
+			}
+			// if the device does not have the gps turned on we should not
 			// refresh the session.
 			// only refresh it when an action is performed.
 
 			response = Response.status(Status.OK).entity(("SessionToken: "+sessionToken)).build();
-			Date endDate = Utils.getDate();
-			Log.info(sessionToken, this, "patch session token", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		} else
 			response = Response.status(Status.FORBIDDEN).entity(new Error("You do not have permission to access.")).build();
 		return response;
@@ -285,7 +274,6 @@ public class AccountResource {
 	@POST
 	@Path("/signout")
 	public Response deleteSession(JSONObject inputJsonObj, @Context HttpHeaders hh) {
-		Date startDate = Utils.getDate();
 		Response response = null;
 		String sessionToken = null;
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
@@ -293,7 +281,6 @@ public class AccountResource {
 		
 		Boolean flagAll = (Boolean) inputJsonObj.optBoolean("all",false);
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
-		Log.debug("", this, "signout", "********signout User ************ userId: "+userId);  
 		if(userId!=null){
 			if (sessionMid.sessionTokenExists(sessionToken)) {
 				if(!flagAll){
@@ -302,8 +289,6 @@ public class AccountResource {
 					if (sessionMid.deleteUserSession(sessionToken, userId)){
 						Result res = new Result("Signout OK", null);
 						response = Response.status(Status.OK).entity(res).build();
-						Date endDate = Utils.getDate();
-						Log.info(sessionToken, this, "signup", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 					}
 					else{
 						response = Response.status(Status.NOT_FOUND).entity(new Error("Not found")).build();
@@ -312,13 +297,10 @@ public class AccountResource {
 					if (!sessionMid.checkAppForToken(sessionToken, appId))
 						return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 					//deletes all sessions user
-					Log.debug("", this, "deleteSession", "********DELETING ALL SESSIONS FOR THIS USER");
 					boolean sucess = sessionMid.deleteAllUserSessions(userId);
 					if (sucess){
 						Result res = new Result("Signout OK", null);
 						response = Response.status(Status.OK).entity(res).build();
-						Date endDate = Utils.getDate();
-						Log.info(sessionToken, this, "signout", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 					}
 					else
 						response = Response.status(Status.NOT_FOUND).entity(new Error("No sessions exist")).build();
@@ -348,17 +330,13 @@ public class AccountResource {
 	@Path("/sessions/{sessionToken}")
 	public Response getUserIdWithSession(
 			@PathParam(Const.SESSION_TOKEN) String sessionToken) {
-		Date startDate = Utils.getDate();
 		Response response = null;
-		Log.debug("", this, "get session token", "********get session token id ************");
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
 			if (!sessionMid.checkAppForToken(sessionToken, appId))
 				return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 			Result res = new Result(userId, null);
 			response = Response.status(Status.OK).entity(res).build();
-			Date endDate = Utils.getDate();
-			Log.info(sessionToken, this, "get session token", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		} else
 			response = Response.status(Status.NOT_FOUND).entity(new Error(sessionToken)).build();
 		return response;
@@ -374,12 +352,10 @@ public class AccountResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("/sessions")
 	public Response getSessionFields(@Context HttpHeaders hh) {
-		Date startDate = Utils.getDate();
 		Response response = null;
 		String sessionToken = null;
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		sessionToken = headerParams.getFirst(Const.SESSION_TOKEN);
-		Log.debug("", this, "get all session token", "********get all sessions ************");
 		if (sessionMid.sessionTokenExists(sessionToken)) {
 			String userId 	= sessionMid.getUserIdUsingSessionToken(sessionToken);
 			if (!sessionMid.checkAppForToken(sessionToken, appId))
@@ -388,8 +364,6 @@ public class AccountResource {
 			User outUser = (User)res.getData(); 
 			outUser.setReturnToken(sessionToken);
 			response = Response.status(Status.OK).entity(res).build();
-			Date endDate = Utils.getDate();
-			Log.info(sessionToken, this, "get all session token", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		} else
 			response = Response.status(Status.NOT_FOUND).entity(new Error("Token NOT_FOUND")).build();
 		return response;
@@ -404,7 +378,6 @@ public class AccountResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response makeRecoveryRequest(JSONObject inputJson, @Context UriInfo ui, @Context HttpHeaders hh,
 			@HeaderParam(value = Const.LOCATION) String location, @HeaderParam(value = Application.APP_KEY) String appKey){
-		Date startDate = Utils.getDate();
 		Response response = null;
 		String email = null;
 		String newPass = Utils.getRandomString(Const.getPasswordLength());
@@ -415,7 +388,6 @@ public class AccountResource {
 		} catch (JSONException e) {
 			Log.error("", this, "makeRecoveryRequest", "Error parsing the JSON.", e); 
 		}
-		Log.debug("", this, "recovery pass", "********recovery user pass ************");
 		PasswordEncryptionService service = new PasswordEncryptionService();
 		try {
 			salt = service.generateSalt();
@@ -434,11 +406,8 @@ public class AccountResource {
 			return Response.status(Status.UNAUTHORIZED).entity("Wrong App Key").build();
 		boolean opOk = usersMid.recoverUser(appId, userId, email, ui, newPass, hash, salt, Metadata.getNewMetadata(location));
 		if(opOk){
-			String sessionToken = Utils.getSessionToken(hh);
 			Result res = new Result("Email sent with recovery details.", null);
 			response = Response.status(Status.OK).entity(res).build();
-			Date endDate = Utils.getDate();
-			Log.info(sessionToken, this, "recovery", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		}
 		else
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Wrong email.")).build();
@@ -451,14 +420,12 @@ public class AccountResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response changePasswordRequest(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh){
-		Date startDate = Utils.getDate();
 		Response response = null;
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		String oldPassword = null;
 		String newPassword = null; 
 		String userAgent = null;
 		String location = null;
-		Log.debug("", this, "change pass", "********change user pass ************");
 		try {
 			newPassword = (String) inputJsonObj.get("newPassword");
 			oldPassword = (String) inputJsonObj.get("oldPassword");
@@ -484,8 +451,6 @@ public class AccountResource {
 				if(location!=null)
 					sessionMid.refreshSession(sessionToken, location, userAgent);
 				response = Response.status(Status.OK).entity("Passoword correctly changed.").build();
-				Date endDate = Utils.getDate();
-				Log.info(sessionToken, this, "changepassword", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			}else
 				response = Response.status(Status.BAD_REQUEST).entity(new Error("Wrong old password.")).build();
 		}catch (Exception e) {

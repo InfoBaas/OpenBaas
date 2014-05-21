@@ -129,7 +129,7 @@ public class Storage extends Media {
 		String resultStatus = "";
         for (FileItem item : items) {
             if (item.isFormField()) {
-            	Log.debug("", this, "upload", item.getFieldName() + "=" + item.getString());
+            	Log.info("", this, "upload", item.getFieldName() + "=" + item.getString());
             }
             if (!item.isFormField()) {
                 try {

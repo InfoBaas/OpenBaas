@@ -37,13 +37,9 @@ public class Startup implements ServletContextListener {
 			Log.error("", this, "contextInitialized", "Invalid Key.", e); 
 		}
 		if (!usersMid.userEmailExists(AdminAppId, AdminEmail)) {
-			Log.debug("", this, "contextInitialized", "*****************Creating user***************");
-			Log.debug("", this, "contextInitialized", "userId: " + AdminId + " email: " + AdminEmail);
-			Log.debug("", this, "contextInitialized", "********************************************");
 			usersMid.createUser(this.AdminAppId, AdminId,OPENBAASADMIN,"NOK", "NOK", AdminEmail, salt, hash, null, null, null, false, null, null, null);
 		}
 		if(sessionMid.createSession(AdminSessionId, AdminAppId,AdminId, ADMINPASSWORD)){
-			Log.debug("", this, "contextInitialized", "Admin Session created. Id: ");
 			FeedBackSchedule.startManager();
 			NotificationsThread.startManager();
 		}

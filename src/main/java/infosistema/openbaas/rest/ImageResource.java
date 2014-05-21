@@ -15,7 +15,6 @@ import infosistema.openbaas.utils.Log;
 import infosistema.openbaas.utils.Utils;
 
 import java.io.InputStream;
-import java.util.Date;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -68,11 +67,8 @@ public class ImageResource {
 	public Response uploadImage(@Context HttpHeaders hh, @Context UriInfo ui, @FormDataParam(Const.FILE) InputStream uploadedInputStream,
 			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail, @HeaderParam(value = Const.LOCATION) String location,
 			@FormDataParam(Const.MESSAGEID) String messageId) {
-		Date startDate = Utils.getDate();
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
-		Log.debug("", this, "upload image", "********upload image ************");
-		Log.error("", this, "upload image", "********upload image ###### messageId:"+messageId);
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -87,8 +83,6 @@ public class ImageResource {
 			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if(code == -1)
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
-		Date endDate = Utils.getDate();
-		Log.info(sessionToken, this, "upload image", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		return response;
 	}
 
@@ -110,11 +104,9 @@ public class ImageResource {
 	public Response deleteImage(@Context HttpHeaders hh, @PathParam("imageId") String imageId) {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
-		Log.debug("", this, "del image", "********del image ************");
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (SessionMiddleLayer.getInstance().sessionTokenExists(sessionToken)) {
-			Log.debug("", this, "deleteImage", "***********Deleting Image***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.image, imageId)) {
 				if (this.mediaMid.deleteMedia(appId, ModelEnum.image, imageId))
 					response = Response.status(Status.OK).entity("").build();
@@ -146,7 +138,6 @@ public class ImageResource {
 		QueryParameters qp = QueryParameters.getQueryParameters(appId, null, query, radiusStr, latitudeStr, longitudeStr, 
 				pageNumberStr, pageSizeStr, orderByStr, orderTypeStr, ModelEnum.image,pageCount,pageIndex);
 		Response response = null;
-		Log.debug("", this, "get images list", "********get images list ************");
 		if(pageNumberStr==null) pageNumberStr = "1";
 		String sessionToken = Utils.getSessionToken(hh);
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
@@ -195,7 +186,6 @@ public class ImageResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			Log.debug("", this, "getImageMetadata", "********Finding Image Meta**********");
 			if(AppsMiddleLayer.getInstance().appExists(this.appId)){
 				if(mediaMid.mediaExists(appId, ModelEnum.image, imageId)){
 					Result res = mediaMid.getMedia(appId, ModelEnum.image, imageId, true);
@@ -223,23 +213,17 @@ public class ImageResource {
 	//@Produces({ MediaType.APPLICATION_OCTET_STREAM })
 	public Response downloadImage(@PathParam("imageId") String imageId, @PathParam("quality") String quality,
 			@QueryParam("bars") String bars, @Context UriInfo ui, @Context HttpHeaders hh) {
-		Date startDate = Utils.getDate();
 		Response response = null;
 		byte[] sucess = null;
 		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
 		//int code=1;
-		Log.debug("", this, "download image", "******** download image ************");
 		if (code == 1) {
-			String sessionToken = Utils.getSessionToken(hh);
-			Log.debug("", this, "downloadImage", "*********Downloading Image**********");
 			if (mediaMid.mediaExists(appId, ModelEnum.image, imageId)) {
 				Image image = (Image)(mediaMid.getMedia(appId, ModelEnum.image, imageId, false).getData());
 				sucess = mediaMid.download(appId, ModelEnum.image, imageId, image.getFileExtension(),quality,bars);
 				if (sucess!=null){ 
-					Date endDate = Utils.getDate();
-					Log.info(sessionToken, this, "upload image", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 					return Response.ok(sucess, MediaType.APPLICATION_OCTET_STREAM)
 							.header("content-disposition","attachment; filename = "+image.getFileName()+"."+image.getFileExtension()).build();
 				}else{

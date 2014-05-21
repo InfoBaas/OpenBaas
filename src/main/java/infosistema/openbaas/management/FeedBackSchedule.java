@@ -56,7 +56,6 @@ public class FeedBackSchedule extends Thread {
 		  try {
 			  try {
 				  get().removeInactiveDevices();
-		          Log.info("FeedBackSchedule", this, "run", "NextSleepTime= " + sleepTime + " msec");
 	          } catch (Exception e) {
 	        	  Log.warning("FeedBackSchedule", this, "run", "Failed to using APNS feedback service: ", e);
 	          }

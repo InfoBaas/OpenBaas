@@ -124,7 +124,6 @@ public class AwsModel implements FileInterface {
 	@Override
 	public boolean createUser(String appId, String userId, String userName)
 			throws EntityAlreadyExistsException {
-		Log.debug("", this, "createUser", "appId: " + appId + " userId: " + userId + " userName: " + userName);
 		this.startIAM();
 		CreateUserRequest user = new CreateUserRequest(userId);
 		CreateAccessKeyRequest key = new CreateAccessKeyRequest();
@@ -175,7 +174,6 @@ public class AwsModel implements FileInterface {
 			S3Object object = s3.getObject(new GetObjectRequest(Const.getAwsOpenBaasBucket(), directory.toString()));
 			S3ObjectInputStream s3ObjInputStream = object.getObjectContent();
 			byteArray = IOUtils.toByteArray(s3ObjInputStream);
-			Log.debug("", this, "download", "Downloading to: " + directory.toString());
 			soutputStream = new FileOutputStream(new File(directory.toString()));
 			int read = 0;
 			byte[] bytes = new byte[1024];

@@ -10,7 +10,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -189,7 +188,6 @@ public class IntegrationResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response test4(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) throws IOException{
-		Date startDate = Utils.getDate();
 		String everything="";
 		 BufferedReader br = new BufferedReader(new FileReader("/home/aniceto/baas/file2000x2000.txt"));
 		    try {
@@ -234,8 +232,6 @@ public class IntegrationResource {
 	        e.printStackTrace();
 	      }
 	    }
-	    Date endDate = Utils.getDate();
-	    System.out.println(Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		
 		return Response.status(Status.OK).entity("DEL OK").build();
 	}
@@ -252,7 +248,6 @@ public class IntegrationResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createOrLoginFacebookUser(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh) {
-		Date startDate = Utils.getDate();
 		Response response = null;
 		MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
 		String email = null;
@@ -308,14 +303,10 @@ public class IntegrationResource {
 		userId = usersMid.getUserIdUsingEmail(appId, email);
 		//userSocialId = usersMid.socialUserExists(appId, socialId, socialNetwork);
 		if (userId == null) {
-			Log.debug("", this, "signup with FB", "********signup with FB ************ email: "+email);
 			if (uriInfo == null) uriInfo=ui;
 			Result res = usersMid.createSocialUserAndLogin(headerParams, appId, userName,email, socialId, socialNetwork, Metadata.getNewMetadata(location));
-			Date endDate = Utils.getDate();
-			Log.info(((User)res.getData()).getReturnToken(), this, "signup fb", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			response = Response.status(Status.CREATED).entity(res).build();
 		} else {
-			Log.debug("", this, "signin with FB", "********signin with FB ************ email: "+email);
 			String sessionToken = Utils.getRandomString(Const.getIdLength());
 			boolean validation = sessionMid.createSession(sessionToken, appId, userId, socialId);
 			if(validation){
@@ -340,8 +331,6 @@ public class IntegrationResource {
 				outUser.setUserName(userName);
 				Result res = new Result(outUser, data.getMetadata());
 				response = Response.status(Status.OK).entity(res).build();
-				Date endDate = Utils.getDate();
-				Log.info(((User)res.getData()).getReturnToken(), this, "signin fb", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			}
 		}
 		return response;

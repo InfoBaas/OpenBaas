@@ -21,7 +21,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -85,8 +84,6 @@ public class AppResource {
 	public Response createApp(JSONObject inputJsonObj,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
-		Date startDate = Utils.getDate();
-		Log.debug("", this, "post app ", "********post app  ************");
 		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
 			Application temp = null;
@@ -131,11 +128,8 @@ public class AppResource {
 						imageRes,imageBars,videoRes,audioRes, clientsList);
 			}
 			if (temp != null) {
-				String sessionToken = Utils.getSessionToken(hh);
 				Result res = new Result(temp, null);
 				response = Response.status(Status.CREATED).entity(res).build();
-				Date endDate = Utils.getDate();
-				Log.info(sessionToken, this, "create app", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			} else {
 				response = Response.status(302).entity(new Error("not created")).build();
 			}
@@ -151,13 +145,10 @@ public class AppResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getUserState(@PathParam(Const.APP_ID) String appId, JSONObject inputJsonObj, 
 			@Context UriInfo ui, @Context HttpHeaders hh) {
-		Date startDate = Utils.getDate();
 		Response response = null;
 		List<UsersState> listRes = new ArrayList<UsersState>();
-		Log.debug("", this, "post getUserState ", "********post getUserState  ************");
 		int code = Utils.treatParameters(ui, hh);
 		if (code == 1) {
-			String sessionToken = Utils.getSessionToken(hh);
 			try {
 				JSONArray inputJsonArray = inputJsonObj.getJSONArray(Application.USERS);
 				Boolean includeNulls = inputJsonObj.optBoolean(Application.INCLUDEMISSES, false);
@@ -182,8 +173,6 @@ public class AppResource {
 								listRes.add(null);
 						}
 					}
-					Date endDate = Utils.getDate();
-					Log.info(sessionToken, this, "usersstate", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 					return Response.status(Status.OK).entity(listRes).build();
 				}else{
 					return  Response.status(Status.NOT_FOUND).entity(new Error("UserIds Array empty")).build();
@@ -206,10 +195,8 @@ public class AppResource {
 	public Response uploadLog(@PathParam(Const.APP_ID) String appId, @Context HttpHeaders hh, 
 			@Context UriInfo ui, @FormDataParam(Const.FILE) InputStream uploadedInputStream,
 			@FormDataParam(Const.FILE) FormDataContentDisposition fileDetail) {
-		Date startDate = Utils.getDate();
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
-		Log.debug("", this, "upload image", "********upload image ************");
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		String userId = sessionMid.getUserIdUsingSessionToken(sessionToken);
@@ -224,10 +211,10 @@ public class AppResource {
 			response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();
 		} else if(code == -1)
 			response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
-		Date endDate = Utils.getDate();
-		Log.info(sessionToken, this, "upload image", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 		return response;	
 	}
+	
+	
  	// *** UPDATE *** //
 	
 	/**
@@ -243,12 +230,10 @@ public class AppResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateApp(@PathParam(Const.APP_ID) String appId,	JSONObject inputJsonObj,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
-		Date startDate = Utils.getDate();
 		List<String> oldImageRes = new ArrayList<String>();
 		List<String> oldVideoRes = new ArrayList<String>();
 		List<String> oldAudioRes = new ArrayList<String>();
 		Response response = null;
-		Log.debug("", this, "patch app ", "********patch app  ************");
 		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
 			String newAlive = null;
@@ -311,12 +296,9 @@ public class AppResource {
 					this.appsMid.updateFilesRes(imageRes,imageBars,videoRes,audioRes,appId,
 							oldImageRes,oldVideoRes,oldAudioRes);
 				}				
-				String sessionToken = Utils.getSessionToken(hh);
 				temp = this.appsMid.updateAllAppFields(appId, newAlive, newAppName,newConfirmUsersEmail,newAWS,newFTP,newFileSystem, clientsList);
 				Result res = new Result(temp, null);
 				response = Response.status(Status.OK).entity(res).build();
-				Date endDate = Utils.getDate();
-				Log.info(sessionToken, this, "patch app", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			} else {
 				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 			}
@@ -341,17 +323,11 @@ public class AppResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response deleteApp(@PathParam(Const.APP_ID) String appId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
-		Date startDate = Utils.getDate();
 		Response response = null;
-		Log.debug("", this, "del app ", "********del app  ************");
 		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
-			Log.debug("", this, "deleteApp", "*Deleting App (setting as inactive)*");
 			if (this.appsMid.removeApp(appId)) {
-				String sessionToken = Utils.getSessionToken(hh);
 				response = Response.status(Status.OK).entity(appId).build();
-				Date endDate = Utils.getDate();
-				Log.info(sessionToken, this, "delete app", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			} else
 				response = Response.status(Status.NOT_FOUND).entity(new Error(appId)).build();
 		} else if(code == -2){
@@ -378,20 +354,15 @@ public class AppResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response findById(@PathParam(Const.APP_ID) String appId,
 			@Context UriInfo ui, @Context HttpHeaders hh) {
-		Date startDate = Utils.getDate();
 		Response response = null;
 		int code = Utils.treatParametersAdmin(ui, hh);
 		if (code == 1) {
-			Log.debug("", this, "findById", "********Finding App info************");
 			Application temp = appsMid.getApp(appId);
 			if (temp == null)
 				return Response.status(Status.NOT_FOUND).entity(new Error("App not exist")).build();
 			else {
-				String sessionToken = Utils.getSessionToken(hh);
 				Result res = new Result(temp, null);
 				response = Response.status(Status.OK).entity(res).build();
-				Date endDate = Utils.getDate();
-				Log.info(sessionToken, this, "get app", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time:" + (endDate.getTime()-startDate.getTime()));
 			}
 		} else if(code == -2){
 			 response = Response.status(Status.FORBIDDEN).entity(new Error("Invalid Session Token.")).build();

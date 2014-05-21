@@ -105,7 +105,6 @@ public class VideoResource {
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (sessionMid.sessionTokenExists(sessionToken)) {
-			Log.debug("", this, "deleteVideo", "***********Deleting Video***********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 				if (mediaMid.deleteMedia(appId, ModelEnum.video, videoId))
 					response = Response.status(Status.OK).entity("").build();
@@ -174,7 +173,6 @@ public class VideoResource {
 		if (!sessionMid.checkAppForToken(sessionToken, appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		if (sessionMid.sessionTokenExists(sessionToken)) {
-			Log.debug("", this, "findById", "********Finding Video Meta**********");
 			if (AppsMiddleLayer.getInstance().appExists(appId)) {
 				if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 					Result res = mediaMid.getMedia(appId, ModelEnum.video, videoId, true);
@@ -207,7 +205,6 @@ public class VideoResource {
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		byte[] sucess = null;
 		if (sessionMid.sessionTokenExists(sessionToken)) {
-			Log.debug("", this, "updateUser", "*********Downloading Video**********");
 			if (mediaMid.mediaExists(appId, ModelEnum.video, videoId)) {
 				Video video = (Video)(mediaMid.getMedia(appId, ModelEnum.video, videoId, false).getData());
 				sucess = mediaMid.download(appId, ModelEnum.video, videoId, video.getFileExtension(),quality,null);

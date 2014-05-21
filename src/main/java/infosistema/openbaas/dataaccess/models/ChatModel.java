@@ -367,7 +367,6 @@ public class ChatModel {
 			if(jsonArray.length()>0){
 				String unreadMsgKey = getUnreadMsgKey(appId, userId);
 				for(int i = 0;i<jsonArray.length();i++){
-					//Log.error("", "", "readMessages", "********readMessages read ###### userId:"+userId +" - mensagem:"+jsonArray.getString(i));
 					aux = jedis.lrem(unreadMsgKey, 0, jsonArray.getString(i));
 					res += ((int)(long)aux);
 				}
