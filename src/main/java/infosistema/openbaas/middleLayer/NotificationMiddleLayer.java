@@ -21,6 +21,7 @@ import infosistema.openbaas.dataaccess.models.NotificationsModel;
 import infosistema.openbaas.utils.ApplePushNotifications;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
+import infosistema.openbaas.utils.Utils;
 
 
 public class NotificationMiddleLayer {
@@ -77,30 +78,50 @@ public class NotificationMiddleLayer {
 
 	public void pushBadge(String appId, String userId, String roomId) {
 		try {
+			Date startDate = Utils.getDate();
 			int numberBadge = 0;
-			//List<Certificate> certList = new ArrayList<Certificate>();
 			Application app = appModel.getApplication(appId);
 			List<String> unReadMsgs =  chatModel.getTotalUnreadMsg(appId, userId);
-			//int numberBadge = chatModel.getTotalUnreadMsg(appId, userId).size();
 			Boolean flagNotification = null;
-			if(roomId!=null){
+			Date endDate = Utils.getDate();
+			Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$1:" + (endDate.getTime()-startDate.getTime()));
+			startDate = endDate;
+			if(roomId != null){
 				numberBadge = unReadMsgs.size();
 				flagNotification = chatModel.hasNotification(appId, roomId);
-				if(flagNotification){
+				endDate = Utils.getDate();
+				Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$2:" + (endDate.getTime()-startDate.getTime()));
+				startDate = endDate;
+				if (flagNotification){
 					sendBadge(appId, userId, app, numberBadge,roomId);
 				}
+				endDate = Utils.getDate();
+				Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$3:" + (endDate.getTime()-startDate.getTime()));
+				startDate = endDate;
 			}else{
 				Iterator<String> it = unReadMsgs.iterator();
 				while(it.hasNext()){
 					String messageId = it.next();
 					ChatMessage msg = chatModel.getMessage(appId, messageId);
+					endDate = Utils.getDate();
+					Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$4:" + (endDate.getTime()-startDate.getTime()));
+					startDate = endDate;
 					flagNotification = chatModel.hasNotification(appId, msg.getRoomId());
+					endDate = Utils.getDate();
+					Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$5:" + (endDate.getTime()-startDate.getTime()));
+					startDate = endDate;
 					if(flagNotification){
 						numberBadge++;
 						sendBadge(appId, userId, app, numberBadge,msg.getRoomId());
+						endDate = Utils.getDate();
+						Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$6:" + (endDate.getTime()-startDate.getTime()));
+						startDate = endDate;
 					}
 				}
 			}
+			endDate = Utils.getDate();
+			Log.info("", this, "$$$$$$", "Start: " + Utils.printDate(startDate) + " - Finish:" + Utils.printDate(endDate) + " - Time$3:" + (endDate.getTime()-startDate.getTime()));
+			startDate = endDate;
 		} catch (Exception e) {
 			Log.error("", this, "pushBadge", "Error pushing the badge.", e);
 		}

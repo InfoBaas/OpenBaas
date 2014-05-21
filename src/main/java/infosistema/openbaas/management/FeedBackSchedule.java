@@ -64,7 +64,7 @@ public class FeedBackSchedule extends Thread {
 			  if (keepRunning) {
 				  Log.error("FeedBackSchedule", this, "run", "Thread interrupted: ", e); 
 			  } else {
-				  Log.info("FeedBackSchedule", this, "run", "Stopping event manager..."); 
+				  Log.error("FeedBackSchedule", this, "run", "Stopping event manager...", e); 
 			  }
 	      } catch (Exception e) {
 	    	  Log.error("FeedBackSchedule", this, "run", "Failed to check events: ", e); 

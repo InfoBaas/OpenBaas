@@ -58,7 +58,7 @@ public class NotificationsThread extends Thread {
   			  if (keepRunning) {
   				  Log.error("PushNotifications", this, "run", "Thread interrupted: ", e); 
   			  } else {
-  				  Log.info("PushNotifications", this, "run", "Stopping event manager..."); 
+  				  Log.error("PushNotifications", this, "run", "Stopping event manager...", e); 
   			  }
   	      } catch (Exception e) {
   	    	  Log.error("PushNotifications", this, "run", "Failed to check events: ", e); 

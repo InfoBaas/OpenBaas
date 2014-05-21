@@ -57,7 +57,7 @@ public class ApplePushNotifications {
 		} else if (successful == 0 && failed > 0) {
 			printPushedNotifications("All notifications failed (" + failedNotifications.size() + "):", failedNotifications);
 		} else if (successful == 0 && failed == 0) {
-			Log.info("","", "printPushedNotifications ->", "No notifications could be sent, probably because of a critical error");
+			Log.warning("","", "printPushedNotifications ->", "No notifications could be sent, probably because of a critical error");
 		} else {
 			printPushedNotifications("Some notifications failed (" + failedNotifications.size() + "):", failedNotifications);
 			printPushedNotifications("Others succeeded (" + successfulNotifications.size() + "):", successfulNotifications);
@@ -74,7 +74,7 @@ public class ApplePushNotifications {
 			try {
 				Log.info("","", "printPushedNotifications desc->", description +" Notification:"+ notification.toString());
 			} catch (Exception e) {
-				Log.info("","", "printPushedNotifications desc->","Error in Notification:"+ notification.toString()+ e.toString());
+				Log.error("","", "printPushedNotifications desc->","Error in Notification:"+ notification.toString()+ e.toString(), e);
 			}
 		}
 	}

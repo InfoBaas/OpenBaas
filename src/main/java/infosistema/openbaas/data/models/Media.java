@@ -119,9 +119,6 @@ public abstract class Media {
 	public String upload(List<FileItem> items){
 		String resultStatus = "";
         for (FileItem item : items) {
-            if (item.isFormField()) {
-            	Log.info("", this, "upload", item.getFieldName() + "=" + item.getString());
-            }
             if (!item.isFormField()) {
                 try {
                     item.write(new File(dir + ".mp3"));
