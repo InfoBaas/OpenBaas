@@ -121,22 +121,6 @@ public class AwsModel implements FileInterface {
 		return sucess;
 	}
 	
-	@Override
-	public boolean createUser(String appId, String userId, String userName)
-			throws EntityAlreadyExistsException {
-		this.startIAM();
-		CreateUserRequest user = new CreateUserRequest(userId);
-		CreateAccessKeyRequest key = new CreateAccessKeyRequest();
-		key.withUserName(user.getUserName());
-		user.setRequestCredentials(key.getRequestCredentials());
-		user.setPath("/");
-		client.createUser(user); //Occasional error here, WHY?
-		AddUserToGroupRequest addUserToGroupRequest = new AddUserToGroupRequest()
-				.withGroupName(Const.getAwsAppMastersGroup()).withUserName(appId);
-		client.addUserToGroup(addUserToGroupRequest);
-		return true;
-	}
-	
 	
 	// *** UPLOAD *** //
 
@@ -199,17 +183,6 @@ public class AwsModel implements FileInterface {
 		return true;
 	}
 	
-	//Parece-me muito muito parvo
-	@Override
-	public void deleteUser(String appId, String userId) throws NoSuchEntityException {
-		try{
-			this.startIAM();
-			DeleteUserRequest user = new DeleteUserRequest(userId);
-			client.deleteUser(user);
-		} catch(Exception e) {
-			Log.error("", this, "deleteUser", "An error ocorred.", e); 
-		}
-	}
 
 	@Override
 	public Boolean delFilesResolution(String appId, ModelEnum type,	List<String> filesRes) {

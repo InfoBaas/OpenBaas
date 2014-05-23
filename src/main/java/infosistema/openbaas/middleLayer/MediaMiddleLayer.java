@@ -1,5 +1,6 @@
 package infosistema.openbaas.middleLayer;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -111,11 +113,14 @@ public class MediaMiddleLayer extends MiddleLayerAbstract {
 		//Upload File
 		FileInterface fileModel = getAppFileInterface(appId);
 		try{
-			filePath = fileModel.upload(appId, type, id, fields.get(Media.FILEEXTENSION), stream);
-			File file = new File(filePath);
+			byte[] bytes = IOUtils.toByteArray(stream);
+			InputStream is1 = new ByteArrayInputStream(bytes); 
+			filePath = fileModel.upload(appId, type, id, fields.get(Media.FILEEXTENSION), is1);
+			int size = bytes.length;
+			//File file = new File(filePath);
 			fields.put(Media.PATH, filePath);
 			fields.put(type+"Id", id);
-			fields.put(Media.SIZE, String.valueOf(file.length()));
+			fields.put(Media.SIZE, String.valueOf(size));
 		} catch(AmazonServiceException e) {
 			Log.error("", this, "upload", "Amazon Service error.", e);
 			return null;

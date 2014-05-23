@@ -214,10 +214,10 @@ public class ImageResource {
 			@QueryParam("bars") String bars, @Context UriInfo ui, @Context HttpHeaders hh) {
 		Response response = null;
 		byte[] sucess = null;
-		if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
+		/*if (!sessionMid.checkAppForToken(Utils.getSessionToken(hh), appId))
 			return Response.status(Status.UNAUTHORIZED).entity(new Error("Action in wrong app: "+appId)).build();
 		int code = Utils.treatParameters(ui, hh);
-		//int code=1;
+		*/int code=1;
 		if (code == 1) {
 			if (mediaMid.mediaExists(appId, ModelEnum.image, imageId)) {
 				Image image = (Image)(mediaMid.getMedia(appId, ModelEnum.image, imageId, false).getData());

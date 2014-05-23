@@ -27,13 +27,6 @@ public class FtpModel implements FileInterface {
 		return true;
 	}
 	
-	@Override
-	public boolean createUser(String appId, String userId, String userName) throws Exception {
-		//TODO
-		return false;
-	}
-
-	
 	// *** UPLOAD *** //
 
 	@Override
@@ -60,11 +53,7 @@ public class FtpModel implements FileInterface {
 		return false;
 	}
 	
-	@Override
-	public void deleteUser(String appId, String userId) throws Exception {
-		//TODO
-	}
-
+	
 	@Override
 	public Boolean delFilesResolution(String appId, ModelEnum type,	List<String> filesRes) {
 		// TODO 

@@ -53,7 +53,7 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	 * @return
 	 */
 	public Application createApp(String appId, String appKey, String appName, boolean userEmailConfirmation,
-			boolean AWS,boolean FTP,boolean FileSystem, JSONObject ImageRes,JSONObject ImageBars,
+			boolean AWS,boolean FTP,boolean FileSystem,boolean Dropbox, JSONObject ImageRes,JSONObject ImageBars,
 			JSONObject videoRes,JSONObject AudioRes, List<String> clientsList) {
 		byte[] salt = null;
 		byte[] hash = null;
@@ -63,7 +63,7 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 		try {
 			salt = service.generateSalt();
 			hash = service.getEncryptedPassword(appKey, salt);
-			app = appModel.createApp(appId,appKey, hash, salt, appName, new Date().toString(), userEmailConfirmation,AWS,FTP,FileSystem,clientsList);
+			app = appModel.createApp(appId,appKey, hash, salt, appName, new Date().toString(), userEmailConfirmation,AWS,FTP,FileSystem,Dropbox,clientsList);
 			if(ImageBars!=null && ImageBars.length()>0){
 				appModel.createAppResolutions(ImageRes,appId,ModelEnum.bars);
 			}
@@ -100,9 +100,9 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 	// *** UPDATE *** //
 	
 	public Application updateAllAppFields(String appId, String alive, String newAppName, boolean confirmUsersEmail,
-			boolean AWS,boolean FTP,boolean FILESYSTEM, List<String> clientsList) {
+			boolean AWS,boolean FTP,boolean FILESYSTEM, boolean Dropbox, List<String> clientsList) {
 		if (appModel.appExists(appId)) {
-			appModel.updateAppFields(appId, alive, newAppName, confirmUsersEmail,AWS,FTP,FILESYSTEM, clientsList);
+			appModel.updateAppFields(appId, alive, newAppName, confirmUsersEmail,AWS,FTP,FILESYSTEM,Dropbox, clientsList);
 			return appModel.getApplication(appId);
 		}
 		return null;

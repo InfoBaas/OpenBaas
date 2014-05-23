@@ -44,6 +44,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -65,7 +66,19 @@ public class AppResource {
 
 	@Context
 	UriInfo uriInfo;
-
+/*
+	@GET
+	@Path("/Test")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response TestJM(@Context UriInfo ui, @Context HttpHeaders hh) {
+		try {
+			CopyClient.authenticate();
+		} 
+		catch (Exception e) {
+			return null;
+		}
+		return Response.status(200).build();
+	}*/
 	// *** CREATE *** //
 
 	/**
@@ -92,6 +105,7 @@ public class AppResource {
 			boolean AWS;
 			boolean FTP;
 			boolean FileSystem;
+			boolean DropboxCloud;
 			String appId = null;
 			String appKey = null;
 			boolean readSucess = false;
@@ -110,11 +124,12 @@ public class AppResource {
 				confirmUsersEmail = (boolean) inputJsonObj.optBoolean(Application.CONFIRM_USERS_EMAIL, false);
 				AWS = (boolean) inputJsonObj.optBoolean(FileMode.aws.toString(), false);
 				FTP = (boolean) inputJsonObj.optBoolean(FileMode.ftp.toString(), false);
-				if(!AWS && !FTP)
+				DropboxCloud = (boolean) inputJsonObj.optBoolean(FileMode.dropbox_cloud.toString(), false);
+				if(!AWS && !FTP && !DropboxCloud )
 					FileSystem = (boolean) inputJsonObj.optBoolean(FileMode.filesystem.toString(), true);
 				else 
 					FileSystem = (boolean) inputJsonObj.optBoolean(FileMode.filesystem.toString(), false);
-				if(!AWS && !FTP && !FileSystem)
+				if(!AWS && !FTP && !FileSystem && !DropboxCloud)
 					FileSystem = true;
 				readSucess = true;
 			} catch (JSONException e) {
@@ -124,7 +139,7 @@ public class AppResource {
 			if (readSucess) {
 				appId = Utils.getRandomString(Const.getIdLength());
 				appKey = Utils.getRandomString(Const.getIdLength());
-				temp = appsMid.createApp(appId, appKey, appName, confirmUsersEmail, AWS, FTP, FileSystem,
+				temp = appsMid.createApp(appId, appKey, appName, confirmUsersEmail, AWS, FTP, FileSystem,DropboxCloud,
 						imageRes,imageBars,videoRes,audioRes, clientsList);
 			}
 			if (temp != null) {
@@ -247,6 +262,7 @@ public class AppResource {
 			Boolean newAWS;
 			Boolean newFTP;
 			Boolean newFileSystem;
+			Boolean newDropbox;
 			Boolean newConfirmUsersEmail;
 			newAlive = inputJsonObj.optString(Application.ALIVE); //mudar para boolean
 			newAppName = inputJsonObj.optString(Application.APP_NAME);
@@ -254,6 +270,7 @@ public class AppResource {
 			newAWS = (Boolean) inputJsonObj.opt(FileMode.aws.toString());
 			newFTP = (Boolean) inputJsonObj.opt(FileMode.ftp.toString());
 			newFileSystem = (Boolean) inputJsonObj.opt(FileMode.filesystem.toString());
+			newDropbox = (Boolean) inputJsonObj.opt(FileMode.dropbox_cloud.toString());
 			imageRes = (JSONObject) inputJsonObj.opt(Application.IMAGE_RES);
 			imageBars = (JSONObject) inputJsonObj.opt(Application.IMAGE_BARS);
 			videoRes = (JSONObject) inputJsonObj.opt(Application.VIDEO_RES);
@@ -277,8 +294,10 @@ public class AppResource {
 				newFTP = app.getFTP();
 			if(newFileSystem==null)
 				newFileSystem = app.getFileSystem();
+			if(newDropbox==null)
+				newDropbox = app.getDropbox();
 			
-			if(!newAWS && !newFTP && !newFileSystem)
+			if(!newAWS && !newFTP && !newFileSystem && !newDropbox)
 				newFileSystem = true;
 			
 			if (this.appsMid.appExists(appId)) {
@@ -296,7 +315,7 @@ public class AppResource {
 					this.appsMid.updateFilesRes(imageRes,imageBars,videoRes,audioRes,appId,
 							oldImageRes,oldVideoRes,oldAudioRes);
 				}				
-				temp = this.appsMid.updateAllAppFields(appId, newAlive, newAppName,newConfirmUsersEmail,newAWS,newFTP,newFileSystem, clientsList);
+				temp = this.appsMid.updateAllAppFields(appId, newAlive, newAppName,newConfirmUsersEmail,newAWS,newFTP,newFileSystem,newDropbox, clientsList);
 				Result res = new Result(temp, null);
 				response = Response.status(Status.OK).entity(res).build();
 			} else {

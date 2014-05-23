@@ -80,7 +80,7 @@ public class Utils {
 	}
 	
 	public static String getRandomString(int length) {
-		return (String) UUID.randomUUID().toString().subSequence(0, length);
+		return (String) ("OB"+UUID.randomUUID().toString().subSequence(0, length));
 	}
 	
 	public static long roundUp(long num, long divisor) {

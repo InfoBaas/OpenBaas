@@ -106,6 +106,13 @@ public class Const {
 
 	public static int SOCKET_PORT_MIN = 4000;
 	public static int SOCKET_PORT_MAX = 4010;
+	
+	private static String DROPBOX_EMAIL="joao.infosistema.com";
+	private static String DROPBOX_PASS="infosistema";
+	private static String DROPBOX_CONSUMER_APPKEY="wn8bocbdM8k4MrBfVbgelT6HNfzR2l19";
+	private static String DROPBOX_CONSUMER_APPSECRET="dc5JUkvUbHXmwo0qLDF1Y86DUdLuTshZsF6omQ8bOuGLHxxQ";
+	private static String DROPBOX_ACCESS_TOKEN_KEY="xgmb7uy9rdy05crn";
+	private static String DROPBOX_ACCESS_TOKEN_SECRET="wfv2qadmv6i7k21";
 
 	static {
 		loadConstants();
@@ -293,6 +300,24 @@ public class Const {
 			try {
 				SOCKET_PORT_MAX = Integer.parseInt(props.getProperty("SOCKET_PORT_MAX"));
 			} catch (Exception e) {}
+			
+			stmp = props.getProperty("DROPBOX_EMAIL");
+			if (stmp != null) DROPBOX_EMAIL = stmp;
+			
+			stmp = props.getProperty("DROPBOX_PASS");
+			if (stmp != null) DROPBOX_PASS = stmp;
+			
+			stmp = props.getProperty("DROPBOX_CONSUMER_APPKEY");
+			if (stmp != null) DROPBOX_CONSUMER_APPKEY = stmp;
+			
+			stmp = props.getProperty("DROPBOX_CONSUMER_APPSECRET");
+			if (stmp != null) DROPBOX_CONSUMER_APPSECRET = stmp;
+
+			stmp = props.getProperty("DROPBOX_ACCESS_TOKEN_KEY");
+			if (stmp != null) DROPBOX_ACCESS_TOKEN_KEY=stmp;
+			
+			stmp = props.getProperty("DROPBOX_ACCESS_TOKEN_SECRET");
+			if (stmp != null) DROPBOX_ACCESS_TOKEN_SECRET=stmp;
 
 		} catch (Throwable t) {
 			Log.error("", "Const", "updateConstants", t.getMessage());
@@ -516,6 +541,33 @@ public class Const {
 
 	public static int getAPNS_PUSH_CICLE() {
 		return APNS_PUSH_CICLE;
+	}
+
+	public static String getDROPBOX_EMAIL() {
+		return DROPBOX_EMAIL;
+	}
+
+	
+	public static String getDROPBOX_PASS() {
+		return DROPBOX_PASS;
+	}
+
+	
+	public static String getDROPBOX_CONSUMER_APPKEY() {
+		return DROPBOX_CONSUMER_APPKEY;
+	}
+
+	
+	public static String getDROPBOX_CONSUMER_APPSECRET() {
+		return DROPBOX_CONSUMER_APPSECRET;
+	}
+
+	public static String getDROPBOX_ACCESS_TOKEN_KEY() {
+		return DROPBOX_ACCESS_TOKEN_KEY;
+	}
+
+	public static String getDROPBOX_ACCESS_TOKEN_SECRET() {
+		return DROPBOX_ACCESS_TOKEN_SECRET;
 	}
 
 }

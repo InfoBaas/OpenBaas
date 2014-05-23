@@ -42,6 +42,7 @@ public class Application {
 	private Boolean AWS;
 	private Boolean FTP;
 	private Boolean FileSystem;
+	private Boolean Dropbox;
 	private Map<String,String> imageResolutions;
 	private Map<String,String> videoResolutions;
 	private Map<String,String> audioResolutions;
@@ -180,5 +181,13 @@ public class Application {
 
 	public void setClients(List<String> clients) {
 		this.clients = clients;
+	}
+
+	public Boolean getDropbox() {
+		return Dropbox;
+	}
+
+	public void setDropbox(Boolean dropbox) {
+		Dropbox = dropbox;
 	}
 }

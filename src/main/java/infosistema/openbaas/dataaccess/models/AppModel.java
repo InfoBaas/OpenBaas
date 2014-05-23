@@ -68,7 +68,7 @@ public class AppModel {
 	 * @throws UnsupportedEncodingException 
 	 */
 	public Application createApp(String appId, String appKeyId, byte[] hash, byte[] salt, String appName, String creationDate, 
-			Boolean confirmUsersEmail, Boolean AWS, Boolean FTP, Boolean FileSystem, List<String> clientsList) throws UnsupportedEncodingException {
+			Boolean confirmUsersEmail, Boolean AWS, Boolean FTP, Boolean FileSystem,Boolean DropBox, List<String> clientsList) throws UnsupportedEncodingException {
 		Jedis jedis = pool.getResource();
 		try {
 			String appKey = getAppKey(appId);
@@ -84,6 +84,7 @@ public class AppModel {
 				jedis.hset(appKey, FileMode.aws.toString(), "" + AWS);
 				jedis.hset(appKey, FileMode.ftp.toString(), "" + FTP);
 				jedis.hset(appKey, FileMode.filesystem.toString(), "" + FileSystem);
+				jedis.hset(appKey, FileMode.dropbox_cloud.toString(), "" + DropBox);
 				if (clientsList != null && clientsList.size()>0){
 					Iterator<String> it = clientsList.iterator();
 					while(it.hasNext()){
@@ -124,7 +125,7 @@ public class AppModel {
 	// *** UPDATE *** //
 	
 	public Application updateAppFields(String appId, String alive, String newAppName, Boolean confirmUsersEmail,
-			Boolean aws, Boolean ftp, Boolean fileSystem,List<String> clientsList) {
+			Boolean aws, Boolean ftp, Boolean fileSystem, Boolean dropbox, List<String> clientsList) {
 		Jedis jedis = pool.getResource();
 		try {
 			String appKey = getAppKey(appId);
@@ -149,6 +150,8 @@ public class AppModel {
 				jedis.hset(appKey, FileMode.ftp.toString(), ""+ftp);
 			if (fileSystem != null)
 				jedis.hset(appKey, FileMode.filesystem.toString(), ""+fileSystem);
+			if (dropbox != null)
+				jedis.hset(appKey, FileMode.dropbox_cloud.toString(), ""+dropbox);
 			if (clientsList != null && clientsList.size()>0){
 				jedis.del(appClientListKey);
 				Iterator<String> it = clientsList.iterator();
@@ -219,6 +222,7 @@ public class AppModel {
 				res.setAWS(Boolean.parseBoolean(fields.get(FileMode.aws.toString())));
 				res.setFTP(Boolean.parseBoolean(fields.get(FileMode.ftp.toString())));
 				res.setFileSystem(Boolean.parseBoolean(fields.get(FileMode.filesystem.toString())));
+				res.setDropbox(Boolean.parseBoolean(fields.get(FileMode.dropbox_cloud.toString())));
 				res.setUpdateDate(fields.get(Application.CREATION_DATE));
 				res.setAppKey(fields.get(Application.APP_KEY));
 				res.set_id(appId);
@@ -277,6 +281,7 @@ public class AppModel {
 		Jedis jedis = pool.getResource();
 		boolean aws = false;
 		boolean ftp = false;
+		boolean dropbox = false;
 		String appKey = getAppKey(appId);
 		try{
 			try {
@@ -285,12 +290,16 @@ public class AppModel {
 			try {
 				ftp = Boolean.parseBoolean(jedis.hget(appKey, FileMode.ftp.toString()));
 			} catch (Exception e) { }	
+			try {
+				dropbox = Boolean.parseBoolean(jedis.hget(appKey, FileMode.dropbox_cloud.toString()));
+			} catch (Exception e) { }	
 		}finally {
 			pool.returnResource(jedis);
 		}
 		
 		if (aws) return FileMode.aws;
 		else if (ftp) return FileMode.ftp;
+		else if (dropbox) return FileMode.dropbox_cloud;
 		else return FileMode.filesystem;
 	}
 	

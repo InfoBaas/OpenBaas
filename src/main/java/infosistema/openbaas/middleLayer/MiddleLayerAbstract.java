@@ -15,6 +15,7 @@ import infosistema.openbaas.data.QueryParameters;
 import infosistema.openbaas.data.enums.FileMode;
 import infosistema.openbaas.data.enums.ModelEnum;
 import infosistema.openbaas.dataaccess.files.AwsModel;
+import infosistema.openbaas.dataaccess.files.DropboxModel;
 import infosistema.openbaas.dataaccess.files.FileInterface;
 import infosistema.openbaas.dataaccess.files.FileSystemModel;
 import infosistema.openbaas.dataaccess.files.FtpModel;
@@ -53,6 +54,7 @@ public abstract class MiddleLayerAbstract {
 		FileMode appFileMode = appModel.getApplicationFileMode(appId);
 		if (appFileMode == FileMode.aws) return AwsModel.getInstance();
 		else if (appFileMode == FileMode.ftp) return FtpModel.getInstance();
+		else if (appFileMode == FileMode.dropbox_cloud) return DropboxModel.getInstance();
 		else return FileSystemModel.getInstance();
 	}
 	
