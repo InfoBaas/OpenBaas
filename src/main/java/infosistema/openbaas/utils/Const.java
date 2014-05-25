@@ -137,10 +137,17 @@ public class Const {
 		loadConstants();
 	}
 
+	private static boolean isOnBluemix() {
+		return System.getenv("VCAP_SERVICES") != null;
+	}
+	
 	private static synchronized void loadConstants() {
 
 		try {
-			Properties props = LoadProperties.getProperties("infosistema.openbaas.utils.properties.openbaas");
+			String resource = "infosistema.openbaas.utils.properties.tomcat";
+	    	if (isOnBluemix()) resource = "infosistema.openbaas.utils.properties.bluemix";
+			
+	    	Properties props = LoadProperties.getProperties(resource);
 
 			String stmp = null;
 
