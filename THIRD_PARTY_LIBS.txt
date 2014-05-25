@@ -1,0 +1,71 @@
+License	Name	ArtifactId	Version	GroupId	Download from
+CDDL	JavaBeans Activation Framework (JAF)	activation	1.1	javax.activation	maven managed
+ASLv2.0	Apache JAMES Mime4j (Core)	apache-mime4j-core	0.7.2	org.apache.james	maven managed
+ASLv2.0	Apache JAMES Mime4j (DOM)	apache-mime4j-dom	0.7.2	org.apache.james	maven managed
+OW2	ASM Core	asm	3.1	asm	maven managed
+EPL	AspectJ runtime	aspectjrt	1.6.0	org.aspectj	maven managed
+ASLv2.0	AWS SDK for Java	aws-java-sdk	1.4.5	com.amazonaws	maven managed
+BCL	Bouncy Castle CMS and S/MIME API	bcmail-jdk15	1.45	org.bouncycastle	maven managed
+BCL	Bouncy Castle Provider	bcprov-jdk15	1.45	org.bouncycastle	maven managed
+BCL	Bouncy Castle Provider	bcprov-jdk15	1.46	org.bouncycastle	maven managed
+ASLv2.0	Boilerpipe -- Boilerplate Removal and Fulltext Extraction from HTML pages	boilerpipe	1.1.0	de.l3s.boilerpipe	maven managed
+ASLv2.0	Commons BeanUtils	commons-beanutils	1.8.3	commons-beanutils	maven managed
+ASLv2.0	Commons Codec	commons-codec	1.5	commons-codec	maven managed
+ASLv2.0	Commons Compress	commons-compress	1.4.1	org.apache.commons	maven managed
+ASLv2.0	Commons Digester	commons-digester	2.1	commons-digester	maven managed
+ASLv2.0	Commons FileUpload	commons-fileupload	1.3	commons-fileupload	maven managed
+ASLv2.0	Commons IO	commons-io	2.2	commons-io	maven managed
+ASLv2.0	Commons Logging	commons-logging	1.1.1	commons-logging	maven managed
+ASLv2.0	Commons Pool	commons-pool	1.5.5	commons-pool	maven managed
+MS	dom4j	dom4j	1.6.1	dom4j	maven managed
+ASLv2.0	Apache FontBox	fontbox	1.7.1	org.apache.pdfbox	maven managed
+ASLv2.0	Streaming API for XML (STAX API 1.0)	geronimo-stax-api_1.0_spec	1.0.1	org.apache.geronimo.specs	maven managed
+ASLv2.0	HttpClient	httpclient	4.1	org.apache.httpcomponents	maven managed
+ASLv2.0	HttpCore	httpcore	4.2.4	org.apache.httpcomponents	maven managed
+ASLv2.0	HttpMime	httpmime	4.2.5	org.apache.httpcomponents	maven managed
+ASLv2.0	ISO Parser	isoparser	1.0-RC-1	com.googlecode.mp4parser	maven managed
+ASLv2.0	Jackson	jackson-core-asl	1.9.12	org.codehaus.jackson	maven managed
+ASLv2.0	JAX-RS provider for JSON content type	jackson-jaxrs	1.9.2	org.codehaus.jackson	maven managed
+ASLv2.0	Data Mapper for Jackson	jackson-mapper-asl	1.9.12	org.codehaus.jackson	maven managed
+ASLv2.0	Xml Compatibility extensions for Jackson	jackson-xc	1.9.2	org.codehaus.jackson	maven managed
+LGPL	javapns-jdk16	javapns-jdk16	2.2.1	com.github.fernandospr	maven managed
+ASLv2.0	Java Servlet API	javax.servlet-api	3.0.1	javax.servlet	maven managed
+CDDL+GPL	JAXB API bundle for GlassFish V3	jaxb-api	2.1	javax.xml.bind	maven managed
+CDDL+GPL	JAXB RI	jaxb-impl	2.2.3-1	com.sun.xml.bind	maven managed
+JHBM	jdom	jdom	1.0	jdom	maven managed
+JEDIS	Jedis	jedis	2.1.0	redis.clients	maven managed
+ASLv2.0	jempbox	jempbox	1.7.1	org.apache.pdfbox	maven managed
+CDDL+GPL	jersey-client	jersey-client	1.17.1	com.sun.jersey	maven managed
+CDDL+GPL	jersey-core	jersey-core	1.17.1	com.sun.jersey	maven managed
+CDDL+GPL	jersey-json	jersey-json	1.17.1	com.sun.jersey	maven managed
+CDDL+GPL	jersey-multipart	jersey-multipart	1.17.1	com.sun.jersey.contribs	maven managed
+CDDL+GPL	jersey-server	jersey-server	1.17.1	com.sun.jersey	maven managed
+CDDL+GPL	jersey-servlet	jersey-servlet	1.17.1	com.sun.jersey	maven managed
+ASLv2.0	Jettison	jettison	1.3.3	org.codehaus.jettison	maven managed
+CDDL	jsr311-api	jsr311-api	1.1.1	javax.ws.rs	maven managed
+MPL	juniversalchardet	juniversalchardet	1.0.3	com.googlecode.juniversalchardet	maven managed
+ASLv2.0	Log4j	log4j	1.2.17	log4j	maven managed
+CDDL	JavaMail API (compat)	mail	1.4	javax.mail	maven managed
+ASLv2.0	metadata-extractor	metadata-extractor	2.6.2	com.drewnoakes	maven managed
+CDDL+GPL	MIME streaming extension	mimepull	1.6	org.jvnet	maven managed
+ASLv2.0	MongoDB Java Driver	mongo-java-driver	2.11.1	org.mongodb	maven managed
+netCDF	The NetCDF-Java Library	netcdf	4.2-min	edu.ucar	maven managed
+ASLv2.0	Apache PDFBox	pdfbox	1.7.1	org.apache.pdfbox	maven managed
+ASLv2.0	Apache POI	poi	3.8	org.apache.poi	maven managed
+ASLv2.0	Apache POI	poi-ooxml	3.8	org.apache.poi	maven managed
+ASLv2.0	Apache POI	poi-ooxml-schemas	3.8	org.apache.poi	maven managed
+ASLv2.0	Apache POI	poi-scratchpad	3.8	org.apache.poi	maven managed
+ASLv2.0	ROME, RSS and atOM utilitiEs for Java	rome	0.9	rome	maven managed
+SLF4J	SLF4J API Module	slf4j-api	1.5.6	org.slf4j	maven managed
+ASLv2.0	Streaming API for XML	stax-api	1.0.1	javax.xml.stream	maven managed
+ASLv2.0	Streaming API for XML	stax-api	1.0-2	javax.xml.stream	maven managed
+SLF4J	TagSoup	tagsoup	1.2.1	org.ccil.cowan.tagsoup	maven managed
+ASLv2.0	Apache Tika core	tika-core	1.3	org.apache.tika	maven managed
+ASLv2.0	Apache Tika parsers	tika-parsers	1.3	org.apache.tika	maven managed
+ASLv2.0	Ogg and Vorbis for Java, Core	vorbis-java-core	0.1	org.gagravarr	maven managed
+ASLv2.0	Apache Tika plugin for Ogg, Vorbis and FLAC	vorbis-java-tika	0.1	org.gagravarr	maven managed
+ASLv2.0	Xerces2 Java Parser	xercesImpl	2.8.1	xerces	maven managed
+ASLv2.0	xml-apis	xml-apis		xml-apis	maven managed
+ASLv2.0	XmlBeans	xmlbeans	2.3.0	org.apache.xmlbeans	maven managed
+BSD	XMP Library for Java	xmpcore	5.1.2	com.adobe.xmp	maven managed
+PublicDomain	XZ for Java	xz	1.0	org.tukaani	maven managed
