@@ -319,10 +319,6 @@ public abstract class ModelAbstract {
 		DBCollection coll = getCollection(appId);
 		DBObject queryObj = (DBObject)JSON.parse(searchQuery); 
 		
-/*
-{"_parentPath": "specials/precincts", , "_geo.gridLatitude": {$gte: 70.0}, "_geo.gridLatitude": {$lte: 270.0}, 
-"_geo.gridLongitude": {$gte: -110.0}, "_geo.gridLongitude": {$lte: 110.0}, }
- */
 		BasicDBObject projection = new BasicDBObject();
 		if(toShow.size()>0){
 			projection = getDataProjection(true, toShow, null);
@@ -348,12 +344,25 @@ public abstract class ModelAbstract {
 					else if (orderBy.equals(_DIST)){
 						Double dist = geo.getDistanceFromLatLonInKm(latitude, longitude, objLatitude, objLongitude);
 						lstIdDists.put(obj,dist.toString());
+					} else {
+						String idAux =obj.get(_ID).toString();
+						String[] splitArray = idAux.split("/");
+						String id = splitArray[splitArray.length-1];
+						DBObject res = new BasicDBObject();
+						res.put(_ID, id);
+						DBObject meta = new BasicDBObject();
+						  try{
+							  meta = (DBObject) obj.get(_METADATA);
+							  obj.removeField(_METADATA);
+						  }catch(Exception e){ }
+						  res.put(METADATA,meta);
+						res.put(DATA,obj);
+						retObj.add(res);
 					}
-				}else{
+				} else {
 					String idAux =obj.get(_ID).toString();
 					String[] splitArray = idAux.split("/");
 					String id = splitArray[splitArray.length-1];
-					//obj.removeField(_ID);
 					DBObject res = new BasicDBObject();
 					res.put(_ID, id);
 					DBObject meta = new BasicDBObject();
