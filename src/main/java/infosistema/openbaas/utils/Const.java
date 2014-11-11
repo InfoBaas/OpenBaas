@@ -64,10 +64,10 @@ public class Const {
 	private static String REDIS_GENERAL_SERVER = "localhost";
 	private static Integer REDIS_GENERAL_PORT = 6382;
 
-	private static String REDIS_SESSION_USER = "openbaas";
-	private static String REDIS_SESSION_PASS = "redisdbpwd";
-	private static Integer REDIS_SESSION_PORT = 6380;
-	private static String REDIS_SESSION_SERVER = "localhost";
+	private static String REDIS_SESSIONS_USER = "openbaas";
+	private static String REDIS_SESSIONS_PASS = "redisdbpwd";
+	private static Integer REDIS_SESSIONS_PORT = 6380;
+	private static String REDIS_SESSIONS_SERVER = "localhost";
 
 	private static String REDIS_GEO_USER = "openbaas";
 	private static String REDIS_GEO_PASS = "redisdbpwd";
@@ -173,11 +173,11 @@ public class Const {
 			} catch (Exception e) {}
 
 			try {
-				REDIS_SESSION_PORT = Integer.parseInt(props.getProperty("REDIS_SESSION_PORT"));
+				REDIS_SESSIONS_PORT = Integer.parseInt(props.getProperty("REDIS_SESSIONS_PORT"));
 			} catch (Exception e) {}
 
-			stmp = props.getProperty("REDIS_SESSION_SERVER");
-			if (stmp != null) REDIS_SESSION_SERVER = stmp;
+			stmp = props.getProperty("REDIS_SESSIONS_SERVER");
+			if (stmp != null) REDIS_SESSIONS_SERVER = stmp;
 
 			stmp = props.getProperty("REDIS_GEO_SERVER");
 			if (stmp != null) REDIS_GEO_SERVER = stmp;
@@ -206,10 +206,10 @@ public class Const {
 			if (stmp != null) REDIS_GEO_PASS = stmp;
 			
 			stmp = props.getProperty("REDIS_SESSIONS_USER");
-			if (stmp != null) REDIS_SESSION_USER = stmp;
+			if (stmp != null) REDIS_SESSIONS_USER = stmp;
 			
 			stmp = props.getProperty("REDIS_SESSIONS_PASS");
-			if (stmp != null) REDIS_SESSION_PASS = stmp;
+			if (stmp != null) REDIS_SESSIONS_PASS = stmp;
 			
 			stmp = props.getProperty("REDIS_CHAT_USER");
 			if (stmp != null) REDIS_CHAT_USER = stmp;
@@ -374,11 +374,11 @@ public class Const {
 	}
 
 	public static String getRedisSessionServer() {
-		return REDIS_SESSION_SERVER;
+		return REDIS_SESSIONS_SERVER;
 	}
 
 	public static Integer getRedisSessionPort() {
-		return REDIS_SESSION_PORT;
+		return REDIS_SESSIONS_PORT;
 	}
 
 	public static String getRedisGeoServer() {
@@ -427,11 +427,11 @@ public class Const {
 	}
 	
 	public static String getRedisSessionUser() {
-		return REDIS_SESSION_USER;
+		return REDIS_SESSIONS_USER;
 	}
 	
 	public static String getRedisSessionPass() {
-		return REDIS_SESSION_PASS;
+		return REDIS_SESSIONS_PASS;
 	}
 	public static String getRedisGeoUser() {
 		return REDIS_GEO_USER;

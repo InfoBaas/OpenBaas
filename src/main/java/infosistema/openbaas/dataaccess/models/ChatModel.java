@@ -102,6 +102,7 @@ public class ChatModel {
 	public Boolean createChatRoom(String appId, String messageId,String roomId, String roomName, String roomCreator, Boolean flagNotification, String totalParticipants) {
 		Boolean res = false;
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		if(flagNotification==null) flagNotification = false;
 		Long milliseconds = new Date().getTime();
 		String[] participants = totalParticipants.split(Const.SEMICOLON);
@@ -126,6 +127,7 @@ public class ChatModel {
 	public Boolean createMessage(String appId, ChatMessage msg) {
 		Boolean res = false;
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		long milliseconds = msg.getDate().getTime();
 		try {
 			String msgKey = getMessageKey(appId, msg.get_id()); 
@@ -155,6 +157,7 @@ public class ChatModel {
 	public Boolean addMessage2Room(String appId, String messageId, String roomId, String senderId, List<String> unReadUsers) {
 		Boolean res = false;
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		Iterator<String> it = unReadUsers.iterator();
 		try {
 			jedis.rpush(getChatRoomKey_2(appId, roomId), messageId);
@@ -172,6 +175,7 @@ public class ChatModel {
 
 	public void updateMessageWithMedia(String appId, String messageId, ModelEnum type, String mediaId) { 
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		long milliseconds = new Date().getTime();
 		try {
 			String msgKey = getMessageKey(appId, messageId); 
@@ -201,6 +205,7 @@ public class ChatModel {
 	public List<String> getListParticipants(String appId, String roomId) {
 		List<String> res = null;
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			String strParticipants = jedis.hget(getChatRoomKey(appId, roomId), ChatRoom.PARTICIPANTS);
 			res = Utils.getListByString(strParticipants, ChatRoom.SEPARATOR);
@@ -212,6 +217,7 @@ public class ChatModel {
 
 	public List<ChatMessage> getMessageList(String appId, String roomId, Date date, Integer numberMessages, String orientation) {
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		List<ChatMessage> res = new ArrayList<ChatMessage>();
 		if (orientation==null) orientation = "";
 		if (numberMessages==null) numberMessages = 10;
@@ -302,6 +308,7 @@ public class ChatModel {
 
 	public List<String> getMessageChatroom(String appId, String roomId) {
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		List<String> res = new ArrayList<String>();
 		try {
 			res = jedis.lrange(getChatRoomKey_2(appId, roomId), 0, MAXELEMS);		
@@ -319,6 +326,7 @@ public class ChatModel {
 	public ChatRoom getChatRoom(String appId, String roomId) {
 		ChatRoom res = new ChatRoom();
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			String roomKey = getChatRoomKey(appId, roomId);
 			res.set_id(roomId);
@@ -341,6 +349,7 @@ public class ChatModel {
 	public ChatMessage getMessage(String appId, String messageId) {
 		ChatMessage res = new ChatMessage();
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			String msgKey = getMessageKey(appId, messageId);
 			String sender = jedis.hget(msgKey, ChatMessage.SENDER);
@@ -380,6 +389,7 @@ public class ChatModel {
 
 	public int readMessages(String appId, String userId, JSONArray jsonArray) {
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		int res = 0;
 		Long aux = (long) 0;
 		try {
@@ -400,6 +410,7 @@ public class ChatModel {
 
 	public List<String> getTotalUnreadMsg(String appId, String userId) {
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		List<String> res = new ArrayList<String>();
 		try {
 			res = jedis.lrange(getUnreadMsgKey(appId, userId), 0, MAXELEMS);
@@ -416,6 +427,7 @@ public class ChatModel {
 
 		List<String> kList = getKeysForUserInParticipantsList(appId, userId); 
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			for (String k : kList) {
 				Set<String> keys = jedis.keys(k);
@@ -438,6 +450,7 @@ public class ChatModel {
 	
 	public String existsChat(String participants, String appId) {
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		String res=null;
 		try {
 			res = jedis.get(getParticipantsKey(appId, participants));
@@ -451,6 +464,7 @@ public class ChatModel {
 
 	public Boolean existsKey(String appId, String key) {
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		Boolean res = false;
 		try {
 			res = jedis.exists(getMessageKey(appId, key));		
@@ -465,6 +479,7 @@ public class ChatModel {
 	public Boolean hasNotification(String appId, String roomId) {
 		Boolean res = false;
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			res = (Boolean.parseBoolean(jedis.hget(getChatRoomKey(appId, roomId), ChatRoom.FLAG_NOTIFICATION)));
 		} finally {

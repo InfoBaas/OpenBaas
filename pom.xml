@@ -136,21 +136,21 @@
 			<artifactId>aws-java-sdk</artifactId>
 			<version>1.4.5</version>
 		</dependency>
-	<dependency>
-	 <groupId>javax.mail</groupId>
-	 <artifactId>mail</artifactId>
-	 <version>1.4.7</version>
-    </dependency>
-	<dependency>
-		<groupId>log4j</groupId>
-		<artifactId>log4j</artifactId>
-		<version>1.2.13</version>
-	</dependency>
-	<dependency>
-		<groupId>org.syncloud</groupId>
-		<artifactId>dropbox-client</artifactId>
-		<version>1.5.3</version>
-	</dependency>
+		<dependency>
+		 <groupId>javax.mail</groupId>
+		 <artifactId>mail</artifactId>
+		 <version>1.4.7</version>
+	    </dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.13</version>
+		</dependency>
+		<dependency>
+			<groupId>org.syncloud</groupId>
+			<artifactId>dropbox-client</artifactId>
+			<version>1.5.3</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>Openbaas</finalName>

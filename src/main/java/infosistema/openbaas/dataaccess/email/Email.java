@@ -47,6 +47,7 @@ public class Email {
 	public boolean addUrlToUserId(String appId, String userId, String registrationCode) {
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisSessionPass());
 		try {
 			jedis.hset("apps:"+appId+":users:"+userId, "registrationCode", registrationCode);
 		} finally {
@@ -59,6 +60,7 @@ public class Email {
 	public boolean removeUrlToUserId(String appId, String userId) {
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisSessionPass());
 		try {
 			jedis.del("apps:"+appId+":users:"+userId);
 		} finally {
@@ -71,6 +73,7 @@ public class Email {
 	public boolean updateUrlToUserId(String appId, String userId, String registrationCode) {
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisSessionPass());
 		try {
 			jedis.hset("apps:"+appId+":users:"+userId, "registrationCode", registrationCode);
 		} finally {
@@ -83,6 +86,7 @@ public class Email {
 	public String getUrlUserId(String appId, String userId) {
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisSessionPass());
 		String url = null;
 		try {
 			url = jedis.hget("apps:"+appId+":users:"+userId, "registrationCode");
@@ -128,6 +132,7 @@ public class Email {
 			String shortCode) {
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisSessionPass());
 		try {
 			jedis.hset("apps:"+appId+":users:"+userId, "recoveryCode", shortCode);
 			jedis.expire("apps:"+appId+":users:"+userId, 172800); //expire after 2 days
@@ -141,6 +146,7 @@ public class Email {
 	public String getRecoveryCodeOfUser(String appId, String userId){
 		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisSessionPass());
 		String code = null;
 		try {
 			code = jedis.hget("apps:"+appId+":users:"+userId, "recoveryCode");

@@ -100,7 +100,8 @@ public class NotificationsModel {
 	
 	public Boolean addDeviceId(String appId,String userId, String clientId, String deviceToken) {
 		Boolean res = false;
-		Jedis jedis = pool.getResource();
+		Jedis jedis = pool.getResource(); 
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			String user = getDeviceUser(appId, clientId, deviceToken);
 			String deviceListKey = getDeviceListKey(appId, userId, clientId);
@@ -122,7 +123,8 @@ public class NotificationsModel {
 	
 	public Boolean createUpdateDevice(String appId, String userId, String clientId, Device device) {
 		Boolean res = false;
-		Jedis jedis = pool.getResource();
+		Jedis jedis = pool.getResource(); 
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			Long milliseconds = device.getLastRegister().getTime();
 			String deviceKey = getDeviceKey(appId, clientId, device.getToken());
@@ -141,7 +143,8 @@ public class NotificationsModel {
 	
 	public Boolean createUpdateCertificate(String appId, Certificate cert) {
 		Boolean res = false;
-		Jedis jedis = pool.getResource();
+		Jedis jedis = pool.getResource(); 
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			long milliseconds = cert.getCreatedDate().getTime();
 			String clientKey = getClientKey(appId, cert.getClientId());
@@ -159,7 +162,8 @@ public class NotificationsModel {
 	//badges
 	
 	public Boolean setNewBadgesTODO(String appId, String userId) {
-		Jedis jedis = pool.getResource();
+		Jedis jedis = pool.getResource(); 
+		jedis.auth(Const.getRedisChatPass());
 		Boolean res = false;
 		try {
 			String value = getBadgeValue(appId, userId);
@@ -175,7 +179,8 @@ public class NotificationsModel {
 	//notifications
 
 	public Boolean setNewNotifications(String appId, String userId, String roomId) {
-		Jedis jedis = pool.getResource();
+		Jedis jedis = pool.getResource(); 
+		jedis.auth(Const.getRedisChatPass());
 		Boolean res = false;
 		try {
 			String value = getNotificationValue(appId, userId, roomId);
@@ -197,6 +202,7 @@ public class NotificationsModel {
 		List<Device> res = new ArrayList<Device>();
 		List<String> aux = new ArrayList<String>();
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			aux = jedis.lrange(getDeviceListKey(appId, userId, clientId), 0, MAXELEMS);
 			Iterator<String> it = aux.iterator();
@@ -213,7 +219,8 @@ public class NotificationsModel {
 	
 	public List<Certificate> getAllCertificateList() {
 		List<Certificate> res = new ArrayList<Certificate>();
-		Jedis jedis = pool.getResource();
+		Jedis jedis = pool.getResource(); 
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			Set<String> setCert = jedis.keys("*"+CERT+"*");
 			Iterator<String> it = setCert.iterator();
@@ -232,7 +239,8 @@ public class NotificationsModel {
 	//badges
 
 	public List<String> getAllBadgesTODO() {
-		Jedis jedis = pool.getResource();
+		Jedis jedis = pool.getResource(); 
+		jedis.auth(Const.getRedisChatPass());
 		List<String> res = new ArrayList<String>();
 		try {
 			res = jedis.lrange(PUSH_BADGES_LIST, 0, MAXELEMS);
@@ -250,6 +258,7 @@ public class NotificationsModel {
 
 	public List<String> getAllNotificationsTODO() {
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisChatPass());
 		List<String> res = new ArrayList<String>();
 		try {
 			res = jedis.lrange(PUSHLIST, 0, MAXELEMS);
@@ -271,7 +280,8 @@ public class NotificationsModel {
 	
 	public Device getDevice(String appId,String clientId, String deviceToken) {
 		Device res = new BasicDevice();
-		Jedis jedis = pool.getResource();
+		Jedis jedis = pool.getResource(); 
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			String deviceKey = getDeviceKey(appId, clientId, deviceToken);
 			String deviceId = jedis.hget(deviceKey, DEVICEID);
@@ -288,7 +298,8 @@ public class NotificationsModel {
 	
 	public String getDeviceUser(String appId,String clientId, String deviceToken) {
 		String res = null;
-		Jedis jedis = pool.getResource();
+		Jedis jedis = pool.getResource(); 
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			String userId = jedis.hget(getDeviceKey(appId, clientId, deviceToken), USERID);
 			res=userId;
@@ -302,7 +313,8 @@ public class NotificationsModel {
 	
 	public Certificate getCertificate(String appId, String clientId) {
 		Certificate res = null;
-		Jedis jedis = pool.getResource();
+		Jedis jedis = pool.getResource(); 
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			String clientKey = getClientKey(appId, clientId);
 			String path = jedis.hget(clientKey, Application.APNS_CERTIFICATION_PATH);
@@ -327,7 +339,8 @@ public class NotificationsModel {
 	
 	public String removeDevice(String appId,String clientId, String deviceToken) {
 		String res = null;
-		Jedis jedis = pool.getResource();
+		Jedis jedis = pool.getResource(); 
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			String deviceKey = getDeviceKey(appId, clientId, deviceToken);
 			if(jedis.exists(deviceKey)){
@@ -342,7 +355,8 @@ public class NotificationsModel {
 	
 	public Boolean removeDeviceId(String appId,String userId, String clientId, String deviceToken) {
 		Boolean res = false;
-		Jedis jedis = pool.getResource();
+		Jedis jedis = pool.getResource(); 
+		jedis.auth(Const.getRedisChatPass());
 		try {
 			Long a=(long) -1;
 			a = jedis.lrem(getDeviceListKey(appId, userId, clientId), 0, deviceToken);

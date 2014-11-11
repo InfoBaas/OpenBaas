@@ -28,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.pool.impl.GenericKeyedObjectPool.Config;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -44,8 +45,8 @@ public class UserModel extends ModelAbstract {
 
 	public UserModel() {
 		JedisPoolConfig poolConf = new JedisPoolConfig();
-		poolConf.setMaxActive(20);
-		poolConf.setMaxWait(100000);
+		poolConf.setMaxActive(200);
+		poolConf.setMaxWait(1000000);
 		pool = new JedisPool(poolConf, Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
 	}
 
@@ -117,6 +118,7 @@ public class UserModel extends ModelAbstract {
 
 	public JSONObject createUser(String appId, String userId, Map<String, String> userFields, Map<String, String> extraMetadata) {
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisGeneralPass());
 		try {
 			String userKey = getUserKey(appId, userId);
 			JSONObject metadata = getMetadaJSONObject(getMetadataCreate(userId, extraMetadata));
@@ -174,6 +176,7 @@ public class UserModel extends ModelAbstract {
 
 	public JSONObject updateUser(String appId, String userId, Map<String, String> fields, Map<String, String> extraMetadata) {
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisGeneralPass());
 		try {
 			String userKey = getUserKey(appId, userId);
 			if (jedis.exists(userKey)) {
@@ -205,6 +208,7 @@ public class UserModel extends ModelAbstract {
 	@Override
 	protected synchronized void updateMetadata(String appId, String userId, Map<String, String> metadata) {
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisGeneralPass());
 		try {
 			JSONObject geolocation = getGeolocation(getMetadaJSONObject(metadata));
 			String userKey = getUserKey(appId, userId);
@@ -271,6 +275,7 @@ public class UserModel extends ModelAbstract {
 	public JSONObject getUser(String appId, String userId, boolean getMetadata) {
 		SessionModel sessionModel = new SessionModel();
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisGeneralPass());
 		Map<String, String> userFields = null;
 		try {
 			String userKey = getUserKey(appId, userId);
@@ -291,6 +296,7 @@ public class UserModel extends ModelAbstract {
 
 	public String getUserField(String appId, String userId, String field) {
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisGeneralPass());
 		try {
 			String userKey = getUserKey(appId, userId);
 			return jedis.hget(userKey, field);
@@ -318,6 +324,7 @@ public class UserModel extends ModelAbstract {
 		Jedis jedis = null;
 		try {
 			jedis = pool.getResource();
+			jedis.auth(Const.getRedisGeneralPass());
 		} catch (Exception e){
 			Log.error("", this, "get jedis", "Error get jedis", e);
 		}	
@@ -355,6 +362,7 @@ public class UserModel extends ModelAbstract {
 
 	private Boolean fieldExists(String appId, String field, String value) {
 		Jedis jedis = pool.getResource();
+		jedis.auth(Const.getRedisGeneralPass());
 		Boolean exists = false;
 		try {
 			exists = jedis.exists(getKey(appId, field, value));
