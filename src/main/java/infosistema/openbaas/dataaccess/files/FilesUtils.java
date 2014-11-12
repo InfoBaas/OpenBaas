@@ -27,7 +27,7 @@ public class FilesUtils {
 
 	public static FilesUtils getInstance() {
 		if (instance == null) instance = new FilesUtils();
-		appModel = new AppModel();
+		appModel = AppModel.getInstance();
 		return instance;
 	}
 

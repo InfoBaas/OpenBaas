@@ -61,7 +61,7 @@ public class Utils {
 			} catch (Exception e2) { }
 		}
 		if (sessionToken != null) {
-			SessionModel sessions = new SessionModel();
+			SessionModel sessions = SessionModel.getInstance();
 			if (sessions.sessionTokenExists(sessionToken.getValue())) {
 				code = 1;
 				sessions.refreshSession(sessionToken.getValue(), location, new Date().toString(), userAgent);
@@ -87,7 +87,7 @@ public class Utils {
 			} catch (Exception e2) { }
 		}
 		if (sessionToken != null && sessionToken.getValue().equals(Const.getADMIN_TOKEN())) {
-			SessionModel sessions = new SessionModel();
+			SessionModel sessions = SessionModel.getInstance();
 			if (sessions.sessionTokenExists(sessionToken.getValue())) {
 				code = 1;
 				sessions.refreshSession(sessionToken.getValue(), location, new Date().toString(), userAgent);

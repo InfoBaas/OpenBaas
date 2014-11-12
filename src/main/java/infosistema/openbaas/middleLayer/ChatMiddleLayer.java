@@ -49,7 +49,7 @@ public class ChatMiddleLayer extends MiddleLayerAbstract{
 	
 	private ChatMiddleLayer() {
 		super();
-		chatModel = new ChatModel();
+		chatModel = ChatModel.getInstance();
 	}
 	
 	public static ChatMiddleLayer getInstance() {

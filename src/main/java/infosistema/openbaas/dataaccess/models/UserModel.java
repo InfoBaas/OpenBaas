@@ -21,6 +21,7 @@ package infosistema.openbaas.dataaccess.models;
 
 import infosistema.openbaas.data.Metadata;
 import infosistema.openbaas.data.models.User;
+import infosistema.openbaas.middleLayer.SessionMiddleLayer;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 
@@ -43,13 +44,22 @@ public class UserModel extends ModelAbstract {
 
 	// *** CONTRUCTORS *** //
 
-	public UserModel() {
+	
+	
+	
+	private UserModel() {
 		JedisPoolConfig poolConf = new JedisPoolConfig();
-		poolConf.setMaxActive(200);
-		poolConf.setMaxWait(1000000);
+		poolConf.setMaxActive(2);
+		poolConf.setMaxWait(10000);
 		pool = new JedisPool(poolConf, Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
 	}
+	private static UserModel instance = null;
+	public static UserModel getInstance() {
+		if (instance == null) instance = new UserModel();
+		return instance;
+	}
 
+	
 
 	// *** PRIVATE *** //
 
@@ -273,7 +283,7 @@ public class UserModel extends ModelAbstract {
 	 * @return
 	 */
 	public JSONObject getUser(String appId, String userId, boolean getMetadata) {
-		SessionModel sessionModel = new SessionModel();
+		SessionModel sessionModel = SessionModel.getInstance();
 		Jedis jedis = pool.getResource();
 		jedis.auth(Const.getRedisGeneralPass());
 		Map<String, String> userFields = null;

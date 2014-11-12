@@ -44,7 +44,7 @@ public class FileSystemModel implements FileInterface {
 
 	public static FileSystemModel getInstance() {
 		if (instance == null) instance = new FileSystemModel();
-		appModel = new AppModel();
+		appModel = AppModel.getInstance();
 		return instance;
 	}
 

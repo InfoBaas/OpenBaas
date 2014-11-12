@@ -57,8 +57,8 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 	private SessionMiddleLayer() {
 		super();
 		service = new PasswordEncryptionService();
-		sessions = new SessionModel();
-		emailOp = new Email();
+		sessions = SessionModel.getInstance();
+		emailOp = Email.getInstance();
 	}
 
 	// *** CREATE *** //
@@ -179,7 +179,7 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 		try {
 			String userId = getUserIdUsingSessionToken(sessionToken);
 			String sessionAppId = null;
-			SessionModel sessions = new SessionModel();
+			SessionModel sessions = SessionModel.getInstance();
 			if(sessions.sessionExistsForUser(userId))
 				sessionAppId = sessions.getAppIdForSessionToken(sessionToken);
 			return appId != null && appId.equals(sessionAppId);

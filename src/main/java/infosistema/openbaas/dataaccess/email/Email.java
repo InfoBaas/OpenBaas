@@ -32,20 +32,29 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 public class Email {
 
-	Jedis jedis;
 
-	public Email() {
-		jedis = new Jedis(Const.getRedisSessionServer(), Const.getRedisSessionPort());
+	private Email() {
+		JedisPoolConfig poolConf = new JedisPoolConfig();
+		poolConf.setMaxActive(2);
+		poolConf.setMaxWait(10000);
+		pool = new JedisPool(poolConf, Const.getRedisSessionServer(), Const.getRedisSessionPort());
 	}
+	private static Email instance = null;
+	public static Email getInstance() {
+		if (instance == null) instance = new Email();
+		return instance;
+	}
+	private JedisPool pool;
 
 	public boolean addUrlToUserId(String appId, String userId, String registrationCode) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
+		
 		Jedis jedis = pool.getResource();
 		jedis.auth(Const.getRedisSessionPass());
 		try {
@@ -58,7 +67,7 @@ public class Email {
 	}
 
 	public boolean removeUrlToUserId(String appId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
+		
 		Jedis jedis = pool.getResource();
 		jedis.auth(Const.getRedisSessionPass());
 		try {
@@ -71,7 +80,7 @@ public class Email {
 	}
 
 	public boolean updateUrlToUserId(String appId, String userId, String registrationCode) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
+		
 		Jedis jedis = pool.getResource();
 		jedis.auth(Const.getRedisSessionPass());
 		try {
@@ -84,7 +93,7 @@ public class Email {
 	}
 
 	public String getUrlUserId(String appId, String userId) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
+		
 		Jedis jedis = pool.getResource();
 		jedis.auth(Const.getRedisSessionPass());
 		String url = null;
@@ -130,7 +139,7 @@ public class Email {
 	
 	public boolean addRecoveryCodeToUser(String appId, String userId,
 			String shortCode) {
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
+		
 		Jedis jedis = pool.getResource();
 		jedis.auth(Const.getRedisSessionPass());
 		try {
@@ -144,7 +153,7 @@ public class Email {
 	}
 	
 	public String getRecoveryCodeOfUser(String appId, String userId){
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), Const.getRedisSessionServer(), Const.getRedisSessionPort());
+		
 		Jedis jedis = pool.getResource();
 		jedis.auth(Const.getRedisSessionPass());
 		String code = null;

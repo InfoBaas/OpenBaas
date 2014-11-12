@@ -32,7 +32,6 @@ import java.util.Set;
 
 import javapns.devices.Device;
 import javapns.devices.implementations.basic.BasicDevice;
-
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -41,10 +40,19 @@ public class NotificationsModel {
 
 	// *** CONTRUCTORS *** //
 
-	public NotificationsModel() {
-		pool = new JedisPool(new JedisPoolConfig(), Const.getRedisChatServer(),Const.getRedisChatPort());
-	}
 
+
+	private NotificationsModel() {
+		JedisPoolConfig poolConf = new JedisPoolConfig();
+		poolConf.setMaxActive(2);
+		poolConf.setMaxWait(10000);
+		pool = new JedisPool(poolConf, Const.getRedisChatServer(),Const.getRedisChatPort());
+	}
+	private static NotificationsModel instance = null;
+	public static NotificationsModel getInstance() {
+		if (instance == null) instance = new NotificationsModel();
+		return instance;
+	}
 
 	// *** PRIVATE *** //
 

@@ -61,9 +61,9 @@ public abstract class MiddleLayerAbstract {
 	
 	protected MiddleLayerAbstract() {
 		docModel = new DocumentModel();
-		appModel = new AppModel();;
-		userModel = new UserModel();
-		sessionsModel = new SessionModel();
+		appModel = AppModel.getInstance();
+		userModel = UserModel.getInstance();
+		sessionsModel = SessionModel.getInstance();
 		mediaModel = new MediaModel();
 	}
 

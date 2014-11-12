@@ -45,8 +45,8 @@ public class AppsMiddleLayer extends MiddleLayerAbstract {
 
 	// *** MEMBERS *** //
 
-	AppModel appModel = new AppModel();	
-	NotificationsModel noteModel = new NotificationsModel();	
+	AppModel appModel = AppModel.getInstance();	
+	NotificationsModel noteModel = NotificationsModel.getInstance();	
 	MediaModel mediaModel = new MediaModel();	
 	MediaMiddleLayer mediaMiddleLayer = MediaMiddleLayer.getInstance();
 	// *** INSTANCE *** //

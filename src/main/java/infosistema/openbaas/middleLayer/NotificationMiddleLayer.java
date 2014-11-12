@@ -51,9 +51,9 @@ public class NotificationMiddleLayer {
 	
 	private NotificationMiddleLayer() {
 		super();
-		noteModel = new NotificationsModel();
-		chatModel = new ChatModel();
-		appModel = new AppModel();
+		noteModel = NotificationsModel.getInstance();
+		chatModel = ChatModel.getInstance();
+		appModel = AppModel.getInstance();
 	}
 	
 	public static NotificationMiddleLayer getInstance() {

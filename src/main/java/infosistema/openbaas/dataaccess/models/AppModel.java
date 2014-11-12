@@ -42,10 +42,19 @@ import redis.clients.jedis.JedisPoolConfig;
 public class AppModel {
 
 	// *** CONTRUCTORS *** //
-
-	public AppModel() {
-		pool = new JedisPool(new JedisPoolConfig(), Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
+	
+	private AppModel() {
+		JedisPoolConfig poolConf = new JedisPoolConfig();
+		poolConf.setMaxActive(2);
+		poolConf.setMaxWait(10000);
+		pool = new JedisPool(poolConf, Const.getRedisGeneralServer(),Const.getRedisGeneralPort());
 	}
+	private static AppModel instance = null;
+	public static AppModel getInstance() {
+		if (instance == null) instance = new AppModel();
+		return instance;
+	}
+	
 
 	// isto é preciso?
 	public Object clone() throws CloneNotSupportedException {

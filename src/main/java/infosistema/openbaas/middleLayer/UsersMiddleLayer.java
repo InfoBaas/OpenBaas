@@ -67,8 +67,8 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	
 	private UsersMiddleLayer() {
 		super();
-		sessions = new SessionModel();
-		emailOp = new Email();
+		sessions = SessionModel.getInstance();
+		emailOp = Email.getInstance();
 	}
 
 	
@@ -330,7 +330,7 @@ public class UsersMiddleLayer extends MiddleLayerAbstract {
 	protected List<DBObject> getAllSearchResults(String appId, String userId, String url, Double latitude, Double longitude, 
 			Double radius, JSONObject query, String orderType, String orderBy, ModelEnum type, List<String> toShow) throws Exception {
 		List<DBObject> result = null;
-		SessionModel sessionModel = new SessionModel();
+		SessionModel sessionModel = SessionModel.getInstance();
 		Boolean online = false;
 		if (query == null || query.length() == 0) {
 			query = new JSONObject();

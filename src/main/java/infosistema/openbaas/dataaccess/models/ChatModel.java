@@ -42,8 +42,17 @@ public class ChatModel {
 
 	// *** CONTRUCTORS *** //
 
-	public ChatModel() {
-		pool = new JedisPool(new JedisPoolConfig(), Const.getRedisChatServer(),Const.getRedisChatPort());
+
+	private ChatModel() {
+		JedisPoolConfig poolConf = new JedisPoolConfig();
+		poolConf.setMaxActive(2);
+		poolConf.setMaxWait(10000);
+		pool = new JedisPool(poolConf, Const.getRedisChatServer(),Const.getRedisChatPort());
+	}
+	private static ChatModel instance = null;
+	public static ChatModel getInstance() {
+		if (instance == null) instance = new ChatModel();
+		return instance;
 	}
 
 	
