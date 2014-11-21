@@ -49,7 +49,7 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 	
 	private static SessionMiddleLayer instance = null;
 
-	public static SessionMiddleLayer getInstance() {
+	public static final SessionMiddleLayer getInstance() {
 		if (instance == null) instance = new SessionMiddleLayer();
 		return instance;
 	}
@@ -69,7 +69,7 @@ public class SessionMiddleLayer extends MiddleLayerAbstract {
 			sucess = authenticateUser(appId, userId, attemptedPassword);
 			sessions.createSession(sessionId, appId, userId);
 		}catch (Exception e1){
-			Log.error("", this, "createSession", "Error creating Session");
+			Log.error("", this, "createSession", "Error creating Session: "+e1.toString());
 			sucess = false;
 		}
 		return sucess;

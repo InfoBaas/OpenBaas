@@ -327,7 +327,7 @@ public class AccountResource {
 			}
 		}
 		else 
-			response = Response.status(Status.FORBIDDEN).entity(new Error("FORBIDDEN")).build();		
+			response = Response.status(Status.FORBIDDEN).entity(new Error("No user found")).build();		
 		return response;
 	}
 

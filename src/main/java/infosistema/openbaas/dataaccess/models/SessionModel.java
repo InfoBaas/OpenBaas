@@ -83,7 +83,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 	}
 
 
@@ -163,7 +163,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 		return true;
 	}
 	
@@ -177,7 +177,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 	}
 
 	
@@ -197,7 +197,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 		return adminFields;
 	}
 
@@ -215,7 +215,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 		return adminExists;
 	}
 
@@ -232,7 +232,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 	}
 
 	public Map<String, String> getSessionFields(String sessionId) {
@@ -245,7 +245,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 		return sessionFields;
 	}
 
@@ -267,7 +267,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 		return sucess;
 	}
 
@@ -289,7 +289,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 		return sucess;
 	}
 
@@ -315,7 +315,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 	}
 
 	public void createAdminSession(String sessionId, String adminId) {
@@ -329,7 +329,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 	}
 
 	public boolean deleteUserSession(String sessionToken, String userId) {
@@ -352,7 +352,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 		return sucess;
 	}
 
@@ -376,7 +376,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 		return sessionId;
 	}
 
@@ -393,7 +393,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 		return sucess;
 	}
 
@@ -409,7 +409,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 		return userSessions;
 	}
 
@@ -426,7 +426,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 		return exists;
 	}
 	
@@ -447,7 +447,7 @@ public class SessionModel {
 		} finally {
 			pool.returnResource(jedis);
 		}
-		pool.destroy();
+		//pool.destroy();
 		return exists;
 	}
 	
