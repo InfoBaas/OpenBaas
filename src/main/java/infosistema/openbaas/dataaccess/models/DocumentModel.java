@@ -139,7 +139,6 @@ public class DocumentModel extends ModelAbstract {
 
 	// *** KEYS *** //
 
-	private static final String DATA = "data";
 	private static final String _PARENT_PATH = "_parentPath"; 
 	private static final String _KEY = "_key";
 	private static final String PARENT_PATH_QUERY_FORMAT = "{\"" + _PARENT_PATH + "\": \"%s\"}";

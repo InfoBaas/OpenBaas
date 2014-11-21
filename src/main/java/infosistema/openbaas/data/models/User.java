@@ -39,7 +39,6 @@ public class User {
 	public static final String USER_FILE = "userFile";
 	public static final String SALT = "salt";
 	public static final String HASH = "hash";
-	public static final String FLAG = "flag";
 	public static final String ALIVE = "alive";
 	public static final String EMAIL_CONFIRMED = "emailConfirmed";
 	public static final String BASE_LOCATION_OPTION = "baseLocationOption";
