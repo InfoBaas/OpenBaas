@@ -260,7 +260,7 @@ public class ChatResource {
 	@Path("/{roomid}/readmessages")
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response readMessages(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh, 
+	public Response markMessagesAsRead(JSONObject inputJsonObj, @Context UriInfo ui, @Context HttpHeaders hh, 
 			@PathParam("roomid") String roomId) {
 		Response response = null;
 		String sessionToken = Utils.getSessionToken(hh);
@@ -291,7 +291,7 @@ public class ChatResource {
 	@GET
 	@Path("/{roomid}/unreadmessages")
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response unReadMessages(@Context UriInfo ui, @Context HttpHeaders hh, @PathParam("roomid") String roomId) {
+	public Response getUnreadMessages(@Context UriInfo ui, @Context HttpHeaders hh, @PathParam("roomid") String roomId) {
 		Response response = null;
 		List<ChatMessage> lisRes = new ArrayList<ChatMessage>();
 		String sessionToken = Utils.getSessionToken(hh);
