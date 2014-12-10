@@ -25,23 +25,11 @@ import infosistema.openbaas.dataaccess.models.AppModel;
 import infosistema.openbaas.utils.Const;
 import infosistema.openbaas.utils.Log;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.imageio.ImageIO;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -51,6 +39,7 @@ import com.dropbox.client2.DropboxAPI.Entry;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AccessTokenPair;
 import com.dropbox.client2.session.AppKeyPair;
+import com.dropbox.client2.session.RequestTokenPair;
 import com.dropbox.client2.session.Session.AccessType;
 import com.dropbox.client2.session.WebAuthSession;
 
@@ -59,6 +48,7 @@ public class DropboxModel implements FileInterface {
 	private static DropboxModel instance;
 	final private AccessType ACCESS_TYPE = AccessType.APP_FOLDER;
 	private DropboxAPI<WebAuthSession> mDBApi;
+	
 	private static AppModel appModel = null;
 	
 	public static DropboxModel getInstance() {
@@ -89,6 +79,30 @@ public class DropboxModel implements FileInterface {
 		return res;
 	}
 	
+	public static void getDropboxTokens() {
+		try {
+			AppKeyPair appKeys = new AppKeyPair(Const.getDROPBOX_CONSUMER_APPKEY(), Const.getDROPBOX_CONSUMER_APPSECRET()); //Both from Dropbox developer website
+	        WebAuthSession session = new WebAuthSession(appKeys, AccessType.APP_FOLDER);
+	
+	        DropboxAPI<WebAuthSession> mDBApi = new DropboxAPI<WebAuthSession>(session);
+        
+			System.out.println(mDBApi.getSession().getAuthInfo().url);
+			/*Pausa!!! ir ao url e dar o allow! Depois prosseguir em debug para obter key + secret*/
+			
+			AccessTokenPair tokenPair = mDBApi.getSession().getAccessTokenPair();
+			// wait for user to allow app in above URL, 
+			// then return back to executing code below
+			RequestTokenPair tokens = new RequestTokenPair(tokenPair.key, tokenPair.secret);
+			mDBApi.getSession().retrieveWebAccessToken(tokens); // completes initial auth
+			 
+			//these two calls will retrive access tokens for future use
+			System.out.println("key:"+session.getAccessTokenPair().key);    // store String returned by this call somewhere
+			System.out.println("secret:"+session.getAccessTokenPair().secret);
+		} catch (DropboxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	// *** CREATE *** //
 	
 	@Override

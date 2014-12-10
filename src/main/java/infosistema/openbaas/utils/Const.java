@@ -141,12 +141,16 @@ public class Const {
 		return System.getenv("VCAP_SERVICES") != null;
 	}
 	
+	private static boolean isOnOpenshift() {
+		return System.getenv("OPENSHIFT_APP_NAME") != null;
+	}
+	
 	private static synchronized void loadConstants() {
 
 		try {
 			String resource = "infosistema.openbaas.utils.properties.tomcat";
 	    	if (isOnBluemix()) resource = "infosistema.openbaas.utils.properties.bluemix";
-			
+			if (isOnOpenshift())  resource = "infosistema.openbaas.utils.properties.openshift";
 	    	Properties props = LoadProperties.getProperties(resource);
 
 			String stmp = null;

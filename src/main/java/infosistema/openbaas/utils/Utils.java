@@ -169,10 +169,11 @@ public class Utils {
 	public static List<String> getListByJsonArray(JSONArray jsonArray) {
 		List<String> res = new ArrayList<String>();
 		try {
-			if(jsonArray.length()>0){
-				for(int i=0; i<jsonArray.length(); i++){
-					res.add(jsonArray.getString(i));
-				}
+			if(jsonArray!=null)
+				if(jsonArray.length()>0){
+					for(int i=0; i<jsonArray.length(); i++){
+						res.add(jsonArray.getString(i));
+					}
 			}
 		} catch (Exception e) {
 			Log.error("", "", "getStringByJSONArray", "Error occored.", e); 

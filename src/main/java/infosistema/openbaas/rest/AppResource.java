@@ -26,6 +26,7 @@ import infosistema.openbaas.data.enums.FileMode;
 import infosistema.openbaas.data.models.Application;
 import infosistema.openbaas.data.models.User;
 import infosistema.openbaas.data.models.UsersState;
+import infosistema.openbaas.dataaccess.files.DropboxModel;
 import infosistema.openbaas.middleLayer.AppsMiddleLayer;
 import infosistema.openbaas.middleLayer.MediaMiddleLayer;
 import infosistema.openbaas.middleLayer.SessionMiddleLayer;
@@ -64,6 +65,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.view.Viewable;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -85,19 +87,21 @@ public class AppResource {
 
 	@Context
 	UriInfo uriInfo;
-/*
+
 	@GET
-	@Path("/Test")
+	@Path("/GetDropBoxToken")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response TestJM(@Context UriInfo ui, @Context HttpHeaders hh) {
+	public Response getDropboxTokens(@Context UriInfo ui, @Context HttpHeaders hh) {
 		try {
-			CopyClient.authenticate();
+			DropboxModel.getDropboxTokens();
 		} 
 		catch (Exception e) {
 			return null;
 		}
 		return Response.status(200).build();
-	}*/
+	}
+	
+
 	// *** CREATE *** //
 
 	/**
@@ -356,6 +360,7 @@ public class AppResource {
 	 * @param appId
 	 * @return
 	 */
+	/*Danger NOT to USE!!!
 	@Path("{appId}")
 	@DELETE
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -374,6 +379,7 @@ public class AppResource {
 			 response = Response.status(Status.BAD_REQUEST).entity(new Error("Error handling the request.")).build();
 		return response;
 	}
+	*/
 
 	
 	// *** GET LIST *** //
