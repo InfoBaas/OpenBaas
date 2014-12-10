@@ -11,12 +11,12 @@ html {
 }
 body {
 	margin-bottom: 80px;
-	font-size: 1.6em;
+	font-size: 1.6em; 
 	line-height: 1.6;
 	color: #fff;
 	background: #f2f2f2;
 	font-family: 'Ubuntu', sans-serif;
-	background: url(http://netdna.infosistema.com/stockphotos/startup.jpg) no-repeat center center;
+	background: url(http://netdna.infosistema.com/stockphotos/startup1.jpg) no-repeat center center;
 	background-size: cover;
 }
 footer {
