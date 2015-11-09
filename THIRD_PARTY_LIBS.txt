@@ -1,4 +1,4 @@
-License	Name	ArtifactId	Version	GroupId	Download from
+License	Name	ArtifactId	Version	GroupId	Download from 
 CDDL	JavaBeans Activation Framework (JAF)	activation	1.1	javax.activation	maven managed
 ASLv2.0	Apache JAMES Mime4j (Core)	apache-mime4j-core	0.7.2	org.apache.james	maven managed
 ASLv2.0	Apache JAMES Mime4j (DOM)	apache-mime4j-dom	0.7.2	org.apache.james	maven managed
